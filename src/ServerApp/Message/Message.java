@@ -1,4 +1,4 @@
-package src.ServerApp.Message;
+package ServerApp.Message;
 
 import java.time.LocalDateTime;
 

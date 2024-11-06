@@ -1,4 +1,4 @@
-package src.ServerApp.User;
+package ServerApp.User;
 
 public class User {
 	// Attributes
