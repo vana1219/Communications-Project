@@ -7,13 +7,13 @@ public class Message {
     // Attributes
 	private static int count = 0;
     private int messageID;
-    private String senderID;
+    private int senderID;
     private String content;
     private final LocalDateTime timestamp; // immutable once set
     private boolean hidden;
 
     // Constructor
-    public Message(String senderID, String content) {
+    public Message(int senderID, String content) {
         this.messageID = ++count;
         this.senderID = senderID;
         this.content = content;
@@ -28,7 +28,7 @@ public class Message {
         return messageID;
     }
 
-    public String getSenderID() {
+    public int getSenderID() {
         return senderID;
     }
 
