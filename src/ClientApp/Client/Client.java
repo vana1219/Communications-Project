@@ -1,8 +1,11 @@
-package Client;
+package ClientApp.Client;
 
+import java.io.DataInputStream;
 import java.net.Socket;
 import java.util.Map;
 import java.util.Queue;
+
+import ServerApp.User.User;
 
 public class Client {
 	private String serverAddress;
@@ -16,10 +19,11 @@ public class Client {
     public static void main(String[] args) {
 
     }
-}
+
 //testing commit
 
 public DataInputStream ClientMessageThread() {
+	return null;
 
 }
 
@@ -44,7 +48,7 @@ public void sendCreateUserRequest() {
 }
 
 public String receiveResponse() {
-	
+	return null;
 }
 
 public void receiveChatBoxStatus() {
@@ -57,4 +61,6 @@ public void sendViewChatBoxLogRequest() {
 
 public void receiveChatBoxLog() {
 	
+}
+
 }

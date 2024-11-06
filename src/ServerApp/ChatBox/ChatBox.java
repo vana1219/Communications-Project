@@ -1,7 +1,8 @@
-package src.ServerApp.ChatBox;
+package ServerApp.ChatBox;
 
-import src.ServerApp.User.User;
-import src.ServerApp.Message.Message;
+import ServerApp.User.User;
+
+import ServerApp.Message.Message;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedSet;
