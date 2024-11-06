@@ -1,7 +1,8 @@
 package ServerApp.Admin;
+
 import ServerApp.User.User; 
 
-// Admin INHERENTS from User
+// Admin INHERITS from User
 public class Admin extends User {
 
     // Constructor

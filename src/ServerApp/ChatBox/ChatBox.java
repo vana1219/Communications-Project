@@ -2,12 +2,17 @@ package ServerApp.ChatBox;
 
 import ServerApp.User.User;
 
+
 import ServerApp.Message.Message;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.ArrayList;
 import java.util.TreeSet;
+
+import ServerApp.Message.Message;
+
+import java.util.*;
 
 public class ChatBox {
 
@@ -23,7 +28,7 @@ public class ChatBox {
         this.chatName = chatName;
         this.chatBoxID = ++chatBoxCount;
         this.participants = new HashSet<>();
-        this.messages = new TreeSet<>((m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp())); // Automatically sorts messages in chronological order based on timestamp
+        this.messages = new TreeSet<>(Comparator.comparing(Message::getTimestamp)); // Automatically sorts messages in chronological order based on timestamp
     }
 
     // Getters and Setters

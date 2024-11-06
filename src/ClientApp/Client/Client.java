@@ -24,7 +24,6 @@ public class Client {
 
 public DataInputStream ClientMessageThread() {
 	return null;
-
 }
 
 public void sendMessageRequest() {
