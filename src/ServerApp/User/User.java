@@ -2,15 +2,16 @@ package src.ServerApp.User;
 
 public class User {
 	// Attributes
-    private String userID;
+    private final int userID;
+    private static int userCount = 0;
     private String username;
     private String password;
     private boolean isOnline;
     private boolean isBanned;
 
     // Constructor
-    public User(String userID, String username, String password) {
-        this.userID = userID;
+    public User(String username, String password) {
+        this.userID = ++userCount;
         this.username = username;
         this.password = password;
         this.isOnline = false;
@@ -18,12 +19,9 @@ public class User {
     }
 
     // Getters and setters
-    public String getUserID() {
+    // NOTE: Username can only be set with Admin
+    public int getUserID() {
         return userID;
-    }
-
-    public void setUserID(String userID) {
-        this.userID = userID;
     }
 
     public String getUsername() {
