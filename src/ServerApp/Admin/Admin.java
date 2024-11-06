@@ -5,8 +5,8 @@ import src.ServerApp.User.User;
 public class Admin extends User {
 
     // Constructor
-    public Admin(String userID, String username, String password) {
-        super(userID, username, password);
+    public Admin(String username, String password) {
+        super(username, password);
     }
 
     // Methods 
