@@ -1,6 +1,6 @@
-package src.ServerApp.StorageManager;
+package ServerApp.StorageManager;
 
-import src.ServerApp.ChatBox.ChatBox;
+import ServerApp.ChatBox.ChatBox;
 import java.util.HashMap;
 import java.io.*;
 
