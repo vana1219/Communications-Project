@@ -1,6 +1,7 @@
 package src.ServerApp.User;
 
 public class User {
+	// Attributes
     private String userID;
     private String username;
     private String password;
@@ -57,7 +58,7 @@ public class User {
         this.isBanned = isBanned;
     }
 
-    // Methods from the class diagram
+    // Methods
     public boolean checkIfBanned() {
         return isBanned;
     }
