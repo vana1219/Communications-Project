@@ -12,12 +12,14 @@ public class ChatBox {
 
     // Attributes
     private final int chatBoxID;
-    private HashMap<String, User> participants;
+    private final String chatName;
+    private HashMap<Integer, User> participants;
     private SortedSet<Message> messages;
     private static int chatBoxCount = 0;
 
     // Constructor
-    public ChatBox() {
+    public ChatBox(String chatName) {
+    	this.chatName = chatName;
         this.chatBoxID = ++chatBoxCount;
         this.participants = new HashMap<>();
         this.messages = new TreeSet<>((m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp())); // Automatically sorts messages in chronological order based on timestamp
@@ -27,8 +29,12 @@ public class ChatBox {
     public int getChatBoxID() {
         return chatBoxID;
     }
+    
+    public String getChatName() {
+        return chatName;
+    }
 
-    public HashMap<String, User> getParticipants() {
+    public HashMap<Integer, User> getParticipants() {
         return participants;
     }
 
