@@ -1,5 +1,6 @@
 package ServerApp.Admin;
-import ServerApp.User.User;
+
+import ServerApp.User.User; 
 
 // Admin INHERITS from User
 public class Admin extends User {

@@ -1,23 +1,21 @@
 package ClientApp.Client;
 
-import ServerApp.ChatBox.ChatBox;
-import ServerApp.Message.Message;
-import ServerApp.User.User;
-
 import java.io.DataInputStream;
 import java.net.Socket;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Queue;
+
+import ServerApp.User.User;
 
 public class Client {
 	private String serverAddress;
 	private DataInputStream inputStream;
 	private Socket socket;
 	private int port;
-	private Queue<Message> messageQueue;
+	private Queue messageQueue;
 	private User userData;
-	private HashSet<ChatBox> ChatBoxList;
-
+	private Map ChatBoxList;
+	
     public static void main(String[] args) {
 
     }
@@ -25,27 +23,27 @@ public class Client {
 //testing commit
 
 public DataInputStream ClientMessageThread() {
-    return null;
+	return null;
 }
 
 public void sendMessageRequest() {
-
+	
 }
 
 public void sendChatBoxRequest() {
-
+	
 }
 
 public void sendUnbanUserRequest() {
-
+	
 }
 
 public void sendResetUserPassword() {
-
+	
 }
 
 public void sendCreateUserRequest() {
-
+	
 }
 
 public String receiveResponse() {
@@ -53,13 +51,15 @@ public String receiveResponse() {
 }
 
 public void receiveChatBoxStatus() {
-
+	
 }
 
 public void sendViewChatBoxLogRequest() {
-
+	
 }
 
 public void receiveChatBoxLog() {
+	
+}
 
-}}
+}
