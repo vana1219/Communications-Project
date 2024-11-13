@@ -8,6 +8,7 @@ import java.util.Queue;
 
 import ServerApp.ChatBox.ChatBox;
 import ServerApp.Message.Message;
+import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.Server.Server;
 import ServerApp.User.User;
 

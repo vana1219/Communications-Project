@@ -9,10 +9,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.ArrayList;
 import java.util.TreeSet;
+import java.util.Comparator;
 
-import ServerApp.Message.Message;
-
-import java.util.*;
 
 public class ChatBox {
 
@@ -67,5 +65,15 @@ public class ChatBox {
 
     public boolean removeParticipant(User user) {
         return participants.remove(user); // Removes the user if present in the set
+    }
+
+    public ChatBox getEmpty(){
+        try {
+            ChatBox empty = (ChatBox) this.clone();
+            empty.messages = null;
+            return empty;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
