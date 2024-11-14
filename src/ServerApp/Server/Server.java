@@ -21,12 +21,12 @@ public class Server {
 	
 	
 	public static void main(String[] args) {
-		int port=5627;
+		int default_port=3000;
 		
 		Server server = new Server();
-		server.setPort(port);
+		server.setPort(default_port);
 		try{
-			server.startServer(port);
+			server.startServer(default_port);
 		 
 			while(true) {
 				try {
