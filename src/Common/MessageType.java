@@ -13,6 +13,6 @@ public enum MessageType {
     RETURN_USER_LIST,
     SEND_MESSAGE,
     UNBAN_USER,
+    RETURN_CHATBOX_LOG,
     VIEW_CHATBOX_LOG
-
 }
