@@ -22,12 +22,12 @@ public class Server {
 	
 	
 	public static void main(String[] args) {
-		int port=5627;
+		int default_port=5627;
 		
 		Server server = new Server();
-		server.setPort(port);
+		server.setPort(default_port);
 		try{
-			server.startServer(port);
+			server.startServer(default_port);
 		 
 			while(true) {
 				try {
@@ -52,13 +52,13 @@ public class Server {
 	public int getPort() {
 		return this.port;
 	}
-	public void startServer(int port) throws IOException{
+	private void startServer(int port) throws IOException{
 		serverSocket = new ServerSocket(port);		//creates a new ServerSocket object that listens for incoming connections
 		System.out.println("The server is running in port: "+ port);
 		serverSocket.setReuseAddress(true);
 		
 	}
-	public void acceptClient() throws IOException{
+	private void acceptClient() throws IOException{
 		try {
 			Socket client=serverSocket.accept();
 			 
@@ -75,7 +75,7 @@ public class Server {
             System.err.println("Error accepting client connection: " + e.getMessage());
         }	
 	}
-	public void shutDownServer() {
+	private void shutDownServer() {
 		if (serverSocket != null && !serverSocket.isClosed()) {
             try {
                 serverSocket.close();

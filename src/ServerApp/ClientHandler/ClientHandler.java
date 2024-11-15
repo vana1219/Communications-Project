@@ -1,7 +1,9 @@
 package ServerApp.ClientHandler;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Map;
 import java.util.Queue;
@@ -12,21 +14,29 @@ import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.Server.Server;
 import ServerApp.User.User;
 
-public class ClientHandler implements Runnable {
+public class ClientHandler implements Runnable{
 	private final Socket clientSocket;
-	private DataInputStream inputStream;
-	private DataOutputStream outputStream;
+	private OutputStream outputStream;
+	private ObjectOutputStream objectOutput;
+	private InputStream inputStream;
+	private ObjectInputStream objectInput;
 	private User user;
 	private Server server;
 	private MessageHandler messageHandler;
 	private Map<String, ChatBox> chatBoxList;
-	private Queue<Message> messageQueue;
+	private Queue<Message> OutBoundQue;
+	private Queue<Message> InBoundQue;
+	private ClientMessageRecieve clientMsgRecieve;
+	private ClientMessageSend clientMsgSend;
 	
 	
 	
 	//Constructor
 	public ClientHandler(Socket socket) {
 		this.clientSocket=socket;
+//		this.clientMsgRecieve= new ClientMessageRecieve();
+//		this.clientMsgSend= new ClientMessageSend();
+		
 	}
 
 	@Override
