@@ -1,6 +1,5 @@
 
-#ignore Log files but not the directory itself
-log/
+*
 
 #ignore Binaries
 *bin/
