@@ -21,7 +21,7 @@ public class ClientHandler implements Runnable {
 	private MessageHandler messageHandler;
 	private Map<String, ChatBox> chatBoxList;
 	private Queue<Message> messageQueue;
-	
+	private ClientProcessHandle processHandle;
 	
 	
 	//Constructor
