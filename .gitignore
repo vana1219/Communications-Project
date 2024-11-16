@@ -1,5 +1,9 @@
-# Ignore everything by default
-*
+
+#ignore Log files but not the directory itself
+log/*
+
+#ignore Binaries
+*bin/
 
 # Allow Java source files
 !*.java
