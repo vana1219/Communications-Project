@@ -3,6 +3,7 @@ package ServerApp.Server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,12 +21,17 @@ public class Server {
 	private static ServerSocket serverSocket=null;
 	private int port;
 	
+	public Server(int port, String ip) {
+		this.port=port;
+		this.ipAddress=ip;
+		this.clientHandler=new ArrayList<>();
+	}
 	
+
 	public static void main(String[] args) {
-		int default_port=5627;
-		
-		Server server = new Server();
-		server.setPort(default_port);
+		int default_port=3000;
+		String ip="127.0.0.1";		//Will change when working in different computers
+		Server server = new Server(default_port, ip);
 		try{
 			server.startServer(default_port);
 		 
@@ -45,12 +51,18 @@ public class Server {
 			server.shutDownServer();
 			}
 		}
-
+	
+	public String getIpAddress() {
+		return this.ipAddress;
+	}
 	public void setPort(int port) {
 		this.port=port;
 	}
 	public int getPort() {
 		return this.port;
+	}
+	public List<ClientHandler> getClientHandlers(){
+		return this.clientHandler;
 	}
 	private void startServer(int port) throws IOException{
 		serverSocket = new ServerSocket(port);		//creates a new ServerSocket object that listens for incoming connections
@@ -67,9 +79,12 @@ public class Server {
 			
 			// create a new thread object
 			ClientHandler clientSock = new ClientHandler(client);
-
-			// This thread will handle the client separately
-			//new Thread(clientSock).start();
+			
+			//Add new Client to the list
+			this.clientHandler.add(clientSock);
+			
+			clientSock.createThread();
+			
 			}
 		catch (IOException e) {
             System.err.println("Error accepting client connection: " + e.getMessage());
