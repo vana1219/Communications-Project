@@ -1,7 +1,6 @@
 package ServerApp.User;
 
 public class User {
-	// Attributes
     private final int userID;
     private static int userCount = 0;
     private String username;
@@ -19,7 +18,6 @@ public class User {
     }
 
     // Getters and setters
-    // NOTE: Username can only be set with Admin
     public int getUserID() {
         return userID;
     }
@@ -54,14 +52,5 @@ public class User {
 
     public void setBanned(boolean isBanned) {
         this.isBanned = isBanned;
-    }
-
-    // Methods
-    public boolean checkIfBanned() {
-        return isBanned;
-    }
-
-    public boolean checkIfOnline() {
-        return isOnline;
     }
 }
