@@ -69,7 +69,7 @@ public class Server {
 			ClientHandler clientSock = new ClientHandler(client);
 
 			// This thread will handle the client separately
-			new Thread(clientSock).start();
+			//new Thread(clientSock).start();
 			}
 		catch (IOException e) {
             System.err.println("Error accepting client connection: " + e.getMessage());

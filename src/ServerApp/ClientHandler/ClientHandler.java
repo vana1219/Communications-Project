@@ -14,7 +14,7 @@ import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.Server.Server;
 import ServerApp.User.User;
 
-public class ClientHandler implements Runnable{
+public class ClientHandler{
 	private final Socket clientSocket;
 	private OutputStream outputStream;
 	private ObjectOutputStream objectOutput;
