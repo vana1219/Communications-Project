@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
@@ -30,13 +31,23 @@ public class ClientHandler{
     private Queue<Message> InBoundQue;
     private ClientMessageRecieve clientMsgRecieve;
     private ClientMessageSend clientMsgSend;
+    
 	
 	
 	//Constructor
 	public ClientHandler(Socket socket) {
 		this.clientSocket=socket;
-//		this.clientMsgRecieve= new ClientMessageRecieve();
-//		this.clientMsgSend= new ClientMessageSend();
+		this.OutBoundQue= new LinkedList<>();
+		this.InBoundQue= new LinkedList<>();
+		this.clientMsgRecieve= new ClientMessageRecieve(socket,InBoundQue);
+		this.clientMsgSend= new ClientMessageSend(socket,OutBoundQue);
+		this.processHandle=new ClientProcessHandle(socket,InBoundQue,OutBoundQue);
+		
+	}
+	public void createThread() {
+		new Thread(clientMsgRecieve).start();
+		new Thread(processHandle).start();
+		new Thread(clientMsgSend).start();
 		
 	}
 
