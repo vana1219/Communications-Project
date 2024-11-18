@@ -16,6 +16,7 @@ public class ChatBox {
     private HashSet<User> participants;
     private SortedSet<Message> messages;
     private static int chatBoxCount = 0;
+    private boolean isHidden;
 
     // Constructor
     // Creates a new ChatBox instance
@@ -23,6 +24,7 @@ public class ChatBox {
         this.chatBoxID = ++chatBoxCount;
         this.participants = new HashSet<>();
         this.messages = new TreeSet<>(Comparator.comparing(Message::getTimestamp)); // Automatically sorts messages in chronological order based on timestamp
+        this.isHidden = false;
     }
 
     // Getters
@@ -41,6 +43,11 @@ public class ChatBox {
         return messages;
     }
 
+    // Returns the hidden status of the ChatBox
+    public boolean isHidden() {
+        return isHidden;
+    }
+
     // Methods
     // Adds a message to the ChatBox
     // INPUT: message (Message)
@@ -57,11 +64,15 @@ public class ChatBox {
     }
 
     // Returns a list of all messages in the ChatBox
+    // INPUT: none
+    // OUTPUT: List of messages
     public List<Message> getMessagesList() {
         return new ArrayList<>(messages);
     }
 
     // Returns a list of all participants in the ChatBox
+    // INPUT: none
+    // OUTPUT: List of participants
     public List<User> getParticipantsList() {
         return new ArrayList<>(participants);
     }
@@ -71,6 +82,13 @@ public class ChatBox {
     // OUTPUT: true if user removed successfully, false otherwise
     public boolean removeParticipant(User user) {
         return participants.remove(user); // Removes the user if present in the set
+    }
+
+    // Hides the ChatBox from users
+    // INPUT: none
+    // OUTPUT: none
+    public void hideChatBox() {
+        this.isHidden = true;
     }
 
     // Creates a new chatbox with specified participants
@@ -97,4 +115,3 @@ public class ChatBox {
         }
     }
 }
-
