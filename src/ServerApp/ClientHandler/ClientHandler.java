@@ -14,7 +14,7 @@ import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.Server.Server;
 import ServerApp.User.User;
 
-public class ClientHandler implements Runnable{
+public class ClientHandler{
 	private final Socket clientSocket;
 	private OutputStream outputStream;
 	private ObjectOutputStream objectOutput;
@@ -24,12 +24,12 @@ public class ClientHandler implements Runnable{
 	private Server server;
 	private MessageHandler messageHandler;
 	private Map<String, ChatBox> chatBoxList;
-  private Queue<Message> messageQueue;
-  private ClientProcessHandle processHandle;
-  private Queue<Message> OutBoundQue;
-  private Queue<Message> InBoundQue;
-  private ClientMessageRecieve clientMsgRecieve;
-  private ClientMessageSend clientMsgSend;
+    
+    private ClientProcessHandle processHandle;
+    private Queue<Message> OutBoundQue;
+    private Queue<Message> InBoundQue;
+    private ClientMessageRecieve clientMsgRecieve;
+    private ClientMessageSend clientMsgSend;
 	
 	
 	//Constructor
@@ -40,11 +40,11 @@ public class ClientHandler implements Runnable{
 		
 	}
 
-	@Override
-	public void run() {
-		
-		
+	public User getUser()
+	{
+		return user;
 	}
+	
 	public Message recieveMessage() {
 		return null;
 	}
