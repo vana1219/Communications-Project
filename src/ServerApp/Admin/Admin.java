@@ -1,66 +1,93 @@
 package ServerApp.Admin;
 
-import ServerApp.User.User; 
+import ServerApp.User.User;
+import ServerApp.AuthenticationSystem.AuthenticationSystem;
+import ServerApp.MessageHandler.MessageHandler;
 
-// Admin INHERITS from User
 public class Admin extends User {
 
+    // Attributes
+    private MessageHandler messageHandler;
+    private AuthenticationSystem authenticationSystem;
+
     // Constructor
-    public Admin(String username, String password) {
+    // INPUT: username (String), password (String), messageHandler (MessageHandler), authenticationSystem (AuthenticationSystem)
+    public Admin(String username, String password, MessageHandler messageHandler, AuthenticationSystem authenticationSystem) {
         super(username, password);
+        this.messageHandler = messageHandler;
+        this.authenticationSystem = authenticationSystem;
     }
 
-    // Methods 
-    // NOTE - METHOD NOT COMPLETE
-    public boolean banUser(String userID) {
-    	// Placeholder for method implementation
+    // Bans a user from the system
+    // INPUT: userID (int)
+    // OUTPUT: true if ban was successful, false otherwise
+    public boolean banUser(int userID) {
+        User user = authenticationSystem.findUser(userID);
+        if (user != null && !user.isBanned()) {
+            user.setBanned(true);
+            authenticationSystem.updateUser(user);
+            return true;
+        }
         return false;
     }
 
-    // NOTE - METHOD NOT COMPLETE
-    public boolean unbanUser(String userID) {
-        // Placeholder for method implementation
+    // Unbans a user from the system
+    // INPUT: userID (int)
+    // OUTPUT: true if unban was successful, false otherwise
+    public boolean unbanUser(int userID) {
+        User user = authenticationSystem.findUser(userID);
+        if (user != null && user.isBanned()) {
+            user.setBanned(false);
+            authenticationSystem.updateUser(user);
+            return true;
+        }
         return false;
     }
-    
-    // NOTE - METHOD NOT COMPLETE
+
+    // Adds a user to the system
+    // INPUT: user (User)
+    // OUTPUT: true if user added successfully, false otherwise
     public boolean addUser(User user) {
-        // Placeholder for method implementation
-        return false;
-    }
-    
-    // NOTE - METHOD NOT COMPLETE
-    public boolean deleteUser(String userID) {
-        // Placeholder for method implementation
-        return false;
+        return authenticationSystem.registerUser(user);
     }
 
-    // NOTE - METHOD NOT COMPLETE
-    public boolean resetUserPassword(String userID, String newPassword) {
-        // Placeholder for method implementation
-        return false;
+    // Deletes a user from the system
+    // INPUT: userID (int)
+    // OUTPUT: true if user deleted successfully, false otherwise
+    public boolean deleteUser(int userID) {
+        return authenticationSystem.deleteUser(userID);
     }
 
-    // NOTE - METHOD NOT COMPLETE
+    // Resets a user's password
+    // INPUT: userID (int), newPassword (String)
+    // OUTPUT: true if password reset successfully, false otherwise
+    public boolean resetUserPassword(int userID, String newPassword) {
+        return authenticationSystem.resetPassword(userID, newPassword);
+    }
+
+    // Sends a system-wide message to all users
+    // INPUT: content (String)
+    // OUTPUT: none
     public void sendSystemMessage(String content) {
-        // Placeholder for method implementation
+        for (User user : authenticationSystem.getAllUsers()) {
+            if (user.isOnline()) {
+                messageHandler.sendMessageToUser(user.getUserID(), content);
+            }
+        }
     }
 
-    // NOTE - METHOD NOT COMPLETE
-    public boolean hideChatMessage(String chatBoxID, String messageID) {
-        // Placeholder for method implementation
-        return false;
+    // Hides a specific message in a chatbox using MessageHandler
+    // INPUT: chatBoxID (int), messageID (int)
+    // OUTPUT: true if message was hidden successfully, false otherwise
+    public boolean hideChatMessage(int chatBoxID, int messageID) {
+        return messageHandler.hideMessage(chatBoxID, messageID);
     }
 
-    // NOTE - METHOD NOT COMPLETE
-    public boolean hideChatBox(String chatID) {
-        // Placeholder for method implementation
-        return false;
-    }
-
-    // NOTE - METHOD NOT COMPLETE
-    public String getChatBoxLog(String chatBoxID) {
-        // Placeholder for method implementation
-        return "";
+    // Hides a specific chatbox using MessageHandler
+    // INPUT: chatBoxID (int)
+    // OUTPUT: true if chatbox was hidden successfully, false otherwise
+    public boolean hideChatBox(int chatBoxID) {
+        return messageHandler.hideChatBox(chatBoxID);
     }
 }
+
