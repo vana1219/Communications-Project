@@ -78,4 +78,7 @@ public class ClientHandler{
 	public void closeConnection() {
 		
 	}
+
+    public void sendChatBoxUpdate(ChatBox chatBox) {
+    }
 }
