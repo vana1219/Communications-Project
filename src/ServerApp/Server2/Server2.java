@@ -1,10 +1,10 @@
 package ServerApp.Server2;
 
 import ServerApp.User.User;
+import ServerApp.ClientHandler2.ClientHandler2;
 import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.StorageManager.StorageManager;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
-import ServerApp.ClientHandler2.ClientHandler2;
 import ServerApp.ChatBox.ChatBox;
 
 import java.io.*;
@@ -31,8 +31,7 @@ public class Server2 {
     private final AuthenticationSystem authenticationSystem;
     private volatile boolean isRunning;
 
-   
-	//vConstructor initializes the server with necessary components.
+    // Constructor initializes the server with necessary components.
     public Server2(int port) {
         System.out.println("Initializing Server2...");
         this.port = port;
@@ -54,17 +53,18 @@ public class Server2 {
     // Starts the server to begin accepting client connections.
     public void startServer() {
         try {
-            String serverIP = getServerIpAddress();
-            System.out.println("Server IP: " + serverIP);
+            String publicIP = "24.5.35.68"; // Replace with your actual public IP
+            System.out.println("Server IP: " + publicIP);
             System.out.println("Starting Server2 on port " + port);
 
             serverSocket = new ServerSocket();
             serverSocket.setReuseAddress(true); // Allow port reuse
             try {
-                serverSocket.bind(new InetSocketAddress(port)); // Bind to the specified port
+                serverSocket.bind(new InetSocketAddress(publicIP, port)); // Bind to the specified public IP and port
+                System.out.println("Server bound to " + publicIP + ":" + port);
             } catch (BindException e) {
-                System.err.println("Port " + port + " is already in use. Trying next available port...");
-                serverSocket.bind(null); // Bind to a random available port
+                System.err.println("Port " + port + " is already in use on IP " + publicIP + ". Trying next available port...");
+                serverSocket.bind(new InetSocketAddress(0)); // Bind to a random available port
                 System.out.println("Server bound to port " + serverSocket.getLocalPort());
             }
             isRunning = true;
@@ -104,8 +104,7 @@ public class Server2 {
         }
     }
 
- 
-	// Shuts down the server gracefully by closing the server socket and all client handlers.
+    // Shuts down the server gracefully by closing the server socket and all client handlers.
     public void shutdownServer() {
         isRunning = false;
         try {
@@ -190,5 +189,4 @@ public class Server2 {
         server.startServer();
     }
 }
-
 
