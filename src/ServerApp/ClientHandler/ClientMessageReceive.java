@@ -5,21 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
-import java.util.Map;
 import java.util.Queue;
 
-import ServerApp.ChatBox.ChatBox;
 import ServerApp.Message.Message;
-import ServerApp.MessageHandler.MessageHandler;
-import ServerApp.Server.Server;
-import ServerApp.User.User;
 
-public class ClientMessageRecieve implements Runnable
+public class ClientMessageReceive implements Runnable
 {
 	private Socket client;
 	private Queue<Message> inCont;
 	
-	public ClientMessageRecieve (Socket cl, Queue<Message> in)
+	public ClientMessageReceive(Socket cl, Queue<Message> in)
 	{
 		client = cl;
 		inCont = in;

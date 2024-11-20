@@ -29,7 +29,7 @@ public class ClientHandler{
     private ClientProcessHandle processHandle;
     private Queue<Message> OutBoundQue;
     private Queue<Message> InBoundQue;
-    private ClientMessageRecieve clientMsgRecieve;
+    private ClientMessageReceive clientMsgRecieve;
     private ClientMessageSend clientMsgSend;
     
 	
@@ -39,7 +39,7 @@ public class ClientHandler{
 		this.clientSocket=socket;
 		this.OutBoundQue= new LinkedList<>();
 		this.InBoundQue= new LinkedList<>();
-		this.clientMsgRecieve= new ClientMessageRecieve(socket,InBoundQue);
+		this.clientMsgRecieve= new ClientMessageReceive(socket, InBoundQue);
 		this.clientMsgSend= new ClientMessageSend(socket,OutBoundQue);
 		this.processHandle=new ClientProcessHandle(socket,InBoundQue,OutBoundQue);
 		
@@ -78,4 +78,7 @@ public class ClientHandler{
 	public void closeConnection() {
 		
 	}
+
+    public void sendChatBoxUpdate(ChatBox chatBox) {
+    }
 }
