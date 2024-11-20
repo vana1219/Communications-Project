@@ -15,7 +15,7 @@ import ServerApp.User.User;
 public class Server {
 	
 	private String ipAddress;
-	private List<ClientHandler> clientHandler;
+	private static List<ClientHandler> clientHandlers;
 	private MessageHandler messageHandler;
 	private HashMap<String, User> userDB;
 	private static ServerSocket serverSocket=null;
@@ -24,7 +24,7 @@ public class Server {
 	public Server(int port, String ip) {
 		this.port=port;
 		this.ipAddress=ip;
-		this.clientHandler=new ArrayList<>();
+		clientHandlers =new ArrayList<>();
 	}
 	
 
@@ -61,8 +61,8 @@ public class Server {
 	public int getPort() {
 		return this.port;
 	}
-	public List<ClientHandler> getClientHandlers(){
-		return this.clientHandler;
+	public static List<ClientHandler> getClientHandlers(){
+		return clientHandlers;
 	}
 	private void startServer(int port) throws IOException{
 		serverSocket = new ServerSocket(port);		//creates a new ServerSocket object that listens for incoming connections
@@ -81,7 +81,7 @@ public class Server {
 			ClientHandler clientSock = new ClientHandler(client);
 			
 			//Add new Client to the list
-			this.clientHandler.add(clientSock);
+			clientHandlers.add(clientSock);
 			
 			clientSock.createThread();
 			
