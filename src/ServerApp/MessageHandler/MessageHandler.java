@@ -5,7 +5,6 @@ import ServerApp.ChatBox.ChatBox;
 import ServerApp.Message.Message;
 import ServerApp.ClientHandler2.ClientHandler2;
 import ServerApp.User.User;
-import ServerApp.AuthenticationSystem.AuthenticationSystem;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;

@@ -3,14 +3,13 @@ package ServerApp.StorageManager;
 import ServerApp.ChatBox.ChatBox;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.*;
-import java.util.HashMap;
 
 /**
  * StorageManager handles the persistent storage and retrieval of ChatBox objects.
  */
 public class StorageManager implements Serializable {
-
-    // Attributes
+	private static final long serialVersionUID = 1L;
+	// Attributes
     private ConcurrentHashMap<Integer, ChatBox> chatBoxRecords;
 
     // Constructor
@@ -64,7 +63,8 @@ public class StorageManager implements Serializable {
     // *Loads chatboxes from file into memory*
     // INPUT: none
     // OUTPUT: none
-    private void loadChatBoxesFromFile() {
+    @SuppressWarnings("unchecked")
+	private void loadChatBoxesFromFile() {
         synchronized (this) { // Ensure thread safety during load
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("chatBoxes.ser"))) {
                 chatBoxRecords = (ConcurrentHashMap<Integer, ChatBox>) ois.readObject();
