@@ -1,24 +1,26 @@
 package ServerApp.StorageManager;
 
 import ServerApp.ChatBox.ChatBox;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.*;
+import java.util.HashMap;
 
-public class StorageManager {
+/**
+ * StorageManager handles the persistent storage and retrieval of ChatBox objects.
+ */
+public class StorageManager implements Serializable {
 
     // Attributes
-    private HashMap<Integer, ChatBox> chatBoxRecords;
+    private ConcurrentHashMap<Integer, ChatBox> chatBoxRecords;
 
     // Constructor
     // *Initializes StorageManager and loads existing chatboxes from file*
     // INPUT: none
     // OUTPUT: none
     public StorageManager() {
-        this.chatBoxRecords = new HashMap<>();
+        this.chatBoxRecords = new ConcurrentHashMap<>();
         loadChatBoxesFromFile(); // Load existing chatboxes from file
     }
-
-    // Methods
 
     // *Stores a chatbox in memory and saves it to file*
     // INPUT: chatBox (ChatBox)
@@ -36,18 +38,26 @@ public class StorageManager {
     // INPUT: chatID (int)
     // OUTPUT: ChatBox object if found, null otherwise
     public ChatBox retrieveChatBox(int chatID) {
-        loadChatBoxesFromFile(); // Load chatboxes from file before retrieving
         return chatBoxRecords.get(chatID);
+    }
+
+    // *Retrieves all chatbox records from storage*
+    // INPUT: none
+    // OUTPUT: ConcurrentHashMap of chatBoxID to ChatBox objects
+    public ConcurrentHashMap<Integer, ChatBox> getChatBoxRecords() {
+        return chatBoxRecords;
     }
 
     // *Saves all chatboxes to a file for persistent storage*
     // INPUT: none
     // OUTPUT: none
     private void saveChatBoxesToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("chatBoxes.ser"))) {
-            oos.writeObject(chatBoxRecords);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (this) { // Ensure thread safety during save
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("chatBoxes.ser"))) {
+                oos.writeObject(chatBoxRecords);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -55,10 +65,13 @@ public class StorageManager {
     // INPUT: none
     // OUTPUT: none
     private void loadChatBoxesFromFile() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("chatBoxes.ser"))) {
-            chatBoxRecords = (HashMap<Integer, ChatBox>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            chatBoxRecords = new HashMap<>(); // If file not found or error occurs, start with an empty HashMap
+        synchronized (this) { // Ensure thread safety during load
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("chatBoxes.ser"))) {
+                chatBoxRecords = (ConcurrentHashMap<Integer, ChatBox>) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                chatBoxRecords = new ConcurrentHashMap<>(); // If file not found or error occurs, start with an empty HashMap
+            }
         }
     }
 }
+

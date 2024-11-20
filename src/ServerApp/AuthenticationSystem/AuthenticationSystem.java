@@ -2,64 +2,41 @@ package ServerApp.AuthenticationSystem;
 
 import ServerApp.User.User;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
 
+/**
+ * AuthenticationSystem manages user authentication and user-related operations.
+ */
 public class AuthenticationSystem {
     // Attributes
-    private Map<Integer, User> userDB;
+    private ConcurrentHashMap<Integer, User> userDB;
     private String userFilePath;
 
     // Constructor
-    // Creates a new instance of AuthenticationSystem
-    // INPUT: userFilePath (String), userDB (Map<Integer, User>)
-    public AuthenticationSystem(String userFilePath, Map<Integer, User> userDB) {
+    // *Initializes AuthenticationSystem and loads existing users from file*
+    // INPUT: userFilePath (String)
+    // OUTPUT: none
+    public AuthenticationSystem(String userFilePath) {
         this.userFilePath = userFilePath;
-        this.userDB = userDB;
+        this.userDB = new ConcurrentHashMap<>();
+        loadUsersFromFile(); // Load existing users from file
     }
 
-    // Loads users from a file containing serialized objects
-    // OUTPUT: Map of userID to User objects
-    private Map<Integer, User> loadUsersFromFile() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userFilePath))) {
-            return (Map<Integer, User>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
-    // Saves all users to a file
-    // OUTPUT: true if save is successful, false otherwise
-    private boolean saveUsersToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(userFilePath))) {
-            oos.writeObject(userDB);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // Registers a new user to the system
+    // *Stores a user in memory and saves it to file*
     // INPUT: user (User)
-    // OUTPUT: true if registration is successful, false otherwise
+    // OUTPUT: true if successfully stored, false otherwise
     public boolean registerUser(User user) {
-        if (!userDB.containsKey(user.getUserID())) {
+        if (user != null && !userDB.containsKey(user.getUserID())) {
             userDB.put(user.getUserID(), user);
-            saveUsersToFile();
+            saveUsersToFile(); // Save updated users to file
             return true;
         }
         return false;
     }
 
-    // Validates user credentials during login
+    // *Validates user credentials during login*
     // INPUT: username (String), password (String)
     // OUTPUT: User object if login is successful, null otherwise
     public User validateCredentials(String username, String password) {
@@ -73,7 +50,7 @@ public class AuthenticationSystem {
         return null;
     }
 
-    // Resets user password
+    // *Resets user password*
     // INPUT: userID (int), newPassword (String)
     // OUTPUT: true if reset is successful, false otherwise
     public boolean resetPassword(int userID, String newPassword) {
@@ -86,7 +63,7 @@ public class AuthenticationSystem {
         return false;
     }
 
-    // Deletes a user from the system
+    // *Deletes a user from the system*
     // INPUT: userID (int)
     // OUTPUT: true if deletion is successful, false otherwise
     public boolean deleteUser(int userID) {
@@ -98,7 +75,7 @@ public class AuthenticationSystem {
         return false;
     }
 
-    // Logs a user out
+    // *Logs a user out*
     // INPUT: userID (int)
     // OUTPUT: true if logout is successful, false otherwise
     public boolean logout(int userID) {
@@ -111,18 +88,18 @@ public class AuthenticationSystem {
         return false;
     }
 
-    // Finds a user by userID
+    // *Finds a user by userID*
     // INPUT: userID (int)
     // OUTPUT: User object or null if not found
     public User findUser(int userID) {
         return userDB.get(userID);
     }
 
-    // Updates a user's information in the system
+    // *Updates a user's information in the system*
     // INPUT: user (User)
     // OUTPUT: true if update is successful, false otherwise
     public boolean updateUser(User user) {
-        if (userDB.containsKey(user.getUserID())) {
+        if (user != null && userDB.containsKey(user.getUserID())) {
             userDB.put(user.getUserID(), user);
             saveUsersToFile();
             return true;
@@ -130,9 +107,43 @@ public class AuthenticationSystem {
         return false;
     }
 
-    // Retrieves all users in the system
+    // *Retrieves all users in the system*
+    // INPUT: none
     // OUTPUT: Collection of User objects
     public Collection<User> getAllUsers() {
         return userDB.values();
+    }
+
+    // *Retrieves the user database*
+    // INPUT: none
+    // OUTPUT: ConcurrentHashMap of userID to User objects
+    public ConcurrentHashMap<Integer, User> getUserDB() {
+        return userDB;
+    }
+
+    // *Saves all users to a file for persistent storage*
+    // INPUT: none
+    // OUTPUT: none
+    private void saveUsersToFile() {
+        synchronized (this) { // Ensure thread safety during save
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(userFilePath))) {
+                oos.writeObject(userDB);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // *Loads users from file into memory*
+    // INPUT: none
+    // OUTPUT: none
+    private void loadUsersFromFile() {
+        synchronized (this) { // Ensure thread safety during load
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userFilePath))) {
+                userDB = (ConcurrentHashMap<Integer, User>) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                userDB = new ConcurrentHashMap<>(); // If file not found or error occurs, start with an empty HashMap
+            }
+        }
     }
 }
