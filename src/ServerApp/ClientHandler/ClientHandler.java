@@ -29,7 +29,7 @@ public class ClientHandler{
     private ClientProcessHandle processHandle;
     private Queue<Message> OutBoundQue;
     private Queue<Message> InBoundQue;
-    private ClientMessageReceive clientMsgRecieve;
+    private ClientMessageReceive clientMsgReceive;
     private ClientMessageSend clientMsgSend;
     
 	
@@ -39,13 +39,13 @@ public class ClientHandler{
 		this.clientSocket=socket;
 		this.OutBoundQue= new LinkedList<>();
 		this.InBoundQue= new LinkedList<>();
-		this.clientMsgRecieve= new ClientMessageReceive(socket, InBoundQue);
+		this.clientMsgReceive = new ClientMessageReceive(socket, InBoundQue);
 		this.clientMsgSend= new ClientMessageSend(socket,OutBoundQue);
 		this.processHandle=new ClientProcessHandle(socket,InBoundQue,OutBoundQue);
 		
 	}
 	public void createThread() {
-		new Thread(clientMsgRecieve).start();
+		new Thread(clientMsgReceive).start();
 		new Thread(processHandle).start();
 		new Thread(clientMsgSend).start();
 		
