@@ -1,7 +1,10 @@
 package ServerApp.User;
 
-public class User {
-    private final int userID;
+import java.io.Serializable;
+
+public class User implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private final int userID;
     private static int userCount = 0;
     private String username;
     private String password;

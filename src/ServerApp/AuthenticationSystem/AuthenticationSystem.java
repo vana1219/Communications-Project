@@ -137,7 +137,8 @@ public class AuthenticationSystem {
     // *Loads users from file into memory*
     // INPUT: none
     // OUTPUT: none
-    private void loadUsersFromFile() {
+    @SuppressWarnings("unchecked")
+	private void loadUsersFromFile() {
         synchronized (this) { // Ensure thread safety during load
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userFilePath))) {
                 userDB = (ConcurrentHashMap<Integer, User>) ois.readObject();

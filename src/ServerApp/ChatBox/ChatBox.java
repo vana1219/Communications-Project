@@ -8,8 +8,9 @@ import java.util.SortedSet;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Comparator;
+import java.io.Serializable;
 
-public class ChatBox {
+public class ChatBox implements Serializable {
 
     // Attributes
     private final int chatBoxID;
