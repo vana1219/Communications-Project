@@ -65,13 +65,10 @@ public class Client2
 			}
 			
 		}
-		catch (IOException ex)
-		{
-			
-		}
-		catch(ClassNotFoundException ex)
-		{
-			
+		catch (IOException ex) {
+		    System.err.println("I/O error: " + ex.getMessage());
+		} catch (ClassNotFoundException ex) {
+		    System.err.println("Class not found: " + ex.getMessage());
 		}
 		
 		
