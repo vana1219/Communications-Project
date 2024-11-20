@@ -14,5 +14,6 @@ public enum MessageType {
     SEND_MESSAGE,
     UNBAN_USER,
     RETURN_CHATBOX_LOG,
-    VIEW_CHATBOX_LOG
+    VIEW_CHATBOX_LOG,
+    CREATE_CHATBOX
 }
