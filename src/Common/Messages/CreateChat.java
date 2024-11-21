@@ -5,8 +5,9 @@ import Common.MessageType;
 import ServerApp.User.User;
 
 import java.util.List;
+import java.io.Serializable;
 
-public record CreateChat(List<User> participants) implements MessageInterface {
+public record CreateChat(List<User> participants) implements MessageInterface,Serializable {
     private static final MessageType type = MessageType.CREATE_CHATBOX;
 
     public MessageType getType() {

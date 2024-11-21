@@ -5,8 +5,9 @@ import Common.MessageType;
 import ServerApp.User.User;
 
 import java.util.List;
+import java.io.Serializable;
 
-public record SendUserList(List<User> userList) implements MessageInterface {
+public record SendUserList(List<User> userList) implements MessageInterface,Serializable {
     private static final MessageType type = MessageType.RETURN_USER_LIST;
 
     public MessageType getType() {
