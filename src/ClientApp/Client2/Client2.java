@@ -1,84 +1,68 @@
 package ClientApp.Client2;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
-import Common.Messages.*;
-import ServerApp.User.*;
+// Import existing classes from your Common package
+import Common.MessageInterface;
+import Common.MessageType;
+import Common.Messages.Login;
 
-public class Client2
-{
-	private static Socket client;
-	private static boolean loginStatus;
-	private static User user;
-	
-	public static void main(String args[])
-	{
-		loginStatus = true;
-		Scanner userInput = new Scanner(System.in);
-		
-		try
-		{
-			System.out.println("Please enter the ip address of the server");
-			String userInputStr = userInput.next(); //grab ip address from console
-			
-			client = new Socket(userInputStr,12345); 
-			
-			System.out.println("Please enter your username");
-			userInputStr = userInput.next(); 
-			
-			String username = userInputStr;
-			
-			System.out.println("Please enter your password");
-			userInputStr = userInput.next(); 
-			
-			String password = userInputStr;
-			
-			Login mylogin = new Login(username, password);
-			
-			InputStream in = client.getInputStream();
-			ObjectInputStream inObj = new ObjectInputStream (in);
-			
-			OutputStream out = client.getOutputStream();
-			ObjectOutputStream outObj = new ObjectOutputStream (out);
-			
-			outObj.writeObject(mylogin); //sends out a Login object
-			
-			LoginResponse loginR = (LoginResponse) inObj.readObject();
-			
-			user = loginR.user();
-			
-			if (user == null)
-			{
-				System.out.println("user not found");
-			}
-			else
-			{
-				System.out.println("returned username is: " + user.getUsername());
-				System.out.println("returned password is: " + user.getPassword());
-			}
-			
-		}
-		catch (IOException ex) {
-		    System.err.println("I/O error: " + ex.getMessage());
-		} catch (ClassNotFoundException ex) {
-		    System.err.println("Class not found: " + ex.getMessage());
-		}
-		
-		
-		
-		
-		
-		userInput.close();
-		
-	}
-	
-	
-	
+public class Client2 {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        try {
+            // Get server IP and port from the user
+            System.out.print("Enter server IP address: ");
+            String serverIP = scanner.nextLine();
+
+            System.out.print("Enter server port number: ");
+            int port = Integer.parseInt(scanner.nextLine());
+
+            // Connect to the server
+            Socket socket = new Socket(serverIP, port);
+            System.out.println("Connected to the server.");
+
+            // Set up object streams
+            ObjectOutputStream outObj = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inObj = new ObjectInputStream(socket.getInputStream());
+
+            // Get username and password from the user
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine();
+
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine();
+
+            // Create and send the login message
+            Login loginMessage = new Login(username, password);
+            outObj.writeObject(loginMessage);
+            outObj.flush();
+
+         // Read and ignore the server's reply
+            try {
+                @SuppressWarnings("unused")
+				Object response = inObj.readObject();
+                // Ignore the response
+            } catch (ClassNotFoundException e) {
+                // Handle exception if necessary
+            }
+
+
+            // Close resources
+            outObj.close();
+            inObj.close();
+            socket.close();
+            scanner.close();
+
+            System.out.println("Login message sent to the server.");
+
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e.getMessage());
+        }
+    }
 }
