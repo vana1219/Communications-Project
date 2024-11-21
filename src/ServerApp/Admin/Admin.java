@@ -5,10 +5,10 @@ import ServerApp.AuthenticationSystem.AuthenticationSystem;
 import ServerApp.MessageHandler.MessageHandler;
 
 public class Admin extends User {
-
+    private static final long serialVersionUID = 1L;
     // Attributes
-    private MessageHandler messageHandler;
-    private AuthenticationSystem authenticationSystem;
+    private transient MessageHandler messageHandler;
+    private transient AuthenticationSystem authenticationSystem;
 
     // Constructor
     // INPUT: username (String), password (String), messageHandler (MessageHandler), authenticationSystem (AuthenticationSystem)
@@ -90,4 +90,3 @@ public class Admin extends User {
         return messageHandler.hideChatBox(chatBoxID);
     }
 }
-
