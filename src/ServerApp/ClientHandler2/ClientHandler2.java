@@ -73,9 +73,9 @@ public class ClientHandler2 implements Runnable {
 		//case LOGIN -> handleLogin((Login) message);
 		//case CREATE_USER -> handleCreateUser((CreateUser) message);
 		case LOGIN -> handleLogin((Login) message);
+		case LOGOUT -> handleLogout();
 		case CREATE_USER -> handleCreateUser((CreateUser) message);
 		case SEND_MESSAGE -> handleSendMessage((SendMessage) message);
-		case LOGOUT -> handleLogout();
 		default -> sendNotification("Unknown message type received.");
 		}
 	}
@@ -111,12 +111,13 @@ public class ClientHandler2 implements Runnable {
 	}
 
 	
+	// Handle CreateUser
     private void handleCreateUser(CreateUser createUser) {
         // Step 1: Check if the requesting user is an admin
-        if (!(user instanceof Admin)) {
+        if (!(user instanceof Admin adminUser)) {
             System.out.println("User " + (user != null ? user.getUsername() : "Unknown") + " attempted to create a user without admin privileges.");
 
-            // Send a CreateUserResponse indicating denial
+            // Send a Notification indicating denial
             Notification response = new Notification("Access denied. Admin privileges required to create a new user.");
             sendMessage(response);
             return;
@@ -125,23 +126,29 @@ public class ClientHandler2 implements Runnable {
         // Step 2: Proceed with user registration
         String newUsername = createUser.username();
         String newPassword = createUser.password();
+        boolean isAdmin = createUser.isAdmin();
 
-        // Create a new User instance
-        User newUser = new User(newUsername, newPassword);
+        // Create a new User or Admin instance based on isAdmin flag
+        User newUser;
+        if (isAdmin) {
+            newUser = new Admin(newUsername, newPassword, messageHandler, authenticationSystem);
+        } else {
+            newUser = new User(newUsername, newPassword);
+        }
 
-        // Attempt to register the new user
-        boolean registrationSuccess = authenticationSystem.registerUser(newUser);
+        // Use Admin's addUser method
+        boolean registrationSuccess = adminUser.addUser(newUser);
 
         if (registrationSuccess) {
-            System.out.println("Admin " + user.getUsername() + " successfully created user: " + newUsername);
+            System.out.println("Admin " + adminUser.getUsername() + " successfully created user: " + newUsername);
 
-            // Send a CreateUserResponse indicating success
+            // Send a Notification indicating success
             Notification response = new Notification("User created successfully.");
             sendMessage(response);
         } else {
-            System.out.println("Admin " + user.getUsername() + " failed to create user: " + newUsername);
+            System.out.println("Admin " + adminUser.getUsername() + " failed to create user: " + newUsername);
 
-            // Send a CreateUserResponse indicating failure (e.g., username already exists)
+            // Send a Notification indicating failure
             Notification response = new Notification("Failed to create user. Username may already exist.");
             sendMessage(response);
         }
