@@ -42,6 +42,23 @@ public class MessageHandler {
                 .orElse(null);
     }
 
+    // *Creates a new chatbox with specified participants*
+    // INPUT: participants (List<User>)
+    // OUTPUT: ChatBox object
+    public ChatBox createChatBox(List<User> participants) {
+        ChatBox chatBox = ChatBox.createChatBox(participants);
+        chatBoxes.put(chatBox.getChatBoxID(), chatBox);
+        storeChatBox(chatBox);
+        return chatBox;
+    }
+
+    // *Retrieves a chatbox by ID*
+    // INPUT: chatBoxID (int)
+    // OUTPUT: ChatBox object or null if not found
+    public ChatBox getChatBox(int chatBoxID) {
+        return chatBoxes.get(chatBoxID);
+    }
+    
     // *Updates all participants in the chatbox with the latest chatbox state*
     // INPUT: chatBoxID (int)
     // OUTPUT: none
