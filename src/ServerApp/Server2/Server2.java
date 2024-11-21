@@ -49,6 +49,9 @@ public class Server2 {
 
         // Create initial users if they don't exist
         createInitialUsers();
+        
+        // Create initial chatboxes
+        createInitialChatBoxes();
     }
 
     // Creates initial users (run once)
@@ -79,6 +82,32 @@ public class Server2 {
             } else {
                 System.out.println("Failed to create regular user: Sally User");
             }
+        }
+    }
+    
+    // Creates initial chatboxes (run once)
+    private void createInitialChatBoxes() {
+        // Check if chatbox between Bob and Sally exists
+        boolean chatBoxExists = chatBoxes.values().stream().anyMatch(chatBox -> {
+            HashSet<User> participants = chatBox.getParticipants();
+            return participants.stream().anyMatch(u -> u.getUsername().equals("Bob Admin")) &&
+                   participants.stream().anyMatch(u -> u.getUsername().equals("Sally User"));
+        });
+
+        if (!chatBoxExists) {
+            // Get Bob and Sally from userDB
+            User bob = userDB.values().stream().filter(u -> u.getUsername().equals("Bob Admin")).findFirst().orElse(null);
+            User sally = userDB.values().stream().filter(u -> u.getUsername().equals("Sally User")).findFirst().orElse(null);
+
+            if (bob != null && sally != null) {
+                List<User> participants = Arrays.asList(bob, sally);
+                ChatBox chatBox = messageHandler.createChatBox(participants);
+                System.out.println("Created chatbox between Bob Admin and Sally User with ID: " + chatBox.getChatBoxID());
+            } else {
+                System.out.println("Error: Could not find Bob or Sally to create chatbox.");
+            }
+        } else {
+            System.out.println("Chatbox between Bob and Sally already exists.");
         }
     }
 
