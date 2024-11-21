@@ -24,16 +24,23 @@ public class AuthenticationSystem {
         loadUsersFromFile(); // Load existing users from file
     }
 
-    // *Stores a user in memory and saves it to file*
+    // *Registers a user in the system*
     // INPUT: user (User)
-    // OUTPUT: true if successfully stored, false otherwise
+    // OUTPUT: true if registration is successful, false otherwise
     public boolean registerUser(User user) {
-        if (user != null && !userDB.containsKey(user.getUserID())) {
+        if (user != null && !usernameExists(user.getUsername())) {
             userDB.put(user.getUserID(), user);
             saveUsersToFile(); // Save updated users to file
             return true;
         }
         return false;
+    }
+
+    // *Checks if a username already exists*
+    // INPUT: username (String)
+    // OUTPUT: true if username exists, false otherwise
+    private boolean usernameExists(String username) {
+        return userDB.values().stream().anyMatch(u -> u.getUsername().equals(username));
     }
 
     // *Validates user credentials during login*
