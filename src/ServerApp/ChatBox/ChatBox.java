@@ -11,20 +11,31 @@ import java.util.Comparator;
 import java.io.Serializable;
 
 public class ChatBox implements Serializable {
-
-    // Attributes
+	private static final long serialVersionUID = 1L;
+	// Attributes
     private final int chatBoxID;
     private HashSet<User> participants;
     private SortedSet<Message> messages;
     private static int chatBoxCount = 0;
     private boolean isHidden;
 
+    // Serializable Comparator
+    private static final Comparator<Message> MESSAGE_TIMESTAMP_COMPARATOR = new SerializableComparator();
+
+    private static class SerializableComparator implements Comparator<Message>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(Message m1, Message m2) {
+            return m1.getTimestamp().compareTo(m2.getTimestamp());
+        }
+    }
+
     // Constructor
-    // Creates a new ChatBox instance
     public ChatBox() {
         this.chatBoxID = ++chatBoxCount;
         this.participants = new HashSet<>();
-        this.messages = new TreeSet<>(Comparator.comparing(Message::getTimestamp)); // Automatically sorts messages in chronological order based on timestamp
+        this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
         this.isHidden = false;
     }
 
