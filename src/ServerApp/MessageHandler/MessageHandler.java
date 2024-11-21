@@ -5,6 +5,7 @@ import ServerApp.ChatBox.ChatBox;
 import ServerApp.Message.Message;
 import ServerApp.ClientHandler2.ClientHandler2;
 import ServerApp.User.User;
+import ServerApp.Server2.Server2;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
@@ -19,14 +20,41 @@ public class MessageHandler {
     private StorageManager storageManager; // Manages storage operations for chatboxes
     private ConcurrentHashMap<Integer, ChatBox> chatBoxes; // In-memory chatboxes
     private ConcurrentHashMap<Integer, User> userDB; // In-memory users
+    private Server2 server; // Reference to the Server2 instance
 
     // Constructor
-    // *Initializes MessageHandler with storageManager, chatBoxes, and userDB*
-    // INPUT: storageManager (StorageManager), chatBoxes (ConcurrentHashMap<Integer, ChatBox>), userDB (ConcurrentHashMap<Integer, User>)
-    public MessageHandler(StorageManager storageManager, ConcurrentHashMap<Integer, ChatBox> chatBoxes, ConcurrentHashMap<Integer, User> userDB) {
+    // *Initializes MessageHandler with storageManager, chatBoxes, userDB, and server*
+    // INPUT: storageManager (StorageManager), chatBoxes (ConcurrentHashMap<Integer, ChatBox>), userDB (ConcurrentHashMap<Integer, User>), server (Server2)
+    public MessageHandler(StorageManager storageManager, ConcurrentHashMap<Integer, ChatBox> chatBoxes, ConcurrentHashMap<Integer, User> userDB, Server2 server) {
         this.storageManager = storageManager;
         this.chatBoxes = chatBoxes;
         this.userDB = userDB;
+        this.server = server;
+    }
+
+    // *Finds the ClientHandler2 for a given user ID*
+    // INPUT: userID (int)
+    // OUTPUT: ClientHandler2 or null if not found
+    private ClientHandler2 findClientHandler(int userID) {
+        return server.getClientHandlers().stream()
+                .filter(handler -> handler.getUser() != null && handler.getUser().getUserID() == userID)
+                .findFirst()
+                .orElse(null);
+    }
+
+    // *Updates all participants in the chatbox with the latest chatbox state*
+    // INPUT: chatBoxID (int)
+    // OUTPUT: none
+    private void updateParticipants(int chatBoxID) {
+        ChatBox chatBox = chatBoxes.get(chatBoxID);
+        if (chatBox != null) {
+            for (User participant : chatBox.getParticipants()) {
+                ClientHandler2 clientHandler = findClientHandler(participant.getUserID());
+                if (clientHandler != null) {
+                    clientHandler.sendChatBoxUpdate(chatBox); // Send the updated chatbox to the client via the client handler
+                }
+            }
+        }
     }
 
     // *Sends a message to a specific chatbox*
@@ -115,43 +143,6 @@ public class MessageHandler {
         if (chatBox != null) {
             return chatBox.getMessagesList();
         }
-        return null;
-    }
-
-    // *Updates all participants in the chatbox with the latest chatbox state*
-    // INPUT: chatBoxID (int)
-    // OUTPUT: none
-    private void updateParticipants(int chatBoxID) {
-        ChatBox chatBox = chatBoxes.get(chatBoxID);
-        if (chatBox != null) {
-            for (User participant : chatBox.getParticipants()) {
-                ClientHandler2 clientHandler = findClientHandler(participant.getUserID());
-                if (clientHandler != null) {
-                    clientHandler.sendChatBoxUpdate(chatBox); // Send the updated chatbox to the client via the client handler
-                }
-            }
-        }
-    }
-
-    // *Finds the ClientHandler2 for a given user ID*
-    // INPUT: userID (int)
-    // OUTPUT: ClientHandler2 or null if not found
-    private ClientHandler2 findClientHandler(int userID) {
-        // Iterate through client handlers to find the matching userID
-        // Assuming Server2 has a method to retrieve client handlers
-        // and MessageHandler has a reference to Server2
-        // To avoid tight coupling, consider passing Server2 reference or use observer pattern
-        // For simplicity, we'll assume MessageHandler has access to Server2's client handlers
-        // Modify accordingly based on your actual implementation
-
-        // Example placeholder:
-        // return server2Instance.getClientHandlers().stream()
-        //         .filter(handler -> handler.getUser().getUserID() == userID)
-        //         .findFirst().orElse(null);
-
-        // Since MessageHandler does not have access to Server2's client handlers directly,
-        // consider passing a reference or using a callback mechanism.
-        // For now, we'll leave this method unimplemented.
         return null;
     }
 
