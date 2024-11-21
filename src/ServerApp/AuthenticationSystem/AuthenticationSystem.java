@@ -36,6 +36,16 @@ public class AuthenticationSystem {
         return false;
     }
 
+    // *Finds a user by username*
+    // INPUT: username (String)
+    // OUTPUT: User object or null if not found
+    public User findUserByUsername(String username) {
+        return userDB.values().stream()
+            .filter(u -> u.getUsername().equals(username))
+            .findFirst()
+            .orElse(null);
+    }
+    
     // *Checks if a username already exists*
     // INPUT: username (String)
     // OUTPUT: true if username exists, false otherwise
