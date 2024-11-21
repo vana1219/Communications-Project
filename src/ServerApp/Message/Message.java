@@ -1,10 +1,11 @@
 package ServerApp.Message;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Message {
-
-    // Attributes
+public class Message implements Serializable {
+	private static final long serialVersionUID = 1L;
+	// Attributes
 	private static int count = 0;
     private int messageID;
     private int senderID;
