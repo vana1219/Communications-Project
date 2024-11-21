@@ -1,6 +1,7 @@
 package ServerApp.Server2;
 
 import ServerApp.User.User;
+import ServerApp.Admin.Admin;
 import ServerApp.ClientHandler2.ClientHandler2;
 import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.StorageManager.StorageManager;
@@ -39,15 +40,51 @@ public class Server2 {
         this.chatBoxes = new ConcurrentHashMap<>(storageManager.getChatBoxRecords());
         this.authenticationSystem = new AuthenticationSystem("users.ser");
         this.userDB = authenticationSystem.getUserDB();
-        this.messageHandler = new MessageHandler(storageManager, chatBoxes, userDB);
+        this.messageHandler = new MessageHandler(storageManager, chatBoxes, userDB, this);
 
         // Debug logs
         System.out.println("StorageManager initialized with " + chatBoxes.size() + " chatboxes.");
         System.out.println("AuthenticationSystem loaded " + userDB.size() + " users.");
         System.out.println("Server2 initialization complete.");
+
+        // Create initial users if they don't exist
+        createInitialUsers();
+    }
+
+    // Creates initial users (run once)
+    private void createInitialUsers() {
+        // Check if "Bob Admin" exists
+        boolean bobExists = userDB.values().stream().anyMatch(u -> u.getUsername().equals("Bob Admin"));
+        Admin bobAdmin;
+        if (!bobExists) {
+            // Create an Admin object
+            bobAdmin = new Admin("Bob Admin", "BobPass", messageHandler, authenticationSystem);
+            authenticationSystem.registerUser(bobAdmin);
+            System.out.println("Created admin user: Bob Admin");
+        } else {
+            // Retrieve existing Bob Admin
+            bobAdmin = (Admin) userDB.values().stream()
+                    .filter(u -> u.getUsername().equals("Bob Admin") && u instanceof Admin)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        // Now, use bobAdmin to add Sally User
+        boolean sallyExists = userDB.values().stream().anyMatch(u -> u.getUsername().equals("Sally User"));
+        if (!sallyExists && bobAdmin != null) {
+            User sallyUser = new User("Sally User", "SallyPass");
+            boolean success = bobAdmin.addUser(sallyUser);
+            if (success) {
+                System.out.println("Created regular user: Sally User");
+            } else {
+                System.out.println("Failed to create regular user: Sally User");
+            }
+        }
     }
 
     // Starts the server to begin accepting client connections.
+    // INPUT: port (int)
+    // OUTPUT: none
     public void startServer(int port) {
         try {
             serverSocket = new ServerSocket(port);
@@ -63,6 +100,10 @@ public class Server2 {
                             client, this, messageHandler, authenticationSystem);
                     clientHandlers.add(clientHandler);
                     new Thread(clientHandler).start();
+
+                    // Output the number of connected clients
+                    System.out.println("Number of connected clients: " + clientHandlers.size());
+
                 } catch (IOException e) {
                     System.err.println("Error accepting client connection: " + e.getMessage());
                     e.printStackTrace();
@@ -85,6 +126,8 @@ public class Server2 {
     }
 
     // Stops the server and closes the server socket
+    // INPUT: none
+    // OUTPUT: none
     public void stopServer() {
         System.out.println("Stopping server...");
         try {
@@ -99,24 +142,35 @@ public class Server2 {
     }
 
     // Removes a client handler from the active list and updates active clients map.
+    // INPUT: handler (ClientHandler2)
+    // OUTPUT: none
     public void removeClientHandler(ClientHandler2 handler) {
         clientHandlers.remove(handler);
         String clientIP = handler.getClientSocket().getInetAddress().getHostAddress();
         activeClients.values().removeIf(ip -> ip.equals(clientIP));
         System.out.println("Client disconnected: " + clientIP);
+
+        // Output the number of connected clients
+        System.out.println("Number of connected clients: " + clientHandlers.size());
     }
 
     // Retrieves the list of active client handlers.
+    // INPUT: none
+    // OUTPUT: List<ClientHandler2>
     public List<ClientHandler2> getClientHandlers() {
         return clientHandlers;
     }
 
     // Retrieves the user database.
+    // INPUT: none
+    // OUTPUT: ConcurrentHashMap<Integer, User>
     public ConcurrentHashMap<Integer, User> getUserDB() {
         return userDB;
     }
 
     // Retrieves the chatboxes.
+    // INPUT: none
+    // OUTPUT: ConcurrentHashMap<Integer, ChatBox>
     public ConcurrentHashMap<Integer, ChatBox> getChatBoxes() {
         return chatBoxes;
     }
@@ -136,6 +190,8 @@ public class Server2 {
     }
 
     // Method to get the external IP address
+    // INPUT: none
+    // OUTPUT: String (external IP address)
     private String getExternalIPAddress() {
         String externalIP = "Unknown IP";
         try (Socket socket = new Socket()) {
