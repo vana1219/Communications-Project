@@ -14,10 +14,15 @@ public record LoginResponse(User user, List<ChatBox> chatBoxList) implements Mes
 
     public LoginResponse(User user, List<ChatBox> chatBoxList) {
         this.user = user;
-        this.chatBoxList = new ArrayList<>();
-        for (ChatBox chatBox : chatBoxList) {
-            this.chatBoxList.add(chatBox.getEmpty());
+        this.chatBoxList = chatBoxList;
+        
+        if (chatBoxList != null)
+        {
+        	for (ChatBox chatBox : chatBoxList) {
+                this.chatBoxList.add(chatBox.getEmpty());
+            }
         }
+        
 
     }
 
