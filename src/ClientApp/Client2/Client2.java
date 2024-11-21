@@ -14,6 +14,10 @@ import Common.Messages.Login;
 public class Client2 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        ObjectOutputStream outObj = null;
+        ObjectInputStream inObj = null;
+        Socket socket = null;
+
 
         try {
             // Get server IP and port from the user
@@ -24,12 +28,12 @@ public class Client2 {
             int port = Integer.parseInt(scanner.nextLine());
 
             // Connect to the server
-            Socket socket = new Socket(serverIP, port);
+            socket = new Socket(serverIP, port);
             System.out.println("Connected to the server.");
 
             // Set up object streams
-            ObjectOutputStream outObj = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream inObj = new ObjectInputStream(socket.getInputStream());
+            outObj = new ObjectOutputStream(socket.getOutputStream());
+            inObj = new ObjectInputStream(socket.getInputStream());
 
             // Get username and password from the user
             System.out.print("Enter username: ");
@@ -42,27 +46,37 @@ public class Client2 {
             Login loginMessage = new Login(username, password);
             outObj.writeObject(loginMessage);
             outObj.flush();
-
-         // Read and ignore the server's reply
-            try {
-                @SuppressWarnings("unused")
-				Object response = inObj.readObject();
-                // Ignore the response
-            } catch (ClassNotFoundException e) {
-                // Handle exception if necessary
-            }
-
-
-            // Close resources
-            outObj.close();
-            inObj.close();
-            socket.close();
-            scanner.close();
-
-            System.out.println("Login message sent to the server.");
+            
+         // Handle server responses
+            handleServerResponses(inObj);
 
         } catch (IOException e) {
             System.err.println("I/O error: " + e.getMessage());
+        } finally {
+            // Close resources
+            try {
+                if (outObj != null) outObj.close();
+                if (inObj != null) inObj.close();
+                if (socket != null) socket.close();
+                scanner.close();
+            } catch (IOException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void handleServerResponses(ObjectInputStream inObj) {
+        while (true) {
+            try {
+                Object response = inObj.readObject();
+             // Process the response if needed
+            } catch (ClassNotFoundException e) {
+                System.err.println("Class not found: " + e.getMessage());
+            } catch (IOException e) {
+                System.err.println("I/O error: " + e.getMessage());
+                break;
+            }
         }
     }
 }
+         
