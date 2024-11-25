@@ -11,7 +11,7 @@ import Common.MessageType;
 import ServerApp.User.User;
 
 public class Client {
-private InetAddress serverAddress;
+    private InetAddress serverAddress;
     private int port;
     private Socket socket;
     private ObjectInputStream inputStream;
