@@ -2,22 +2,24 @@ package ClientApp.Client;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import Common.MessageInterface;
-import Common.MessageType;
-import ServerApp.User.User;
+import Common.Messages.CreateUser;
+import Common.User.User;
 
 public class Client {
-private InetAddress serverAddress;
+    private InetAddress serverAddress;
     private int port;
     private Socket socket;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
-    private Queue inboundRequestQueue;
-    private Queue outboundResponseQueue;
+    private Queue <MessageInterface> inboundRequestQueue;
+    private Queue <MessageInterface> outboundResponseQueue;
     private User userData;
     private Map ChatBoxList;
 
@@ -106,7 +108,6 @@ private InetAddress serverAddress;
             Client client = new Client(host, port);
             client.start();
 
-
 //            client.login("testUser", "password123");
 //            client.requestUserList();
 //
@@ -144,8 +145,8 @@ private InetAddress serverAddress;
     	
     }
 
-    public void sendCreateUserRequest() {
-    	
+    public void sendCreateUserRequest(String username, String password, boolean isAdmin) {
+        sendMessage(new CreateUser(username, password, isAdmin));
     }
 
     public void receiveChatBoxStatus() {
@@ -159,5 +160,7 @@ private InetAddress serverAddress;
     public void receiveChatBoxLog() {
     	
     }
+
+
     
 }

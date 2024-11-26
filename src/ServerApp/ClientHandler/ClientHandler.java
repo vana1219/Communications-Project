@@ -9,11 +9,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import ServerApp.ChatBox.ChatBox;
-import ServerApp.Message.Message;
+import Common.ChatBox.ChatBox;
+import Common.Message.Message;
 import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.Server.Server;
-import ServerApp.User.User;
+import Common.User.User;
 
 public class ClientHandler{
 	private final Socket clientSocket;

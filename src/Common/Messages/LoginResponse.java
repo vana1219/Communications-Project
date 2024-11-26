@@ -2,10 +2,9 @@ package Common.Messages;
 
 import Common.MessageInterface;
 import Common.MessageType;
-import ServerApp.User.User;
-import ServerApp.ChatBox.ChatBox;
+import Common.User.User;
+import Common.ChatBox.ChatBox;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
 

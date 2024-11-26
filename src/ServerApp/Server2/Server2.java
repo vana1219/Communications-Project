@@ -1,12 +1,12 @@
 package ServerApp.Server2;
 
-import ServerApp.User.User;
-import ServerApp.Admin.Admin;
+import Common.User.User;
+import Common.Admin.Admin;
 import ServerApp.ClientHandler2.ClientHandler2;
 import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.StorageManager.StorageManager;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
-import ServerApp.ChatBox.ChatBox;
+import Common.ChatBox.ChatBox;
 
 import java.io.*;
 import java.net.*;

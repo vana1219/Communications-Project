@@ -1,6 +1,6 @@
 package ServerApp.StorageManager;
 
-import ServerApp.ChatBox.ChatBox;
+import Common.ChatBox.ChatBox;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.*;
 

@@ -2,10 +2,10 @@ package ServerApp.ClientHandler2;
 
 import ServerApp.Server2.Server2;
 import ServerApp.MessageHandler.MessageHandler;
-import ServerApp.Admin.Admin;
+import Common.Admin.Admin;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
-import ServerApp.ChatBox.ChatBox;
-import ServerApp.User.User;
+import Common.ChatBox.ChatBox;
+import Common.User.User;
 import Common.MessageInterface;
 import Common.Messages.*;
 
