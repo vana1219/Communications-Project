@@ -2,7 +2,7 @@ package Common.Messages;
 
 import Common.MessageInterface;
 import Common.MessageType;
-import ServerApp.User.User;
+import Common.User.User;
 
 import java.util.List;
 import java.io.Serializable;

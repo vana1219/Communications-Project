@@ -1,19 +1,12 @@
 package ServerApp.ClientHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Map;
 import java.util.Queue;
 
-import ServerApp.ChatBox.ChatBox;
-import ServerApp.Message.Message;
-import ServerApp.MessageHandler.MessageHandler;
-import ServerApp.Server.Server;
-import ServerApp.User.User;
+import Common.Message.Message;
 
 
 public class ClientMessageSend implements Runnable

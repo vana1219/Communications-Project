@@ -1,6 +1,6 @@
 package ServerApp.AuthenticationSystem;
 
-import ServerApp.User.User;
+import Common.User.User;
 
 import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,7 +58,7 @@ public class AuthenticationSystem {
     // OUTPUT: User object if login is successful, null otherwise
     public User validateCredentials(String username, String password) {
         for (User user : userDB.values()) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+            if (user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)) {
                 user.setOnline(true);
                 saveUsersToFile();
                 return user;

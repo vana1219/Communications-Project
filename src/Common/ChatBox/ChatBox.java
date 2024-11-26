@@ -1,7 +1,7 @@
-package ServerApp.ChatBox;
+package Common.ChatBox;
 
-import ServerApp.User.User;
-import ServerApp.Message.Message;
+import Common.User.User;
+import Common.Message.Message;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedSet;
@@ -14,6 +14,7 @@ public class ChatBox implements Serializable {
 	private static final long serialVersionUID = 1L;
 	// Attributes
     private final int chatBoxID;
+    private final String name;
     private HashSet<User> participants;
     private SortedSet<Message> messages;
     private static int chatBoxCount = 0;
@@ -37,6 +38,15 @@ public class ChatBox implements Serializable {
         this.participants = new HashSet<>();
         this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
         this.isHidden = false;
+        this.name = "" + this.chatBoxID;
+    }
+
+    public ChatBox(String name) {
+        this.chatBoxID = ++chatBoxCount;
+        this.participants = new HashSet<>();
+        this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
+        this.isHidden = false;
+        this.name = name;
     }
 
     // Getters
@@ -45,10 +55,19 @@ public class ChatBox implements Serializable {
         return chatBoxID;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String toString() {
+        return getName();
+    }
+
     // Returns the set of participants in the ChatBox
     public HashSet<User> getParticipants() {
         return participants;
     }
+
 
     // Returns the set of messages in the ChatBox
     public SortedSet<Message> getMessages() {

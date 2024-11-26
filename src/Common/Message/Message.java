@@ -1,4 +1,4 @@
-package ServerApp.Message;
+package Common.Message;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -48,5 +48,10 @@ public class Message implements Serializable {
 
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
+    }
+
+    @Override
+    public String toString() {
+        return  content;
     }
 }

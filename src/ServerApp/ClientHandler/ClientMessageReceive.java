@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.Queue;
 
-import ServerApp.Message.Message;
+import Common.Message.Message;
 
 public class ClientMessageReceive implements Runnable
 {

@@ -1,4 +1,4 @@
-package ServerApp.User;
+package Common.User;
 
 import java.io.Serializable;
 
