@@ -3,7 +3,7 @@ package Common.Messages;
 
 import Common.MessageInterface;
 import Common.MessageType;
-import ServerApp.Message.Message;
+import Common.Message.Message;
 import java.io.Serializable;
 
 public record SendMessage(Message message, int chatBoxID) implements MessageInterface,Serializable {

@@ -9,7 +9,7 @@ import java.util.List;
 
 import ServerApp.ClientHandler.ClientHandler;
 import ServerApp.MessageHandler.MessageHandler;
-import ServerApp.User.User;
+import Common.User.User;
 
 
 public class Server {

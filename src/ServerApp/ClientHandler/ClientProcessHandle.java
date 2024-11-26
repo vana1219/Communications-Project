@@ -1,16 +1,9 @@
 package ServerApp.ClientHandler;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Map;
 import java.util.Queue;
 
-import ServerApp.ChatBox.ChatBox;
-import ServerApp.Message.Message;
-import ServerApp.MessageHandler.MessageHandler;
-import ServerApp.Server.Server;
-import ServerApp.User.User;
+import Common.Message.Message;
 
 
 public class ClientProcessHandle implements Runnable

@@ -1,6 +1,6 @@
-package ServerApp.Admin;
+package Common.Admin;
 
-import ServerApp.User.User;
+import Common.User.User;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
 import ServerApp.MessageHandler.MessageHandler;
 

@@ -2,7 +2,7 @@ package Common.Messages;
 
 import Common.MessageInterface;
 import Common.MessageType;
-import ServerApp.ChatBox.ChatBox;
+import Common.ChatBox.ChatBox;
 import java.io.Serializable;
 
 public record SendChatBox(ChatBox chatBox) implements MessageInterface,Serializable {

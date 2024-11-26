@@ -1,10 +1,10 @@
 package ServerApp.MessageHandler;
 
 import ServerApp.StorageManager.StorageManager;
-import ServerApp.ChatBox.ChatBox;
-import ServerApp.Message.Message;
+import Common.ChatBox.ChatBox;
+import Common.Message.Message;
 import ServerApp.ClientHandler2.ClientHandler2;
-import ServerApp.User.User;
+import Common.User.User;
 import ServerApp.Server2.Server2;
 
 import java.util.concurrent.ConcurrentHashMap;
