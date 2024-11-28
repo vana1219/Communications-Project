@@ -1,6 +1,6 @@
-package ServerApp.ClientHandler2;
+package ServerApp.ClientHandler;
 
-import ServerApp.Server2.Server2;
+import ServerApp.Server.Server;
 import ServerApp.MessageHandler.MessageHandler;
 import Common.Admin.Admin;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ClientHandler2 implements Runnable {
+public class ClientHandler implements Runnable {
 
     // Attributes
     private Socket clientSocket;
-    private Server2 server;
+    private Server server;
     private MessageHandler messageHandler;
     private AuthenticationSystem authenticationSystem;
     private User user;
@@ -30,7 +30,7 @@ public class ClientHandler2 implements Runnable {
     private volatile boolean isRunning;
 
     // Constructor
-    public ClientHandler2(Socket clientSocket, Server2 server, MessageHandler messageHandler,
+    public ClientHandler(Socket clientSocket, Server server, MessageHandler messageHandler,
             AuthenticationSystem authenticationSystem) {
         this.clientSocket = clientSocket;
         this.server = server;

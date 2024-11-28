@@ -1,4 +1,4 @@
-package ClientApp.Client2;
+package ClientApp.Client;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -22,7 +22,7 @@ import Common.User.User;
 
 import javax.swing.*;
 
-public class Client2 {
+public class Client {
     private boolean loggedIn = false;
     private InetAddress serverAddress;
     private int port;
@@ -37,9 +37,9 @@ public class Client2 {
     private Socket socket = null;
     private User user = null;
 
-    public Client2() {
+    public Client() {
         chatBoxList = new TreeSet<>(Comparator.comparingInt(ChatBox::getChatBoxID));
-        Client2 client = this;
+        Client client = this;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -127,7 +127,7 @@ public class Client2 {
 
 
     public static void main(String[] args) {
-        Client2 client = new Client2();
+        Client client = new Client();
         Thread senderThread = null;
         Thread receiverThread = null;
 

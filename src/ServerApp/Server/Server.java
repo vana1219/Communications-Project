@@ -1,8 +1,8 @@
-package ServerApp.Server2;
+package ServerApp.Server;
 
 import Common.User.User;
 import Common.Admin.Admin;
-import ServerApp.ClientHandler2.ClientHandler2;
+import ServerApp.ClientHandler.ClientHandler;
 import ServerApp.MessageHandler.MessageHandler;
 import ServerApp.StorageManager.StorageManager;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
@@ -15,15 +15,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Server2 is the main server class responsible for accepting client
+ * Server is the main server class responsible for accepting client
  * connections, managing client handlers, and maintaining user and chatbox data
  * in memory.
  */
-public class Server2 {
+public class Server {
 
     // Attributes
     private ServerSocket serverSocket;
-    private final List<ClientHandler2> clientHandlers;
+    private final List<ClientHandler> clientHandlers;
     private final ConcurrentHashMap<String, String> activeClients; // Tracks active clients (ID -> IP)
     private final MessageHandler messageHandler;
     private final ConcurrentHashMap<Integer, User> userDB;
@@ -32,8 +32,8 @@ public class Server2 {
     private final AuthenticationSystem authenticationSystem;
 
     // Constructor initializes the server with necessary components.
-    public Server2() {
-        System.out.println("Initializing Server2...");
+    public Server() {
+        System.out.println("Initializing Server...");
         this.clientHandlers = new CopyOnWriteArrayList<>();
         this.activeClients = new ConcurrentHashMap<>();
         this.storageManager = new StorageManager();
@@ -45,7 +45,7 @@ public class Server2 {
         // Debug logs
         System.out.println("StorageManager initialized with " + chatBoxes.size() + " chatboxes.");
         System.out.println("AuthenticationSystem loaded " + userDB.size() + " users.");
-        System.out.println("Server2 initialization complete.");
+        System.out.println("Server initialization complete.");
 
         // Create initial users if they don't exist
         createInitialUsers();
@@ -125,7 +125,7 @@ public class Server2 {
                 try {
                     Socket client = serverSocket.accept();
                     System.out.println("New client connected: " + client.getInetAddress().getHostAddress());
-                    ClientHandler2 clientHandler = new ClientHandler2(
+                    ClientHandler clientHandler = new ClientHandler(
                             client, this, messageHandler, authenticationSystem);
                     clientHandlers.add(clientHandler);
                     new Thread(clientHandler).start();
@@ -171,9 +171,9 @@ public class Server2 {
     }
 
     // Removes a client handler from the active list and updates active clients map.
-    // INPUT: handler (ClientHandler2)
+    // INPUT: handler (ClientHandler)
     // OUTPUT: none
-    public void removeClientHandler(ClientHandler2 handler) {
+    public void removeClientHandler(ClientHandler handler) {
         clientHandlers.remove(handler);
         String clientIP = handler.getClientSocket().getInetAddress().getHostAddress();
         activeClients.values().removeIf(ip -> ip.equals(clientIP));
@@ -185,8 +185,8 @@ public class Server2 {
 
     // Retrieves the list of active client handlers.
     // INPUT: none
-    // OUTPUT: List<ClientHandler2>
-    public List<ClientHandler2> getClientHandlers() {
+    // OUTPUT: List<ClientHandler>
+    public List<ClientHandler> getClientHandlers() {
         return clientHandlers;
     }
 
@@ -206,8 +206,8 @@ public class Server2 {
 
     // Main method to start the server.
     public static void main(String[] args) {
-        System.out.println("Launching Server2 application...");
-        Server2 server = new Server2();
+        System.out.println("Launching Server application...");
+        Server server = new Server();
 
         // Add a shutdown hook to properly close the server socket on exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
