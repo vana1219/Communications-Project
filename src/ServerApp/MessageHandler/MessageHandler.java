@@ -46,12 +46,13 @@ public class MessageHandler {
     // INPUT: participants (List<User>)
     // OUTPUT: ChatBox object
     public ChatBox createChatBox(List<User> participants) {
-        ChatBox chatBox = ChatBox.createChatBox(participants);
+        ChatBox chatBox = new ChatBox(participants); // Use the new constructor
         chatBoxes.put(chatBox.getChatBoxID(), chatBox);
         storeChatBox(chatBox);
         return chatBox;
     }
 
+    // The rest of the methods remain unchanged...
     // *Retrieves a chatbox by ID*
     // INPUT: chatBoxID (int)
     // OUTPUT: ChatBox object or null if not found
@@ -232,10 +233,11 @@ public class MessageHandler {
             }
         }
         // If no existing private chatbox, create a new one
-        ChatBox newChatBox = ChatBox.createChatBox(List.of(userDB.get(userID)));
+        ChatBox newChatBox = new ChatBox(List.of(userDB.get(userID)));
         if (storeChatBox(newChatBox)) {
             return newChatBox.getChatBoxID();
         }
         return -1;
     }
 }
+
