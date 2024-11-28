@@ -33,8 +33,11 @@ public class Gui {
 
     public void showMain() {
         frame.getContentPane().add(mainWindow.getPanel());
-        mainWindow.chatBox = client.getChatBoxList().first();
-        addAllMessages(mainWindow.chatBox);
+
+        if(!client.getChatBoxList().isEmpty()){
+            mainWindow.chatBox = client.getChatBoxList().first();
+            addAllMessages(mainWindow.chatBox);
+        }
         show();
     }
 

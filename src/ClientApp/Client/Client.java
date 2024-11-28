@@ -201,28 +201,30 @@ public class Client {
 //            throw new RuntimeException(e);
 //        } catch (InterruptedException e) {
 //            throw new RuntimeException(e);
-        } finally {
-            // Close resources
-            try {
-                if (senderThread != null) {
-                    senderThread.interrupt();
-                }
-                if (receiverThread != null) {
-                    receiverThread.interrupt();
-                }
-                if (client.outObj != null) {
-                    client.outObj.close();
-                }
-                if (client.inObj != null) {
-                    client.inObj.close();
-                }
-                if (client.socket != null) {
-                    client.socket.close();
-                }
-                client.scanner.close();
-            } catch (IOException e) {
-                System.err.println("Error closing resources: " + e.getMessage());
-            }
+        }
+//        finally {
+//            // Close resources
+//            try {
+//                if (senderThread != null) {
+//                    senderThread.interrupt();
+//                }
+//                if (receiverThread != null) {
+//                    receiverThread.interrupt();
+//                }
+//                if (client.outObj != null) {
+//                    client.outObj.close();
+//                }
+//                if (client.inObj != null) {
+//                    client.inObj.close();
+//                }
+//                if (client.socket != null) {
+//                    client.socket.close();
+//                }
+//                client.scanner.close();
+//            }
+//            catch (IOException e) {
+//                System.err.println("Error closing resources: " + e.getMessage());
+//            }
         }
     }
-}
+
