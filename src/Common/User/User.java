@@ -59,4 +59,17 @@ public class User implements Serializable {
     public void setBanned(boolean isBanned) {
         this.isBanned = isBanned;
     }
+
+    @Override
+    public boolean equals(Object user) {
+        return user instanceof User && userID == ((User) user).userID;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(userID);
+    }
+
+
+
 }
