@@ -87,13 +87,14 @@ public class Client {
 
     private void receiveLoginResponse(LoginResponse loginResponse) {
         userData = loginResponse.user();
-        chatBoxList.addAll(loginResponse.chatBoxList());
-    }
+
+        if(loginResponse.chatBoxList()!=null && !loginResponse.chatBoxList().isEmpty()) {
+            chatBoxList.addAll(loginResponse.chatBoxList());
+        }    }
 
 
-    public void addMessage(MessageInterface message) {
+    public void queueMessage(MessageInterface message) {
         outboundResponseQueue.add(message);
-
     }
 
 
@@ -116,7 +117,7 @@ public class Client {
         }
     }
 
-  
+
     public void messageReceiver() {
         while (true) {
             try {
@@ -176,7 +177,7 @@ public class Client {
 
 
             while (!client.loggedIn) {
-                client.addMessage(client.gui.login());
+                client.queueMessage(client.gui.login());
                 MessageInterface response = client.inboundRequestQueue.take();
                 if (response.getType() == MessageType.LOGIN_RESPONSE) {
                     client.receiveLoginResponse((LoginResponse) response);
@@ -202,29 +203,29 @@ public class Client {
 //        } catch (InterruptedException e) {
 //            throw new RuntimeException(e);
         }
-//        finally {
-//            // Close resources
-//            try {
-//                if (senderThread != null) {
-//                    senderThread.interrupt();
-//                }
-//                if (receiverThread != null) {
-//                    receiverThread.interrupt();
-//                }
-//                if (client.outObj != null) {
-//                    client.outObj.close();
-//                }
-//                if (client.inObj != null) {
-//                    client.inObj.close();
-//                }
-//                if (client.socket != null) {
-//                    client.socket.close();
-//                }
-//                client.scanner.close();
-//            }
-//            catch (IOException e) {
-//                System.err.println("Error closing resources: " + e.getMessage());
-//            }
+        finally {
+            // Close resources
+            try {
+                if (senderThread != null) {
+                    senderThread.interrupt();
+                }
+                if (receiverThread != null) {
+                    receiverThread.interrupt();
+                }
+                if (client.outObj != null) {
+                    client.outObj.close();
+                }
+                if (client.inObj != null) {
+                    client.inObj.close();
+                }
+                if (client.socket != null) {
+                    client.socket.close();
+                }
+                client.scanner.close();
+            }
+            catch (IOException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
-
+}
