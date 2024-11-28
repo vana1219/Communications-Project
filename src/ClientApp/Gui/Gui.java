@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.CountDownLatch;
 
-import ClientApp.Client2.Client2;
+import ClientApp.Client.Client;
 import Common.Messages.Login;
 import Common.Messages.SendMessage;
 import Common.ChatBox.ChatBox;
@@ -16,13 +16,13 @@ import Common.User.User;
 public class Gui {
     volatile boolean loggedIn = false;
     private User user;
-    private final Client2 client;
+    private final Client client;
     private final JFrame frame;
     private final LoginWindow loginWindow;
     private final MainWindow mainWindow;
 
   
-    public Gui(Client2 client) {
+    public Gui(Client client) {
         this.client = client;
         frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -91,7 +91,7 @@ public class Gui {
 //            @Override
 //            public void run() {
 //                Gui gui = null;
-//                gui = new Gui(new Client2());
+//                gui = new Gui(new Client());
 //
 //                gui.display();
 //            }

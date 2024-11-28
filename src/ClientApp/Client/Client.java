@@ -1,166 +1,225 @@
 package ClientApp.Client;
 
-import java.io.*;
-import java.net.Socket;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.net.Socket;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
+// Import existing classes from your Common package
+import ClientApp.Gui.Gui;
+import Common.ChatBox.ChatBox;
 import Common.MessageInterface;
-import Common.Messages.CreateUser;
+import Common.MessageType;
+import Common.Messages.LoginResponse;
 import Common.User.User;
 
+import javax.swing.*;
+
 public class Client {
+    private boolean loggedIn = false;
     private InetAddress serverAddress;
     private int port;
-    private Socket socket;
-    private ObjectInputStream inputStream;
-    private ObjectOutputStream outputStream;
-    private Queue <MessageInterface> inboundRequestQueue;
-    private Queue <MessageInterface> outboundResponseQueue;
+    private BlockingQueue<MessageInterface> inboundRequestQueue;
+    private BlockingQueue<MessageInterface> outboundResponseQueue;
     private User userData;
-    private Map ChatBoxList;
+    private TreeSet<ChatBox> chatBoxList;
+    private Gui gui;
+    private Scanner scanner = new Scanner(System.in);
+    private ObjectOutputStream outObj = null;
+    private ObjectInputStream inObj = null;
+    private Socket socket = null;
 
-    public Client(InetAddress serverAddress, int port) {
-        this.serverAddress = serverAddress;
-        this.port = port;
-    }
-
-    // Connect to the server
-    public void start() {
-        try {
-        	InetAddress host = InetAddress.getLocalHost();
-            socket = new Socket(host, port);
-            System.out.println("Connected to server at " + host+ ":" + port);
-
-      
-            outputStream = new ObjectOutputStream(socket.getOutputStream());
-            outputStream.flush(); 
-            inputStream = new ObjectInputStream(socket.getInputStream());
-        } catch (IOException e) {
-            System.err.println("Error connecting to server: " + e.getMessage());
-        }
-    }
-
-
-    public void sendMessage(MessageInterface message) {
-        try {
-            outputStream.writeObject(message); // Send the message as a serialized object
-            outputStream.flush();
-            System.out.println("Message sent: " + message.getType());
-        } catch (IOException e) {
-            System.err.println("Error sending message: " + e.getMessage());
-        }
-    }
-
-    // Receive a response from the server
-    public MessageInterface receiveResponse() {
-        try {
-            Object response = inputStream.readObject();
-            if (response instanceof MessageInterface) {
-                return (MessageInterface) response;
+    public Client() {
+        chatBoxList = new TreeSet<>(Comparator.comparingInt(ChatBox::getChatBoxID));
+        Client client = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                gui = new Gui(client);
             }
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error receiving response: " + e.getMessage());
+        });
+        inboundRequestQueue = new LinkedBlockingQueue<>();
+        outboundResponseQueue = new LinkedBlockingQueue<>();
+    }
+
+
+    private void handleServerResponses() {
+        while (true) {
+//            try {
+            MessageInterface response = inboundRequestQueue.poll();
+            if (response != null) {
+                switch (response.getType()) {
+                    case MessageType.LOGIN_RESPONSE:
+                        receiveLoginResponse((LoginResponse) response);
+                        break;
+                    case NOTIFICATION:
+                        break;
+                    case RETURN_CHATBOX:
+                        break;
+                    case RETURN_USER_LIST:
+                        break;
+                    case SEND_MESSAGE:
+                        break;
+                    case RETURN_CHATBOX_LOG:
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
+//            } catch (ClassNotFoundException e) {
+//                System.err.println("Class not found: " + e.getMessage());
+//            } catch (IOException e) {
+//                System.err.println("I/O error: " + e.getMessage());
+//                break;
+//            }
         }
-        return null;
     }
 
-    public void closeConnection() {
-        try {
-            if (socket != null) socket.close();
-            if (inputStream != null) inputStream.close();
-            if (outputStream != null) outputStream.close();
-            System.out.println("Connection closed.");
-        } catch (IOException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
+    public TreeSet<ChatBox> getChatBoxList() {
+        return chatBoxList;
+    }
+
+    private void receiveLoginResponse(LoginResponse loginResponse) {
+        userData = loginResponse.user();
+        chatBoxList.addAll(loginResponse.chatBoxList());
+    }
+
+
+    public void addMessage(MessageInterface message) {
+        outboundResponseQueue.add(message);
+
+    }
+
+
+    public User getUserData() {
+        return userData;
+    }
+
+
+    public void messageSender() {
+        while (true) {
+            MessageInterface message;
+            try {
+                message = outboundResponseQueue.take();
+                outObj.writeObject(message);
+//                outObj.flush();
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    public void login(String username, String password) {
-//        MessageInterface loginMessage = new Message(MessageType.LOGIN, username + ":" + password);
-//        sendMessage(loginMessage);
+
+    public void messageReceiver() {
+        while (true) {
+            try {
+                inboundRequestQueue.add((MessageInterface) inObj.readObject());
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    public void logout() {
-//        MessageInterface logoutMessage = new Message(MessageType.LOGOUT, null);
-//        sendMessage(logoutMessage);
-    }
-
-    public void sendChatMessage(String chatBoxID, String message) {
-//        MessageInterface chatMessage = new Message(MessageType.SEND_MESSAGE, chatBoxID + ":" + message);
-//        sendMessage(chatMessage);
-    }
-
-    public void requestUserList() {
-//        MessageInterface userListRequest = new Message(MessageType.REQUEST_USER_LIST, null);
-//        sendMessage(userListRequest);
-    }
 
     public static void main(String[] args) {
+        Client client = new Client();
+        Thread senderThread = null;
+        Thread receiverThread = null;
+
         try {
-            //String serverAddress = "192.168.1.1";
-        	InetAddress host = InetAddress.getLocalHost();
-            int port = 3000;
 
-            Client client = new Client(host, port);
-            client.start();
+            // Get server IP and port from the user
+            System.out.print("Enter server IP address: ");
+            String serverIP = client.scanner.nextLine();
 
-//            client.login("testUser", "password123");
-//            client.requestUserList();
+            System.out.print("Enter server port number: ");
+            int port = Integer.parseInt(client.scanner.nextLine());
+
+            // Connect to the server
+            client.socket = new Socket(serverIP, port);
+            System.out.println("Connected to the server.");
+
+            // Set up object streams
+            client.outObj = new ObjectOutputStream(client.socket.getOutputStream());
+            client.inObj = new ObjectInputStream(client.socket.getInputStream());
+
+            senderThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    client.messageSender();
+                }
+            });
+            receiverThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    client.messageReceiver();
+                }
+            });
+            senderThread.start();
+            receiverThread.start();
+//            // Get username and password from the user
+//            System.out.print("Enter username: ");
+//            String username = client.scanner.nextLine();
 //
-//            MessageInterface response = client.receiveResponse();
-//            if (response != null) {
-//                System.out.println("Response from server: " + response.getType());
-//            }
-//
-//            client.logout();
-            client.closeConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
+//            System.out.print("Enter password: ");
+//            String password = client.scanner.nextLine();
+
+            // Create and send the login message
+//            final MessageInterface[] message = new MessageInterface[1];
+
+
+            while (!client.loggedIn) {
+                client.addMessage(client.gui.login());
+                MessageInterface response = client.inboundRequestQueue.take();
+                if (response.getType() == MessageType.LOGIN_RESPONSE) {
+                    client.receiveLoginResponse((LoginResponse) response);
+                    if (client.userData != null) {
+                        client.loggedIn = true;
+                        System.out.println("Logged in.");
+                    } else {
+                        new JOptionPane().createDialog("Invalid username or password");
+                    }
+                }
+            }
+
+            client.gui.showMain();
+            // Handle server responses
+            client.handleServerResponses();
+
+        } catch (IOException | InterruptedException e) {
+            System.err.println("I/O error: " + e.getMessage());
+//        } catch (InterruptedException | InvocationTargetException e) {
+//            throw new RuntimeException(e);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+        } finally {
+            // Close resources
+            try {
+                if (senderThread != null) {
+                    senderThread.interrupt();
+                }
+                if (receiverThread != null) {
+                    receiverThread.interrupt();
+                }
+                if (client.outObj != null) {
+                    client.outObj.close();
+                }
+                if (client.inObj != null) {
+                    client.inObj.close();
+                }
+                if (client.socket != null) {
+                    client.socket.close();
+                }
+                client.scanner.close();
+            } catch (IOException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
-    
-   
-
-    public DataInputStream ClientMessageThread() {
-    	return null;
-    }
-
-    public void sendMessageRequest() {
-    	
-    }
-
-    public void sendChatBoxRequest() {
-    	
-    }
-
-    public void sendUnbanUserRequest() {
-    	
-    }
-
-    public void sendResetUserPassword() {
-    	
-    }
-
-    public void sendCreateUserRequest(String username, String password, boolean isAdmin) {
-        sendMessage(new CreateUser(username, password, isAdmin));
-    }
-
-    public void receiveChatBoxStatus() {
-    	
-    }
-
-    public void sendViewChatBoxLogRequest() {
-    	
-    }
-
-    public void receiveChatBoxLog() {
-    	
-    }
-
-
-    
 }
