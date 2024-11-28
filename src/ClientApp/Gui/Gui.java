@@ -6,6 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
@@ -22,32 +25,45 @@ public class Gui {
     private final LoginWindow loginWindow;
     private final MainWindow mainWindow;
     private final ConnectionWindow connectionWindow; // Added connection window
-
+    private final TreeListModel<ChatBox> treeListModel;
   
     public Gui(Client client) {
         this.client = client;
         frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);// Center the window
-        
+        treeListModel = new TreeListModel<>(Comparator.comparingInt(ChatBox::getChatBoxID));
+
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
-        connectionWindow = new ConnectionWindow(); // Initialize connection window
+        connectionWindow = new ConnectionWindow();// Initialize connection window
     }
-    
+
     // Method to get connection info from the user
     public ConnectionInfo getConnectionInfo() {
         return connectionWindow.getConnectionInfo();
     }
-    
-    public void showMain() {
-        frame.getContentPane().add(mainWindow.getPanel());
 
-        if(!client.getChatBoxList().isEmpty()){
-            mainWindow.chatBox = client.getChatBoxList().first();
+    public void showMain() {
+        frame.getContentPane().add(mainWindow.panel);
+
+        if(!treeListModel.isEmpty()) {
+            mainWindow.chatBox = treeListModel.getElementAt(0);
             addAllMessages(mainWindow.chatBox);
         }
+        frame.setLocationRelativeTo(null);
+        frame.setSize(new Dimension(1000, 600));;
         show();
+    }
+
+    public void addChatBox(ChatBox chatBox) {
+        if(!treeListModel.isEmpty()) {
+            treeListModel.remove(chatBox);
+        }
+        treeListModel.add(chatBox);
+    }
+    public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
+        treeListModel.addAll(chatBoxes);
     }
 
     // Send a message to the server.
@@ -85,6 +101,7 @@ public class Gui {
         }
         return null;
     }
+
     public void show() {
         frame.setVisible(true);
     }
@@ -177,14 +194,14 @@ public class Gui {
 
     private class MainWindow {
         private final JList<String> chatList;
-        private JList<ChatBox> chatBoxList;
+        private final JList<ChatBox> chatBoxList;
         private final JTextArea messageField;
         private final JButton sendButton;
         private final JPanel messagePane;
-        private final JScrollPane scrollPane;
-        private final JScrollPane messageScrollPane;
+        private final JScrollPane chatScrollPane;
+        private final JScrollPane inputScrollPane;
+        private final JScrollPane chatBoxListScrollPane;
         private final DefaultListModel<String> chatModel;
-        private final DefaultListModel<ChatBox> chatBoxModel;
         private ChatBox chatBox = new ChatBox();
         private final JPanel panel;
 
@@ -193,29 +210,34 @@ public class Gui {
             // Create the chat area (used to display messages)
             chatModel = new DefaultListModel<>();
             chatList = new JList<>(chatModel);
-            chatBoxModel = new DefaultListModel<>();
             ChatBox chatBox = new ChatBox();
 
             chatList.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
 //        chatArea.setEditable(false);  // Messages should not be editable
 
             // Create the scroll pane for the chat area
-            scrollPane = new JScrollPane(chatList);
-            scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+            chatScrollPane = new JScrollPane(chatList);
+            chatScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
             // Create the message input field
 
             messageField = new JTextArea();
             messageField.setLineWrap(true);
             messageField.setWrapStyleWord(true);
-            messageScrollPane = new JScrollPane(messageField);
-            messageScrollPane.setPreferredSize(new Dimension(500, 60));
+            inputScrollPane = new JScrollPane(messageField);
+            inputScrollPane.setPreferredSize(new Dimension(500, 60));
             messagePane = new JPanel();
-            messagePane.add(messageScrollPane);
+            messagePane.add(inputScrollPane);
+
             // Create the send button
             sendButton = new JButton("Send");
             messagePane.add(sendButton);
             frame.setResizable(false);
+
+            // Create the List to display and select chatboxes.
+            chatBoxList = new JList<>(treeListModel);
+            chatBoxList.setPreferredSize(new Dimension(200, chatBoxList.getPreferredSize().height));
+            chatBoxListScrollPane = new JScrollPane(chatBoxList);
 
             // Action listener for the send button
             sendButton.addActionListener(new ActionListener() {
@@ -228,9 +250,10 @@ public class Gui {
             // Create the layout and add components
             panel = new JPanel();
             panel.setLayout(new BorderLayout());
-            panel.add(scrollPane, BorderLayout.CENTER);
+            panel.add(chatScrollPane, BorderLayout.CENTER);
             panel.add(new JPanel(), BorderLayout.SOUTH);
             panel.add(messagePane, BorderLayout.SOUTH);
+            panel.add(chatBoxListScrollPane, BorderLayout.WEST);
 
         }
 
@@ -238,17 +261,16 @@ public class Gui {
             this.chatBox = chatBox;
             addAllMessages(this.chatBox);
         }
+
         public void sendMessage() {
             String message = messageField.getText();
             if (!message.isEmpty()) {
-                client.addMessage(new SendMessage(new Message(client.getUserData().getUserID(), message), chatBox.getChatBoxID()));
+                client.queueMessage(new SendMessage(new Message(client.getUserData()
+                                                                      .getUserID(), message), chatBox.getChatBoxID()));
                 messageField.setText("");// Clear the input field
             }
         }
 
-        public JPanel getPanel() {
-            return panel;
-        }
     }
 
     // New inner class for the connection window
@@ -342,5 +364,52 @@ public class Gui {
             return connectionInfo[0];
         }
     }
-}
 
+    private class TreeListModel<E> extends AbstractListModel<E> {
+        private final TreeSet<E> treeSet;
+
+        public TreeListModel(Comparator<E> comparator) {
+            treeSet = new TreeSet<>(comparator);
+        }
+
+        public void add(E item) {
+            treeSet.add(item);
+            int index = treeSet.stream().toList().indexOf(item);
+            fireIntervalAdded(this, index, index);
+        }
+        public boolean isEmpty() {
+            return treeSet.isEmpty();
+        }
+
+        public boolean contains(E item) {
+            return treeSet.contains(item);
+        }
+
+        public void addAll(Collection<? extends E> items) {
+            treeSet.addAll(items);
+            fireIntervalAdded(this, 0, -1);
+        }
+
+        public void remove(E item) {
+            int index = treeSet.stream().toList().indexOf(item);
+            treeSet.remove(item);
+            super.fireIntervalRemoved(this, index, index);
+        }
+
+        public void clear() {
+            treeSet.clear();
+            fireIntervalRemoved(this, 0, -1);
+        }
+
+
+        @Override
+        public int getSize() {
+            return treeSet.size();
+        }
+
+        @Override
+        public E getElementAt(int index) {
+            return treeSet.stream().toList().get(index);
+        }
+    }
+}
