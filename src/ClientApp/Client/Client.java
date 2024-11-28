@@ -30,18 +30,17 @@ public class Client {
     private BlockingQueue<MessageInterface> inboundRequestQueue;
     private BlockingQueue<MessageInterface> outboundResponseQueue;
     private User userData;
-    private TreeSet<ChatBox> chatBoxList;
-    private Gui gui;
+    private final Gui gui;
     private ObjectOutputStream outObj = null;
     private ObjectInputStream inObj = null;
     private Socket socket = null;
 
     public Client() {
-        chatBoxList = new TreeSet<>(Comparator.comparingInt(ChatBox::getChatBoxID));
         gui = new Gui(this); // Initialize GUI directly
         inboundRequestQueue = new LinkedBlockingQueue<>();
         outboundResponseQueue = new LinkedBlockingQueue<>();
     }
+
 
     private void handleServerResponses() {
         while (true) {
@@ -89,8 +88,7 @@ public class Client {
     // Handle SendChatBox messages
     private void handleReturnChatBox(SendChatBox sendChatBox) {
         ChatBox chatBox = sendChatBox.chatBox();
-        chatBoxList.remove(chatBox);
-        chatBoxList.add(chatBox);
+        gui.addChatBox(chatBox);
         // Update the GUI if necessary
         // gui.updateChatBox(chatBox);
     }
@@ -115,25 +113,30 @@ public class Client {
         // Process chatBoxLog as needed
     }
 
-    public TreeSet<ChatBox> getChatBoxList() {
-        return chatBoxList;
-    }
 
     private void receiveLoginResponse(LoginResponse loginResponse) {
         userData = loginResponse.user();
 
-        if(loginResponse.chatBoxList()!=null && !loginResponse.chatBoxList().isEmpty()) {
-            chatBoxList.addAll(loginResponse.chatBoxList());
-        }    }
+        if (loginResponse.chatBoxList() != null && !loginResponse.chatBoxList().isEmpty()) {
+            SwingUtilities.invokeLater(new Runnable() {
+               public void run(){
+                    gui.addAllChatBoxes(loginResponse.chatBoxList());
+                }
+            });
+        }
+    }
 
 
     public void queueMessage(MessageInterface message) {
         outboundResponseQueue.add(message);
     }
 
+
     public User getUserData() {
         return userData;
+
     }
+
 
     public void messageSender() {
         while (true) {
@@ -141,7 +144,7 @@ public class Client {
             try {
                 message = outboundResponseQueue.take();
                 outObj.writeObject(message);
-                // outObj.flush(); ???
+
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -178,18 +181,8 @@ public class Client {
             client.outObj = new ObjectOutputStream(client.socket.getOutputStream());
             client.inObj = new ObjectInputStream(client.socket.getInputStream());
 
-            senderThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    client.messageSender();
-                }
-            });
-            receiverThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    client.messageReceiver();
-                }
-            });
+            senderThread = new Thread(client::messageSender);
+            receiverThread = new Thread(client::messageReceiver);
             senderThread.start();
             receiverThread.start();
 
@@ -200,6 +193,7 @@ public class Client {
                     client.receiveLoginResponse((LoginResponse) response);
 
                     if (client.userData != null) {
+
                         client.loggedIn = true;
                         System.out.println("Logged in.");
                     } else {
@@ -238,7 +232,6 @@ public class Client {
                 if (client.socket != null) {
                     client.socket.close();
                 }
-                client.scanner.close();
             }
             catch (IOException e) {
                 System.err.println("Error closing resources: " + e.getMessage());
