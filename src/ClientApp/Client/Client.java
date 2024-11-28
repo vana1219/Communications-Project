@@ -99,6 +99,7 @@ public class Client {
 
     public User getUserData() {
         return userData;
+
     }
 
 
@@ -115,7 +116,7 @@ public class Client {
         }
     }
 
-
+  
     public void messageReceiver() {
         while (true) {
             try {
@@ -179,7 +180,9 @@ public class Client {
                 MessageInterface response = client.inboundRequestQueue.take();
                 if (response.getType() == MessageType.LOGIN_RESPONSE) {
                     client.receiveLoginResponse((LoginResponse) response);
+
                     if (client.userData != null) {
+
                         client.loggedIn = true;
                         System.out.println("Logged in.");
                     } else {

@@ -15,7 +15,6 @@ import Common.User.User;
 
 public class Gui {
     volatile boolean loggedIn = false;
-    private User user;
     private final Client client;
     private final JFrame frame;
     private final LoginWindow loginWindow;
