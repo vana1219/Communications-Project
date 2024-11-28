@@ -3,12 +3,10 @@ package ClientApp.Client;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 // Import existing classes from your Common package
@@ -16,7 +14,6 @@ import ClientApp.Gui.Gui;
 import Common.ChatBox.ChatBox;
 import Common.MessageInterface;
 import Common.MessageType;
-import Common.Messages.Login;
 import Common.Messages.LoginResponse;
 import Common.User.User;
 
@@ -35,7 +32,6 @@ public class Client {
     private ObjectOutputStream outObj = null;
     private ObjectInputStream inObj = null;
     private Socket socket = null;
-    private User user = null;
 
     public Client() {
         chatBoxList = new TreeSet<>(Comparator.comparingInt(ChatBox::getChatBoxID));
@@ -101,6 +97,12 @@ public class Client {
     }
 
 
+    public User getUserData() {
+        return userData;
+
+    }
+
+
     public void messageSender() {
         while (true) {
             MessageInterface message;
@@ -114,7 +116,7 @@ public class Client {
         }
     }
 
-
+  
     public void messageReceiver() {
         while (true) {
             try {
@@ -178,7 +180,9 @@ public class Client {
                 MessageInterface response = client.inboundRequestQueue.take();
                 if (response.getType() == MessageType.LOGIN_RESPONSE) {
                     client.receiveLoginResponse((LoginResponse) response);
-                    if (client.user != null) {
+
+                    if (client.userData != null) {
+
                         client.loggedIn = true;
                         System.out.println("Logged in.");
                     } else {
