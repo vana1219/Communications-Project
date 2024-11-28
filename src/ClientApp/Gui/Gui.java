@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
@@ -19,6 +21,7 @@ public class Gui {
     private final JFrame frame;
     private final LoginWindow loginWindow;
     private final MainWindow mainWindow;
+    private final ConnectionWindow connectionWindow; // Added connection window
 
   
     public Gui(Client client) {
@@ -26,11 +29,17 @@ public class Gui {
         frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);// Center the window
+        
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
+        connectionWindow = new ConnectionWindow(); // Initialize connection window
     }
-
-
+    
+    // Method to get connection info from the user
+    public ConnectionInfo getConnectionInfo() {
+        return connectionWindow.getConnectionInfo();
+    }
+    
     public void showMain() {
         frame.getContentPane().add(mainWindow.getPanel());
 
@@ -240,7 +249,98 @@ public class Gui {
         public JPanel getPanel() {
             return panel;
         }
+    }
 
+    // New inner class for the connection window
+    private static class ConnectionWindow {
+        private final JFrame frame;
+        private final JTextField serverIPField;
+        private final JTextField serverPortField;
+        private CountDownLatch latch;
+        private final ConnectionInfo[] connectionInfo;
 
+        public ConnectionWindow() {
+            frame = new JFrame("Connect to Server");
+            connectionInfo = new ConnectionInfo[1];
+            JPanel serverIPPanel = new JPanel();
+            serverIPPanel.setLayout(new FlowLayout());
+            serverIPPanel.add(new JLabel("Server IP:"));
+            serverIPField = new JTextField();
+            serverIPField.setPreferredSize(new Dimension(150, serverIPField.getPreferredSize().height));
+
+            // Set default IP address (localhost)
+            serverIPField.setText(getLocalIPAddress());
+
+            serverIPPanel.add(serverIPField);
+
+            JPanel serverPortPanel = new JPanel();
+            serverPortPanel.setLayout(new FlowLayout());
+            serverPortPanel.add(new JLabel("Server Port:"));
+            serverPortField = new JTextField();
+            serverPortField.setPreferredSize(new Dimension(150, serverPortField.getPreferredSize().height));
+
+            // Set default port number
+            serverPortField.setText("1234");
+
+            serverPortPanel.add(serverPortField);
+            JButton connectButton = getConnectButton();
+
+            JPanel connectPanel = new JPanel();
+            connectPanel.setLayout(new BoxLayout(connectPanel, BoxLayout.Y_AXIS));
+            connectPanel.add(serverIPPanel);
+            connectPanel.add(serverPortPanel);
+            connectPanel.add(connectButton);
+
+            frame.getContentPane().add(connectPanel);
+            frame.setAlwaysOnTop(true);
+            frame.setLocationRelativeTo(null);
+            frame.pack();
+            frame.setResizable(false);
+        }
+
+        private String getLocalIPAddress() {
+            try {
+                return InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+                return "127.0.0.1"; // Fallback to localhost
+            }
+        }
+
+		private JButton getConnectButton() {
+            JButton connectButton = new JButton("Connect");
+            connectButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String serverIP = serverIPField.getText();
+                    String serverPort = serverPortField.getText();
+                    int port;
+                    try {
+                        port = Integer.parseInt(serverPort);
+                        connectionInfo[0] = new ConnectionInfo(serverIP, port);
+                        serverIPField.setText("");
+                        serverPortField.setText("");
+                        latch.countDown();
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(frame, "Invalid port number.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+            return connectButton;
+        }
+
+        public ConnectionInfo getConnectionInfo() {
+            latch = new CountDownLatch(1);
+
+            frame.setVisible(true);
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            frame.setVisible(false);
+            return connectionInfo[0];
+        }
     }
 }
+

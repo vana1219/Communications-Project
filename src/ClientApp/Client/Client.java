@@ -3,7 +3,6 @@ package ClientApp.Client;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -11,74 +10,109 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 // Import existing classes from your Common package
 import ClientApp.Gui.Gui;
+import ClientApp.Gui.ConnectionInfo;
 import Common.ChatBox.ChatBox;
 import Common.MessageInterface;
 import Common.MessageType;
 import Common.Messages.LoginResponse;
+import Common.Messages.Notification;
+import Common.Messages.SendChatBox;
+import Common.Messages.SendChatLog;
+import Common.Messages.SendMessage;
+import Common.Messages.SendUserList;
+import Common.Message.Message;
 import Common.User.User;
 
 import javax.swing.*;
 
 public class Client {
     private boolean loggedIn = false;
-    private InetAddress serverAddress;
-    private int port;
     private BlockingQueue<MessageInterface> inboundRequestQueue;
     private BlockingQueue<MessageInterface> outboundResponseQueue;
     private User userData;
     private TreeSet<ChatBox> chatBoxList;
     private Gui gui;
-    private Scanner scanner = new Scanner(System.in);
     private ObjectOutputStream outObj = null;
     private ObjectInputStream inObj = null;
     private Socket socket = null;
 
     public Client() {
         chatBoxList = new TreeSet<>(Comparator.comparingInt(ChatBox::getChatBoxID));
-        Client client = this;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                gui = new Gui(client);
-            }
-        });
+        gui = new Gui(this); // Initialize GUI directly
         inboundRequestQueue = new LinkedBlockingQueue<>();
         outboundResponseQueue = new LinkedBlockingQueue<>();
     }
 
-
     private void handleServerResponses() {
         while (true) {
-//            try {
-            MessageInterface response = inboundRequestQueue.poll();
-            if (response != null) {
-                switch (response.getType()) {
-                    case MessageType.LOGIN_RESPONSE:
-                        receiveLoginResponse((LoginResponse) response);
-                        break;
-                    case NOTIFICATION:
-                        break;
-                    case RETURN_CHATBOX:
-                        break;
-                    case RETURN_USER_LIST:
-                        break;
-                    case SEND_MESSAGE:
-                        break;
-                    case RETURN_CHATBOX_LOG:
-                        break;
-                    default:
-                        break;
+            MessageInterface response;
+            try {
+                response = inboundRequestQueue.take();
+                if (response != null) {
+                    switch (response.getType()) {
+                        case MessageType.LOGIN_RESPONSE:
+                            receiveLoginResponse((LoginResponse) response);
+                            break;
+                        case MessageType.NOTIFICATION:
+                            handleNotification((Notification) response);
+                            break;
+                        case MessageType.RETURN_CHATBOX:
+                            handleReturnChatBox((SendChatBox) response);
+                            break;
+                        case MessageType.RETURN_USER_LIST:
+                            handleReturnUserList((SendUserList) response);
+                            break;
+                        case MessageType.SEND_MESSAGE:
+                            handleSendMessage((SendMessage) response);
+                            break;
+                        case MessageType.RETURN_CHATBOX_LOG:
+                            handleReturnChatBoxLog((SendChatLog) response);
+                            break;
+                        default:
+                            break;
+                    }
                 }
+            } catch (InterruptedException e) {
+                System.err.println("Error handling server response: " + e.getMessage());
             }
-
-
-//            } catch (ClassNotFoundException e) {
-//                System.err.println("Class not found: " + e.getMessage());
-//            } catch (IOException e) {
-//                System.err.println("I/O error: " + e.getMessage());
-//                break;
-//            }
         }
+    }
+
+    // Add methods to handle the server responses
+
+    // Handle Notification messages
+    private void handleNotification(Notification notification) {
+        String text = notification.text();
+        JOptionPane.showMessageDialog(null, text, "Notification", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // Handle SendChatBox messages
+    private void handleReturnChatBox(SendChatBox sendChatBox) {
+        ChatBox chatBox = sendChatBox.chatBox();
+        chatBoxList.remove(chatBox);
+        chatBoxList.add(chatBox);
+        // Update the GUI if necessary
+        // gui.updateChatBox(chatBox);
+    }
+
+    // Handle SendUserList messages
+    private void handleReturnUserList(SendUserList sendUserList) {
+        List<User> userList = sendUserList.userList();
+        // Process user list as needed
+    }
+
+    // Handle SendMessage messages
+    private void handleSendMessage(SendMessage sendMessage) {
+        Message message = sendMessage.message();
+        int chatBoxID = sendMessage.chatBoxID();
+        // Add the message to the appropriate chatbox
+        // gui.addMessageToChatBox(message, chatBoxID);
+    }
+
+    // Handle SendChatLog messages
+    private void handleReturnChatBoxLog(SendChatLog sendChatLog) {
+        String chatBoxLog = sendChatLog.chatBoxLog();
+        // Process chatBoxLog as needed
     }
 
     public TreeSet<ChatBox> getChatBoxList() {
@@ -97,12 +131,9 @@ public class Client {
         outboundResponseQueue.add(message);
     }
 
-
     public User getUserData() {
         return userData;
-
     }
-
 
     public void messageSender() {
         while (true) {
@@ -110,7 +141,7 @@ public class Client {
             try {
                 message = outboundResponseQueue.take();
                 outObj.writeObject(message);
-//                outObj.flush();
+                // outObj.flush(); ???
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -128,20 +159,16 @@ public class Client {
         }
     }
 
-
     public static void main(String[] args) {
         Client client = new Client();
         Thread senderThread = null;
         Thread receiverThread = null;
 
         try {
-
-            // Get server IP and port from the user
-            System.out.print("Enter server IP address: ");
-            String serverIP = client.scanner.nextLine();
-
-            System.out.print("Enter server port number: ");
-            int port = Integer.parseInt(client.scanner.nextLine());
+            // Get server IP and port from the GUI
+            ConnectionInfo connectionInfo = client.gui.getConnectionInfo();
+            String serverIP = connectionInfo.getServerIP();
+            int port = connectionInfo.getPort();
 
             // Connect to the server
             client.socket = new Socket(serverIP, port);
@@ -165,16 +192,6 @@ public class Client {
             });
             senderThread.start();
             receiverThread.start();
-//            // Get username and password from the user
-//            System.out.print("Enter username: ");
-//            String username = client.scanner.nextLine();
-//
-//            System.out.print("Enter password: ");
-//            String password = client.scanner.nextLine();
-
-            // Create and send the login message
-//            final MessageInterface[] message = new MessageInterface[1];
-
 
             while (!client.loggedIn) {
                 client.queueMessage(client.gui.login());
@@ -183,11 +200,10 @@ public class Client {
                     client.receiveLoginResponse((LoginResponse) response);
 
                     if (client.userData != null) {
-
                         client.loggedIn = true;
                         System.out.println("Logged in.");
                     } else {
-                        new JOptionPane().createDialog("Invalid username or password");
+                        JOptionPane.showMessageDialog(null, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -198,6 +214,7 @@ public class Client {
 
         } catch (IOException | InterruptedException e) {
             System.err.println("I/O error: " + e.getMessage());
+
 //        } catch (InterruptedException | InvocationTargetException e) {
 //            throw new RuntimeException(e);
 //        } catch (InterruptedException e) {
