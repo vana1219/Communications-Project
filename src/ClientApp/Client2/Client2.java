@@ -35,7 +35,6 @@ public class Client2 {
     private ObjectOutputStream outObj = null;
     private ObjectInputStream inObj = null;
     private Socket socket = null;
-    private User user = null;
 
     public Client2() {
         chatBoxList = new TreeSet<>(Comparator.comparingInt(ChatBox::getChatBoxID));
@@ -98,6 +97,11 @@ public class Client2 {
     public void addMessage(MessageInterface message) {
         outboundResponseQueue.add(message);
 
+    }
+
+
+    public User getUserData() {
+        return userData;
     }
 
 
@@ -178,7 +182,7 @@ public class Client2 {
                 MessageInterface response = client.inboundRequestQueue.take();
                 if (response.getType() == MessageType.LOGIN_RESPONSE) {
                     client.receiveLoginResponse((LoginResponse) response);
-                    if (client.user != null) {
+                    if (client.userData != null) {
                         client.loggedIn = true;
                         System.out.println("Logged in.");
                     } else {

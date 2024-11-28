@@ -15,7 +15,7 @@ import Common.User.User;
 
 public class Gui {
     volatile boolean loggedIn = false;
-    private final User user = null;
+    private User user;
     private final Client2 client;
     private final JFrame frame;
     private final LoginWindow loginWindow;
@@ -229,8 +229,8 @@ public class Gui {
         }
         public void sendMessage() {
             String message = messageField.getText();
-            if (!message.isEmpty() && user != null) {
-                client.addMessage(new SendMessage(new Message(user.getUserID(), message), chatBox.getChatBoxID()));
+            if (!message.isEmpty()) {
+                client.addMessage(new SendMessage(new Message(client.getUserData().getUserID(), message), chatBox.getChatBoxID()));
                 messageField.setText("");// Clear the input field
             }
         }
