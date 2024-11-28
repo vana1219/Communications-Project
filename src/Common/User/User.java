@@ -1,11 +1,14 @@
 package Common.User;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class User implements Serializable {
-	private static final long serialVersionUID = 1L;
-	private final int userID;
-    private static int userCount = 0;
+    private static final long serialVersionUID = 1L;
+
+    private static final AtomicInteger userIdGenerator = new AtomicInteger(0);
+
+    private final int userID;
     private String username;
     private String password;
     private boolean isOnline;
@@ -13,7 +16,7 @@ public class User implements Serializable {
 
     // Constructor
     public User(String username, String password) {
-        this.userID = ++userCount;
+        this.userID = userIdGenerator.incrementAndGet();
         this.username = username;
         this.password = password;
         this.isOnline = false;

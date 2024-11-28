@@ -38,7 +38,7 @@ public class Server {
         this.activeClients = new ConcurrentHashMap<>();
         this.storageManager = new StorageManager();
         this.chatBoxes = new ConcurrentHashMap<>(storageManager.getChatBoxRecords());
-        this.authenticationSystem = new AuthenticationSystem("users.ser");
+        this.authenticationSystem = new AuthenticationSystem(); // Updated to remove file path
         this.userDB = authenticationSystem.getUserDB();
         this.messageHandler = new MessageHandler(storageManager, chatBoxes, userDB, this);
 
@@ -49,7 +49,7 @@ public class Server {
 
         // Create initial users if they don't exist
         createInitialUsers();
-        
+
         // Create initial chatboxes
         createInitialChatBoxes();
     }
@@ -84,7 +84,7 @@ public class Server {
             }
         }
     }
-    
+
     // Creates initial chatboxes (run once)
     private void createInitialChatBoxes() {
         // Check if chatbox between Bob and Sally exists
@@ -233,3 +233,4 @@ public class Server {
         return externalIP;
     }
 }
+

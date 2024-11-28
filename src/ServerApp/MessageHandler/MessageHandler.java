@@ -12,19 +12,19 @@ import java.util.List;
 
 /**
  * MessageHandler manages message-related operations, acting as an intermediary
- * between ClientHandler2 and other components.
+ * between ClientHandler and other components.
  */
 public class MessageHandler {
 
     // Attributes
-    private StorageManager storageManager; // Manages storage operations for chatboxes
-    private ConcurrentHashMap<Integer, ChatBox> chatBoxes; // In-memory chatboxes
-    private ConcurrentHashMap<Integer, User> userDB; // In-memory users
-    private Server server; // Reference to the Server2 instance
+    private final StorageManager storageManager; // Manages storage operations for chatboxes
+    private final ConcurrentHashMap<Integer, ChatBox> chatBoxes; // In-memory chatboxes
+    private final ConcurrentHashMap<Integer, User> userDB; // In-memory users
+    private final Server server; // Reference to the Server instance
 
     // Constructor
     // *Initializes MessageHandler with storageManager, chatBoxes, userDB, and server*
-    // INPUT: storageManager (StorageManager), chatBoxes (ConcurrentHashMap<Integer, ChatBox>), userDB (ConcurrentHashMap<Integer, User>), server (Server2)
+    // INPUT: storageManager (StorageManager), chatBoxes (ConcurrentHashMap<Integer, ChatBox>), userDB (ConcurrentHashMap<Integer, User>), server (Server)
     public MessageHandler(StorageManager storageManager, ConcurrentHashMap<Integer, ChatBox> chatBoxes, ConcurrentHashMap<Integer, User> userDB, Server server) {
         this.storageManager = storageManager;
         this.chatBoxes = chatBoxes;
@@ -32,9 +32,9 @@ public class MessageHandler {
         this.server = server;
     }
 
-    // *Finds the ClientHandler2 for a given user ID*
+    // *Finds the ClientHandler for a given user ID*
     // INPUT: userID (int)
-    // OUTPUT: ClientHandler2 or null if not found
+    // OUTPUT: ClientHandler or null if not found
     private ClientHandler findClientHandler(int userID) {
         return server.getClientHandlers().stream()
                 .filter(handler -> handler.getUser() != null && handler.getUser().getUserID() == userID)
@@ -58,7 +58,7 @@ public class MessageHandler {
     public ChatBox getChatBox(int chatBoxID) {
         return chatBoxes.get(chatBoxID);
     }
-    
+
     // *Updates all participants in the chatbox with the latest chatbox state*
     // INPUT: chatBoxID (int)
     // OUTPUT: none
@@ -119,7 +119,7 @@ public class MessageHandler {
     }
 
     // *Adds a user to a specific chatbox*
-    // INPUT: chatBoxID (int), clientHandler (ClientHandler2)
+    // INPUT: chatBoxID (int), clientHandler (ClientHandler)
     // OUTPUT: true if user added successfully, false otherwise
     public boolean addParticipantToChatBox(int chatBoxID, ClientHandler clientHandler) {
         ChatBox chatBox = chatBoxes.get(chatBoxID);
@@ -180,8 +180,7 @@ public class MessageHandler {
     public boolean storeChatBox(ChatBox chatBox) {
         if (chatBox != null) {
             chatBoxes.put(chatBox.getChatBoxID(), chatBox); // Update the in-memory collection
-            storageManager.storeChatBox(chatBox); // Store the chatbox in persistent storage
-            return true;
+            return storageManager.storeChatBox(chatBox); // Store the chatbox in persistent storage
         }
         return false;
     }
