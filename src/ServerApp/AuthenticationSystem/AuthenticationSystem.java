@@ -5,6 +5,7 @@ import Common.User.User;
 import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
+import java.nio.file.*;
 
 /**
  * AuthenticationSystem manages user authentication and user-related operations.
@@ -12,155 +13,163 @@ import java.util.Collection;
 public class AuthenticationSystem {
     // Attributes
     private ConcurrentHashMap<Integer, User> userDB;
-    private String userFilePath;
+    private final String usersDirectory;
 
     // Constructor
-    // *Initializes AuthenticationSystem and loads existing users from file*
-    // INPUT: userFilePath (String)
-    // OUTPUT: none
-    public AuthenticationSystem(String userFilePath) {
-        this.userFilePath = userFilePath;
+    // Initializes AuthenticationSystem and loads existing users from files
+    public AuthenticationSystem() {
+        this.usersDirectory = "users"; // Directory to store user files
         this.userDB = new ConcurrentHashMap<>();
-        loadUsersFromFile(); // Load existing users from file
+        createUsersDirectory();
+        loadUsersFromFiles(); // Load existing users from files
     }
 
-    // *Registers a user in the system*
-    // INPUT: user (User)
-    // OUTPUT: true if registration is successful, false otherwise
+    // Creates the users directory if it doesn't exist
+    private void createUsersDirectory() {
+        File directory = new File(usersDirectory);
+        if (!directory.exists()) {
+            boolean created = directory.mkdir();
+            if (created) {
+                System.out.println("Users directory created.");
+            } else {
+                System.err.println("Failed to create Users directory.");
+            }
+        }
+    }
+
+    // Registers a user in the system
     public boolean registerUser(User user) {
         if (user != null && !usernameExists(user.getUsername())) {
             userDB.put(user.getUserID(), user);
-            saveUsersToFile(); // Save updated users to file
+            saveUserToFile(user); // Save the user to its individual file
             return true;
         }
         return false;
     }
 
-    // *Finds a user by username*
-    // INPUT: username (String)
-    // OUTPUT: User object or null if not found
+    // Finds a user by username
     public User findUserByUsername(String username) {
         return userDB.values().stream()
             .filter(u -> u.getUsername().equals(username))
             .findFirst()
             .orElse(null);
     }
-    
-    // *Checks if a username already exists*
-    // INPUT: username (String)
-    // OUTPUT: true if username exists, false otherwise
+
+    // Checks if a username already exists
     private boolean usernameExists(String username) {
         return userDB.values().stream().anyMatch(u -> u.getUsername().equals(username));
     }
 
-    // *Validates user credentials during login*
-    // INPUT: username (String), password (String)
-    // OUTPUT: User object if login is successful, null otherwise
+    // Validates user credentials during login
     public User validateCredentials(String username, String password) {
         for (User user : userDB.values()) {
             if (user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)) {
                 user.setOnline(true);
-                saveUsersToFile();
+                saveUserToFile(user); // Save updated user to file
                 return user;
             }
         }
         return null;
     }
 
-    // *Resets user password*
-    // INPUT: userID (int), newPassword (String)
-    // OUTPUT: true if reset is successful, false otherwise
+    // Resets user password
     public boolean resetPassword(int userID, String newPassword) {
         User user = userDB.get(userID);
         if (user != null) {
             user.setPassword(newPassword);
-            saveUsersToFile();
+            saveUserToFile(user); // Save updated user to file
             return true;
         }
         return false;
     }
 
-    // *Deletes a user from the system*
-    // INPUT: userID (int)
-    // OUTPUT: true if deletion is successful, false otherwise
+    // Deletes a user from the system
     public boolean deleteUser(int userID) {
         if (userDB.containsKey(userID)) {
             userDB.remove(userID);
-            saveUsersToFile();
+            deleteUserFile(userID); // Delete user's file
             return true;
         }
         return false;
     }
 
-    // *Logs a user out*
-    // INPUT: userID (int)
-    // OUTPUT: true if logout is successful, false otherwise
+    // Logs a user out
     public boolean logout(int userID) {
         User user = userDB.get(userID);
         if (user != null && user.isOnline()) {
             user.setOnline(false);
-            saveUsersToFile();
+            saveUserToFile(user); // Save updated user to file
             return true;
         }
         return false;
     }
 
-    // *Finds a user by userID*
-    // INPUT: userID (int)
-    // OUTPUT: User object or null if not found
+    // Finds a user by userID
     public User findUser(int userID) {
         return userDB.get(userID);
     }
 
-    // *Updates a user's information in the system*
-    // INPUT: user (User)
-    // OUTPUT: true if update is successful, false otherwise
+    // Updates a user's information in the system
     public boolean updateUser(User user) {
         if (user != null && userDB.containsKey(user.getUserID())) {
             userDB.put(user.getUserID(), user);
-            saveUsersToFile();
+            saveUserToFile(user); // Save updated user to file
             return true;
         }
         return false;
     }
 
-    // *Retrieves all users in the system*
-    // INPUT: none
-    // OUTPUT: Collection of User objects
+    // Retrieves all users in the system
     public Collection<User> getAllUsers() {
         return userDB.values();
     }
 
-    // *Retrieves the user database*
-    // INPUT: none
-    // OUTPUT: ConcurrentHashMap of userID to User objects
+    // Retrieves the user database
     public ConcurrentHashMap<Integer, User> getUserDB() {
         return userDB;
     }
 
-    // *Saves all users to a file for persistent storage*
-    // INPUT: none
-    // OUTPUT: none
-    private void saveUsersToFile() {
+    // Saves a single user to its individual file
+    private void saveUserToFile(User user) {
         synchronized (this) { // Ensure thread safety during save
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(userFilePath))) {
-                oos.writeObject(userDB);
+            String fileName = usersDirectory + File.separator + user.getUserID(); // Filename is userID
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+                oos.writeObject(user);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    // *Loads users from file into memory*
-    // INPUT: none
-    // OUTPUT: none
-    @SuppressWarnings("unchecked")
-	private void loadUsersFromFile() {
+    // Deletes a user's file
+    private void deleteUserFile(int userID) {
+        String fileName = usersDirectory + File.separator + userID;
+        File file = new File(fileName);
+        if (file.exists()) {
+            boolean deleted = file.delete();
+            if (!deleted) {
+                System.err.println("Failed to delete user file: " + fileName);
+            }
+        }
+    }
+
+    // Loads users from individual files into memory
+    private void loadUsersFromFiles() {
         synchronized (this) { // Ensure thread safety during load
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userFilePath))) {
-                userDB = (ConcurrentHashMap<Integer, User>) ois.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                userDB = new ConcurrentHashMap<>(); // If file not found or error occurs, start with an empty HashMap
+            try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(usersDirectory))) {
+                for (Path path : directoryStream) {
+                    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                        User user = (User) ois.readObject();
+                        userDB.put(user.getUserID(), user);
+                    } catch (IOException | ClassNotFoundException e) {
+                        System.err.println("Error loading user from file: " + path.getFileName());
+                        e.printStackTrace();
+                    }
+                }
+                System.out.println("Loaded " + userDB.size() + " users from files.");
+            } catch (IOException e) {
+                System.err.println("Error reading user files from directory: " + usersDirectory);
+                e.printStackTrace();
             }
         }
     }

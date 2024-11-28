@@ -9,15 +9,19 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Comparator;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatBox implements Serializable {
-	private static final long serialVersionUID = 1L;
-	// Attributes
-    private final int chatBoxID;
+    private static final long serialVersionUID = 1L;
+
+    // Static atomic integer for generating unique chatBoxIDs
+    private static final AtomicInteger chatBoxIdGenerator = new AtomicInteger(0);
+
+    // Attributes
+    private int chatBoxID;
     private final String name;
     private HashSet<User> participants;
     private SortedSet<Message> messages;
-    private static int chatBoxCount = 0;
     private boolean isHidden;
 
     // Serializable Comparator
@@ -33,16 +37,17 @@ public class ChatBox implements Serializable {
     }
 
     // Constructor
+    // Initializes a ChatBox with a unique ID and optional name
     public ChatBox() {
-        this.chatBoxID = ++chatBoxCount;
+        this.chatBoxID = chatBoxIdGenerator.incrementAndGet();
         this.participants = new HashSet<>();
         this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
         this.isHidden = false;
-        this.name = "" + this.chatBoxID;
+        this.name = "ChatBox " + this.chatBoxID;
     }
 
     public ChatBox(String name) {
-        this.chatBoxID = ++chatBoxCount;
+        this.chatBoxID = chatBoxIdGenerator.incrementAndGet();
         this.participants = new HashSet<>();
         this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
         this.isHidden = false;
@@ -50,6 +55,7 @@ public class ChatBox implements Serializable {
     }
 
     // Getters
+
     // Returns the unique ChatBox ID
     public int getChatBoxID() {
         return chatBoxID;
@@ -59,15 +65,10 @@ public class ChatBox implements Serializable {
         return name;
     }
 
-    public String toString() {
-        return getName();
-    }
-
     // Returns the set of participants in the ChatBox
     public HashSet<User> getParticipants() {
         return participants;
     }
-
 
     // Returns the set of messages in the ChatBox
     public SortedSet<Message> getMessages() {
@@ -80,6 +81,7 @@ public class ChatBox implements Serializable {
     }
 
     // Methods
+
     // Adds a message to the ChatBox
     // INPUT: message (Message)
     // OUTPUT: none
@@ -125,9 +127,9 @@ public class ChatBox implements Serializable {
     // Creates a new chatbox with specified participants
     // INPUT: List of participants (users)
     // OUTPUT: ChatBox object
-    public static ChatBox createChatBox(List<User> participants) {
+    public static ChatBox createChatBox(List<User> participantsList) {
         ChatBox chatBox = new ChatBox();
-        for (User participant : participants) {
+        for (User participant : participantsList) {
             chatBox.addParticipant(participant);
         }
         return chatBox;
@@ -137,12 +139,30 @@ public class ChatBox implements Serializable {
     // INPUT: none
     // OUTPUT: ChatBox object with participants but no messages
     public ChatBox getEmpty() {
-        try {
-            ChatBox empty = (ChatBox) this.clone();
-            empty.messages = new TreeSet<>();
-            return empty;
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        ChatBox empty = new ChatBox(this.name);
+        empty.chatBoxID = this.chatBoxID; // Keep the same chatBoxID
+        empty.participants = new HashSet<>(this.participants);
+        empty.isHidden = this.isHidden;
+        // Do not copy messages
+        return empty;
+    }
+
+    // Implement equals and hashCode based on chatBoxID
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ChatBox)) return false;
+        ChatBox other = (ChatBox) obj;
+        return this.chatBoxID == other.chatBoxID;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(chatBoxID);
+    }
+
+    @Override
+    public String toString() {
+        return name + " (ID: " + chatBoxID + ")";
     }
 }
