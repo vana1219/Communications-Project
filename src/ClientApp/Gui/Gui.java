@@ -232,7 +232,7 @@ public class Gui {
         public void sendMessage() {
             String message = messageField.getText();
             if (!message.isEmpty()) {
-                client.addMessage(new SendMessage(new Message(client.getUserData().getUserID(), message), chatBox.getChatBoxID()));
+                client.queueMessage(new SendMessage(new Message(client.getUserData().getUserID(), message), chatBox.getChatBoxID()));
                 messageField.setText("");// Clear the input field
             }
         }
