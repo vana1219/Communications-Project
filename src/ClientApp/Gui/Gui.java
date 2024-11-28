@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
@@ -265,12 +267,21 @@ public class Gui {
             serverIPPanel.add(new JLabel("Server IP:"));
             serverIPField = new JTextField();
             serverIPField.setPreferredSize(new Dimension(150, serverIPField.getPreferredSize().height));
+
+            // Set default IP address (localhost)
+            serverIPField.setText(getLocalIPAddress());
+
             serverIPPanel.add(serverIPField);
+
             JPanel serverPortPanel = new JPanel();
             serverPortPanel.setLayout(new FlowLayout());
             serverPortPanel.add(new JLabel("Server Port:"));
             serverPortField = new JTextField();
             serverPortField.setPreferredSize(new Dimension(150, serverPortField.getPreferredSize().height));
+
+            // Set default port number
+            serverPortField.setText("1234");
+
             serverPortPanel.add(serverPortField);
             JButton connectButton = getConnectButton();
 
@@ -287,7 +298,16 @@ public class Gui {
             frame.setResizable(false);
         }
 
-        private JButton getConnectButton() {
+        private String getLocalIPAddress() {
+            try {
+                return InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+                return "127.0.0.1"; // Fallback to localhost
+            }
+        }
+
+		private JButton getConnectButton() {
             JButton connectButton = new JButton("Connect");
             connectButton.addActionListener(new ActionListener() {
                 @Override
