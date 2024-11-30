@@ -417,20 +417,30 @@ public class Gui {
     public class CreateChatBoxDialog extends JDialog implements ActionListener
     {
     	private static CreateChatBoxDialog dialog; 
+    	private static JPanel comboPanel;
+    	private static Container pane; //content pane of dialog
+    	private static JTextField chBoxTxt;
+    	private static JLabel chBoxName;
+    	private static JButton createButton;
+    	private static JButton addParticipant;
+    	private static JButton removeParticipant;
+    	private static JList users;
+    	private static JList participants;
+    	private static JLabel prompt;
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
-    	public static void addToContentPane(Container pane)
+    	public static void setUpContentPane()
     	{
     		
     		//BoxLayout elements
     		
-    		JPanel comboPanel = setupBoxLayout();
+    		comboPanel = setupBoxLayout();
     		
     		
     		//BorderLayout elements
     		
-    		setupLayout(pane, comboPanel);
+    		setupLayout();
     		
     		
     		
@@ -440,37 +450,47 @@ public class Gui {
     	//Post: sets up the box layout portion of the content pane
     	private static JPanel setupBoxLayout()
     	{
-    		JPanel comboPanel = new JPanel();
+    		comboPanel = new JPanel();
     		comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
     		
-    		JTextField chBoxTxt = new JTextField();
+    		chBoxTxt = new JTextField(20);
     		chBoxTxt.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		chBoxTxt.addActionListener(dialog);
     		
-    		JLabel chBoxName = new JLabel("Name Inserted Here");
+    		chBoxName = new JLabel("Name Inserted Here");
     		
     		
-    		JButton createButton = new JButton ("Create ChatBox");
+    		createButton = new JButton ("Create ChatBox");
     		createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		createButton.addActionListener(dialog);
     		
+    		addParticipant = new JButton("Add Participant From List");
+    		addParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		addParticipant.addActionListener(dialog);
     		
+    		removeParticipant = new JButton("Remove Participant From List");
+    		removeParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		removeParticipant.addActionListener(dialog);
     		
     		comboPanel.add(chBoxTxt);
     		comboPanel.add(chBoxName);
     		comboPanel.add(createButton);
+    		comboPanel.add(addParticipant);
+    		comboPanel.add(removeParticipant);
     		
     		return comboPanel;
     	}
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: finished up on BorderLayout and brings it all together
-    	private static void setupLayout(Container pane, JPanel comboPanel)
+    	private static void setupLayout()
     	{
-    		JLabel prompt = new JLabel("Users are listed on the left, Participants on the right\n"
+    		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
     		
-    		JList users = new JList();
+    		users = new JList();
     		users.setPreferredSize( new Dimension (200,100));
-    		JList participants = new JList();
+    		participants = new JList();
     		participants.setPreferredSize( new Dimension (200,100));
     		
     		pane.add(prompt, BorderLayout.NORTH); // add prompt
