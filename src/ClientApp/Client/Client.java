@@ -143,6 +143,7 @@ public class Client {
             MessageInterface message;
             try {
                 message = outboundResponseQueue.take();
+                outObj.reset();
                 outObj.writeObject(message);
 
             } catch (IOException | InterruptedException e) {
