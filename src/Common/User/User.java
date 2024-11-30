@@ -1,9 +1,11 @@
 package Common.User;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class User implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private static final AtomicInteger userIdGenerator = new AtomicInteger(0);

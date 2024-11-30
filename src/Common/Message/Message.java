@@ -1,10 +1,12 @@
 package Common.Message;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class Message implements Serializable {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 	// Attributes
 	private static int count = 0;
     private int messageID;
