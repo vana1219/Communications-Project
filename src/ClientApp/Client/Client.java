@@ -14,12 +14,7 @@ import ClientApp.Gui.ConnectionInfo;
 import Common.ChatBox.ChatBox;
 import Common.MessageInterface;
 import Common.MessageType;
-import Common.Messages.LoginResponse;
-import Common.Messages.Notification;
-import Common.Messages.SendChatBox;
-import Common.Messages.SendChatLog;
-import Common.Messages.SendMessage;
-import Common.Messages.SendUserList;
+import Common.Messages.*;
 import Common.Message.Message;
 import Common.User.User;
 
@@ -27,8 +22,8 @@ import javax.swing.*;
 
 public class Client {
     private boolean loggedIn = false;
-    private BlockingQueue<MessageInterface> inboundRequestQueue;
-    private BlockingQueue<MessageInterface> outboundResponseQueue;
+    private final  BlockingQueue<MessageInterface> inboundRequestQueue;
+    private final BlockingQueue<MessageInterface> outboundResponseQueue;
     private User userData;
     private final Gui gui;
     private ObjectOutputStream outObj = null;
@@ -43,33 +38,31 @@ public class Client {
 
 
     private void handleServerResponses() {
-        while (true) {
-            MessageInterface response;
+        MessageInterface response;
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 response = inboundRequestQueue.take();
-                if (response != null) {
-                    switch (response.getType()) {
-                        case MessageType.LOGIN_RESPONSE:
-                            receiveLoginResponse((LoginResponse) response);
-                            break;
-                        case MessageType.NOTIFICATION:
-                            handleNotification((Notification) response);
-                            break;
-                        case MessageType.RETURN_CHATBOX:
-                            handleReturnChatBox((SendChatBox) response);
-                            break;
-                        case MessageType.RETURN_USER_LIST:
-                            handleReturnUserList((SendUserList) response);
-                            break;
-                        case MessageType.SEND_MESSAGE:
-                            handleSendMessage((SendMessage) response);
-                            break;
-                        case MessageType.RETURN_CHATBOX_LOG:
-                            handleReturnChatBoxLog((SendChatLog) response);
-                            break;
-                        default:
-                            break;
-                    }
+                switch (response.getType()) {
+                    case MessageType.LOGIN_RESPONSE:
+                        receiveLoginResponse((LoginResponse) response);
+                        break;
+                    case MessageType.NOTIFICATION:
+                        handleNotification((Notification) response);
+                        break;
+                    case MessageType.RETURN_CHATBOX:
+                        handleReturnChatBox((SendChatBox) response);
+                        break;
+                    case MessageType.RETURN_USER_LIST:
+                        handleReturnUserList((SendUserList) response);
+                        break;
+                    case MessageType.SEND_MESSAGE:
+                        handleSendMessage((SendMessage) response);
+                        break;
+                    case MessageType.RETURN_CHATBOX_LOG:
+                        handleReturnChatBoxLog((SendChatLog) response);
+                        break;
+                    default:
+                        break;
                 }
             } catch (InterruptedException e) {
                 System.err.println("Error handling server response: " + e.getMessage());
@@ -89,8 +82,10 @@ public class Client {
     private void handleReturnChatBox(SendChatBox sendChatBox) {
         ChatBox chatBox = sendChatBox.chatBox();
         gui.addChatBox(chatBox);
-        // Update the GUI if necessary
-        // gui.updateChatBox(chatBox);
+        if (gui.getChatBox().equals(chatBox)) {
+            gui.clearMessages();
+            gui.addAllMessages(chatBox);
+        }
     }
 
     // Handle SendUserList messages
@@ -103,6 +98,12 @@ public class Client {
     private void handleSendMessage(SendMessage sendMessage) {
         Message message = sendMessage.message();
         int chatBoxID = sendMessage.chatBoxID();
+        if (gui.getChatBox().getChatBoxID() == chatBoxID) {
+            gui.getChatBox().addMessage(message);
+            gui.addMessage(message);
+        } else {
+            gui.getChatBox(chatBoxID).addMessage(message);
+        }
         // Add the message to the appropriate chatbox
         // gui.addMessageToChatBox(message, chatBoxID);
     }
@@ -118,11 +119,7 @@ public class Client {
         userData = loginResponse.user();
 
         if (loginResponse.chatBoxList() != null && !loginResponse.chatBoxList().isEmpty()) {
-            SwingUtilities.invokeLater(new Runnable() {
-               public void run(){
-                    gui.addAllChatBoxes(loginResponse.chatBoxList());
-                }
-            });
+            SwingUtilities.invokeLater(() -> gui.addAllChatBoxes(loginResponse.chatBoxList()));
         }
     }
 
@@ -139,10 +136,11 @@ public class Client {
 
 
     public void messageSender() {
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             MessageInterface message;
             try {
                 message = outboundResponseQueue.take();
+                outObj.reset();
                 outObj.writeObject(message);
 
             } catch (IOException | InterruptedException e) {
@@ -153,11 +151,11 @@ public class Client {
 
 
     public void messageReceiver() {
-        while (true) {
+        while (!Thread.interrupted()) {
             try {
                 inboundRequestQueue.add((MessageInterface) inObj.readObject());
             } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
+//                throw new RuntimeException(e);
             }
         }
     }
@@ -181,8 +179,8 @@ public class Client {
             client.outObj = new ObjectOutputStream(client.socket.getOutputStream());
             client.inObj = new ObjectInputStream(client.socket.getInputStream());
 
-            senderThread = new Thread(client::messageSender);
-            receiverThread = new Thread(client::messageReceiver);
+            senderThread = new Thread(null,client::messageSender,"SenderThread");
+            receiverThread = new Thread(null,client::messageReceiver,"ReceiverThread");
             senderThread.start();
             receiverThread.start();
 
@@ -197,10 +195,16 @@ public class Client {
                         client.loggedIn = true;
                         System.out.println("Logged in.");
                     } else {
-                        JOptionPane.showMessageDialog(null, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Invalid username or password", "Login Failed",
+                                                      JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
+
+            client.queueMessage(new AskChatBox(client.gui.getChatBox().getChatBoxID()));
+            SendChatBox response = (SendChatBox) client.inboundRequestQueue.take();
+            client.handleReturnChatBox(response);
+
 
             client.gui.showMain();
             // Handle server responses
@@ -209,12 +213,7 @@ public class Client {
         } catch (IOException | InterruptedException e) {
             System.err.println("I/O error: " + e.getMessage());
 
-//        } catch (InterruptedException | InvocationTargetException e) {
-//            throw new RuntimeException(e);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-        }
-        finally {
+        } finally {
             // Close resources
             try {
                 if (senderThread != null) {
@@ -232,8 +231,7 @@ public class Client {
                 if (client.socket != null) {
                     client.socket.close();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.err.println("Error closing resources: " + e.getMessage());
             }
         }

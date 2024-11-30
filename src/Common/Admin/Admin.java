@@ -4,7 +4,10 @@ import Common.User.User;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
 import ServerApp.MessageHandler.MessageHandler;
 
+import java.io.Serial;
+
 public class Admin extends User {
+    @Serial
     private static final long serialVersionUID = 1L;
     // Attributes
     private transient MessageHandler messageHandler;

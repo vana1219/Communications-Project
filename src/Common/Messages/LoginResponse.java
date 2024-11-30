@@ -5,6 +5,7 @@ import Common.MessageType;
 import Common.User.User;
 import Common.ChatBox.ChatBox;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
 
@@ -13,7 +14,7 @@ public record LoginResponse(User user, List<ChatBox> chatBoxList) implements Mes
 
     public LoginResponse(User user, List<ChatBox> chatBoxList) {
         this.user = user;
-        this.chatBoxList = chatBoxList;
+        this.chatBoxList = new ArrayList<>();
         
         if (chatBoxList != null)
         {

@@ -9,6 +9,8 @@ import java.nio.file.*;
  * StorageManager handles the persistent storage and retrieval of ChatBox objects.
  */
 public class StorageManager implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     // Attributes

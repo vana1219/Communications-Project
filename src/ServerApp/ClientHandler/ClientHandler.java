@@ -20,10 +20,10 @@ import java.util.Collection;
 public class ClientHandler implements Runnable {
 
     // Attributes
-    private Socket clientSocket;
-    private Server server;
-    private MessageHandler messageHandler;
-    private AuthenticationSystem authenticationSystem;
+    private final Socket clientSocket;
+    private final Server server;
+    private final MessageHandler messageHandler;
+    private final AuthenticationSystem authenticationSystem;
     private User user;
     private ObjectInputStream input;
     private ObjectOutputStream output;
@@ -239,7 +239,7 @@ public class ClientHandler implements Runnable {
     private void handleRequestChatBox(AskChatBox askChatBox) {
         int chatBoxID;
         try {
-            chatBoxID = Integer.parseInt(askChatBox.chatBoxID());
+            chatBoxID = askChatBox.chatBoxID();
         } catch (NumberFormatException e) {
             sendNotification("Invalid chatBox ID provided.");
             return;
@@ -279,7 +279,7 @@ public class ClientHandler implements Runnable {
             validatedParticipants.add(user);
         }
 
-        ChatBox chatBox = messageHandler.createChatBox(validatedParticipants);
+        ChatBox chatBox = messageHandler.createChatBox(validatedParticipants, createChat.name());
 
         if (chatBox != null) {
             SendChatBox response = new SendChatBox(chatBox);
@@ -292,8 +292,8 @@ public class ClientHandler implements Runnable {
 	// Send a message to the client
 	private void sendMessage(MessageInterface message) {
 		try {
+			output.reset();
 			output.writeObject(message);
-			output.flush();
 		} catch (IOException e) {
 			System.err.println("Error sending message to client: " + e.getMessage());
 		}

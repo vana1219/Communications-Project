@@ -2,16 +2,15 @@ package Common.ChatBox;
 
 import Common.User.User;
 import Common.Message.Message;
-import java.util.HashSet;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Comparator;
+
+import java.io.Serial;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatBox implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     // Static atomic integer for generating unique chatBoxIDs
@@ -21,13 +20,15 @@ public class ChatBox implements Serializable {
     private int chatBoxID;
     private final String name;
     private HashSet<User> participants;
-    private SortedSet<Message> messages;
+    private final SortedSet<Message> messages;
     private boolean isHidden;
+    LocalDateTime creationTime;
 
     // Serializable Comparator
     private static final Comparator<Message> MESSAGE_TIMESTAMP_COMPARATOR = new SerializableComparator();
 
     private static class SerializableComparator implements Comparator<Message>, Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -43,6 +44,7 @@ public class ChatBox implements Serializable {
         this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
         this.isHidden = false;
         this.name = "ChatBox " + this.chatBoxID;
+        this.creationTime = LocalDateTime.now();
     }
 
     // Constructor with custom name
@@ -52,6 +54,24 @@ public class ChatBox implements Serializable {
         this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
         this.isHidden = false;
         this.name = name;
+        this.creationTime = LocalDateTime.now();
+    }
+
+    public ChatBox(Collection<User> participants) {
+        this.chatBoxID = chatBoxIdGenerator.incrementAndGet();
+        this.participants = new HashSet<>(participants);
+        this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
+        this.isHidden = false;
+        this.name =  "ChatBox " + this.chatBoxID;
+        this.creationTime = LocalDateTime.now();
+    }
+    public ChatBox(Collection<User> participants, String name){
+        this.chatBoxID = chatBoxIdGenerator.incrementAndGet();
+        this.participants = new HashSet<>(participants);
+        this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
+        this.isHidden = false;
+        this.name = name;
+        this.creationTime = LocalDateTime.now();
     }
 
     // **New Constructor with participants**
@@ -127,6 +147,13 @@ public class ChatBox implements Serializable {
         return participants.remove(user); // Removes the user if present in the set
     }
 
+    public LocalDateTime lastUpdated() {
+        if(!messages.isEmpty()) {
+            return messages.last().getTimestamp();
+        }
+        return creationTime;
+    }
+
     // Hides the ChatBox from users
     // INPUT: none
     // OUTPUT: none
@@ -135,6 +162,7 @@ public class ChatBox implements Serializable {
     }
 
     // **Removed static createChatBox method**
+
 
     // Returns a copy of the chatbox with no messages (for data safety)
     // INPUT: none
@@ -147,6 +175,7 @@ public class ChatBox implements Serializable {
         // Do not copy messages
         return empty;
     }
+
 
     // Implement equals and hashCode based on chatBoxID
     @Override

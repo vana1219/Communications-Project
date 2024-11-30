@@ -1,9 +1,11 @@
 package Common.User;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class User implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private static final AtomicInteger userIdGenerator = new AtomicInteger(0);
@@ -59,5 +61,18 @@ public class User implements Serializable {
     public void setBanned(boolean isBanned) {
         this.isBanned = isBanned;
     }
+
+    @Override
+    public boolean equals(Object user) {
+        return user instanceof User && userID == ((User) user).userID;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(userID);
+    }
+
+
+
 }
 
