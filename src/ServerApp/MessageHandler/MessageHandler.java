@@ -80,7 +80,7 @@ public class MessageHandler {
     public boolean sendMessage(int chatBoxID, Message message) {
         ChatBox chatBox = chatBoxes.get(chatBoxID);
         if (chatBox != null) {
-            chatBox.addMessage(message);
+            chatBox.addMessage(new Message(message));
             storeChatBox(chatBox); // Store updated chatbox in persistent storage
             updateParticipants(chatBoxID); // Update all participants with the new chatbox
             return true;
