@@ -45,6 +45,7 @@ public class MessageHandler {
     // *Creates a new chatbox with specified participants*
     // INPUT: participants (List<User>)
     // OUTPUT: ChatBox object
+
     public ChatBox createChatBox(List<User> participants, String name) {
         ChatBox chatBox = new ChatBox(participants, name);
         chatBoxes.put(chatBox.getChatBoxID(), chatBox);
@@ -52,6 +53,7 @@ public class MessageHandler {
         return chatBox;
     }
 
+    // The rest of the methods remain unchanged...
     // *Retrieves a chatbox by ID*
     // INPUT: chatBoxID (int)
     // OUTPUT: ChatBox object or null if not found
@@ -239,3 +241,4 @@ public class MessageHandler {
         return -1;
     }
 }
+

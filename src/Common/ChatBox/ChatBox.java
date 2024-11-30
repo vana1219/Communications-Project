@@ -37,8 +37,7 @@ public class ChatBox implements Serializable {
         }
     }
 
-    // Constructor
-    // Initializes a ChatBox with a unique ID and optional name
+    // Default Constructor
     public ChatBox() {
         this.chatBoxID = chatBoxIdGenerator.incrementAndGet();
         this.participants = new HashSet<>();
@@ -48,6 +47,7 @@ public class ChatBox implements Serializable {
         this.creationTime = LocalDateTime.now();
     }
 
+    // Constructor with custom name
     public ChatBox(String name) {
         this.chatBoxID = chatBoxIdGenerator.incrementAndGet();
         this.participants = new HashSet<>();
@@ -72,6 +72,16 @@ public class ChatBox implements Serializable {
         this.isHidden = false;
         this.name = name;
         this.creationTime = LocalDateTime.now();
+    }
+
+    // **New Constructor with participants**
+    // Initializes a ChatBox with a unique ID, optional name, and participants
+    public ChatBox(List<User> participantsList) {
+        this.chatBoxID = chatBoxIdGenerator.incrementAndGet();
+        this.participants = new HashSet<>(participantsList);
+        this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
+        this.isHidden = false;
+        this.name = "ChatBox " + this.chatBoxID;
     }
 
     // Getters
@@ -151,6 +161,8 @@ public class ChatBox implements Serializable {
         this.isHidden = true;
     }
 
+    // **Removed static createChatBox method**
+
 
     // Returns a copy of the chatbox with no messages (for data safety)
     // INPUT: none
@@ -184,3 +196,4 @@ public class ChatBox implements Serializable {
         return name + " (ID: " + chatBoxID + ")";
     }
 }
+
