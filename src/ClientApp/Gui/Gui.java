@@ -426,9 +426,11 @@ public class Gui {
     	private static JButton createButton;
     	private static JButton addParticipant;
     	private static JButton removeParticipant;
-    	private static JList users;
-    	private static JList participants;
+    	private static JList<User> users;
+    	private static JList<User> participants;
     	private static JLabel prompt;
+    	private static DefaultListModel<User> userModel;
+    	private static DefaultListModel<User> participantModel;
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
@@ -490,10 +492,8 @@ public class Gui {
     		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
     		
-    		users = new JList();
-    		users.setPreferredSize( new Dimension (200,100));
-    		participants = new JList();
-    		participants.setPreferredSize( new Dimension (200,100));
+    		
+    		
     		
     		pane.add(prompt, BorderLayout.NORTH); // add prompt
     		pane.add(users, BorderLayout.CENTER); // add user list
@@ -530,21 +530,22 @@ public class Gui {
             
         }
     	
+    	public void setUpUserList()
+    	{
+    		userModel = new DefaultListModel<User>();
+    		users = new JList<User>(userModel);
+    		
+    	}
+    	
+    	public void setUpParticipantList()
+    	{
+    		participantModel = new DefaultListModel<User>();
+    		participants = new JList<User>(participantModel);
+    		
+    	}
+    	
     	
     }
     
-    //public void add
     
-    
-    /*
-     public void addChatBox(ChatBox chatBox) {
-        if(!treeListModel.isEmpty()) {
-            treeListModel.remove(chatBox);
-        }
-        treeListModel.add(chatBox);
-    }
-    public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
-        treeListModel.addAll(chatBoxes);
-    }
-    */
 }
