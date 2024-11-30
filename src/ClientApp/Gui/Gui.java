@@ -18,6 +18,7 @@ import Common.ChatBox.ChatBox;
 import Common.Message.Message;
 import Common.User.User;
 
+
 public class Gui {
     volatile boolean loggedIn = false;
     private final Client client;
@@ -413,8 +414,10 @@ public class Gui {
         }
     }
     
-    private static class CreateChatBox
+    public class CreateChatBoxDialog extends JDialog implements ActionListener
     {
+    	private static CreateChatBoxDialog dialog; 
+    	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
     	public static void addToContentPane(Container pane)
@@ -422,21 +425,46 @@ public class Gui {
     		
     		//BoxLayout elements
     		
+    		JPanel comboPanel = setupBoxLayout();
+    		
+    		
+    		//BorderLayout elements
+    		
+    		setupLayout(pane, comboPanel);
+    		
+    		
+    		
+    	}
+    	
+    	//Precondition: None
+    	//Post: sets up the box layout portion of the content pane
+    	private static JPanel setupBoxLayout()
+    	{
     		JPanel comboPanel = new JPanel();
     		comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
     		
     		JTextField chBoxTxt = new JTextField();
     		chBoxTxt.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		
+    		JLabel chBoxName = new JLabel("Name Inserted Here");
+    		
+    		
     		JButton createButton = new JButton ("Create ChatBox");
     		createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
     		
+    		
+    		
     		comboPanel.add(chBoxTxt);
+    		comboPanel.add(chBoxName);
     		comboPanel.add(createButton);
     		
-    		
-    		
-    		//BorderLayout elements
-    		
+    		return comboPanel;
+    	}
+    	
+    	//Precondition: pane must be the content pane of the JDialog
+    	//Postcondition: finished up on BorderLayout and brings it all together
+    	private static void setupLayout(Container pane, JPanel comboPanel)
+    	{
     		JLabel prompt = new JLabel("Users are listed on the left, Participants on the right\n"
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
     		
@@ -451,15 +479,34 @@ public class Gui {
     		
     		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
     		
-    		
-    		
-    		
-    		
     	}
     	
     	
     	
-    	
+    	public void actionPerformed(ActionEvent e) {
+    		
+    		/*
+    		 * How to detect source of event
+    		 * 
+    		 * if (evt.getSource().equals(textField))
+    			{
+    				System.out.println("text field used");
+    			}
+    		
+    		*/
+            if ("Create ChatBox".equals(e.getActionCommand())) {
+            	
+            	//create chatbox request stuff
+            	
+            	
+            	
+            	//Close dialog
+            	
+            	dialog.setVisible(false);
+            	
+            }
+            
+        }
     	
     	
     }
