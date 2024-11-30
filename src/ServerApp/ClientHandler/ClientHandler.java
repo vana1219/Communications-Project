@@ -239,7 +239,7 @@ public class ClientHandler implements Runnable {
     private void handleRequestChatBox(AskChatBox askChatBox) {
         int chatBoxID;
         try {
-            chatBoxID = Integer.parseInt(askChatBox.chatBoxID());
+            chatBoxID = askChatBox.chatBoxID();
         } catch (NumberFormatException e) {
             sendNotification("Invalid chatBox ID provided.");
             return;
