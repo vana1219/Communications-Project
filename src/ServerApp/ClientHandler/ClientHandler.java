@@ -279,7 +279,7 @@ public class ClientHandler implements Runnable {
             validatedParticipants.add(user);
         }
 
-        ChatBox chatBox = messageHandler.createChatBox(validatedParticipants);
+        ChatBox chatBox = messageHandler.createChatBox(validatedParticipants, createChat.name());
 
         if (chatBox != null) {
             SendChatBox response = new SendChatBox(chatBox);
