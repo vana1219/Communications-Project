@@ -45,8 +45,9 @@ public class MessageHandler {
     // *Creates a new chatbox with specified participants*
     // INPUT: participants (List<User>)
     // OUTPUT: ChatBox object
-    public ChatBox createChatBox(List<User> participants) {
-        ChatBox chatBox = new ChatBox(participants); // Use the new constructor
+
+    public ChatBox createChatBox(List<User> participants, String name) {
+        ChatBox chatBox = new ChatBox(participants, name);
         chatBoxes.put(chatBox.getChatBoxID(), chatBox);
         storeChatBox(chatBox);
         return chatBox;
@@ -81,7 +82,7 @@ public class MessageHandler {
     public boolean sendMessage(int chatBoxID, Message message) {
         ChatBox chatBox = chatBoxes.get(chatBoxID);
         if (chatBox != null) {
-            chatBox.addMessage(message);
+            chatBox.addMessage(new Message(message));
             storeChatBox(chatBox); // Store updated chatbox in persistent storage
             updateParticipants(chatBoxID); // Update all participants with the new chatbox
             return true;

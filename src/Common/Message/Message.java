@@ -1,15 +1,17 @@
 package Common.Message;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class Message implements Serializable {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 	// Attributes
 	private static int count = 0;
-    private int messageID;
-    private int senderID;
-    private String content;
+    private final int messageID;
+    private final int senderID;
+    private final String content;
     private final LocalDateTime timestamp; // immutable once set
     private boolean hidden;
 
@@ -20,6 +22,14 @@ public class Message implements Serializable {
         this.content = content;
         this.timestamp = LocalDateTime.now(); // this creates a timestamp during creation of message that can NOT be changed 
         this.hidden = false;
+    }
+
+    public Message(Message message) {
+        this.messageID = ++count;
+        this.senderID = message.senderID;
+        this.content = message.content;
+        this.timestamp = message.timestamp; // this creates a timestamp during creation of message that can NOT be changed
+        this.hidden = message.hidden;
     }
 
     // Getters and Setters

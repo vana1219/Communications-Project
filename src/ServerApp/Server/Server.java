@@ -101,7 +101,7 @@ public class Server {
 
             if (bob != null && sally != null) {
                 List<User> participants = Arrays.asList(bob, sally);
-                ChatBox chatBox = messageHandler.createChatBox(participants);
+                ChatBox chatBox = messageHandler.createChatBox(participants, "Test Box");
                 System.out.println("Created chatbox between Bob Admin and Sally User with ID: " + chatBox.getChatBoxID());
             } else {
                 System.out.println("Error: Could not find Bob or Sally to create chatbox.");
