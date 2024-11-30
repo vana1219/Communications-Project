@@ -9,7 +9,6 @@ import java.io.Serializable;
 
 public record CreateChat(List<User> participants, String name) implements MessageInterface,Serializable {
     private static final MessageType type = MessageType.CREATE_CHATBOX;
-
     public MessageType getType() {
         return type;
     }

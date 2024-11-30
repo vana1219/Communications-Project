@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
+import Common.Messages.AskChatBox;
 import Common.Messages.Login;
 import Common.Messages.SendMessage;
 import Common.ChatBox.ChatBox;
@@ -17,7 +18,6 @@ import Common.Message.Message;
 import Common.User.User;
 
 public class Gui {
-    volatile boolean loggedIn = false;
     private final Client client;
     private final JFrame frame;
     private final LoginWindow loginWindow;
@@ -26,11 +26,17 @@ public class Gui {
     private final TreeListModel<ChatBox> treeListModel;
   
     public Gui(Client client) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         this.client = client;
         frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);// Center the window
-        treeListModel = new TreeListModel<>(Comparator.comparing(ChatBox::lastUpdated).thenComparing(ChatBox::getChatBoxID));
+        treeListModel = new TreeListModel<>(Comparator.comparing(ChatBox::lastUpdated)
+                                                      .thenComparing(ChatBox::getChatBoxID));
 
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
@@ -43,33 +49,40 @@ public class Gui {
     }
 
     public void showMain() {
-        frame.getContentPane().add(mainWindow.panel);
+        SwingUtilities.invokeLater(() -> {
+            frame.getContentPane().add(mainWindow.panel);
 
-        if(!treeListModel.isEmpty()) {
-            mainWindow.chatBox = treeListModel.getElementAt(0);
-        }
-        frame.setLocationRelativeTo(null);
-        frame.setSize(new Dimension(1000, 600));
-        show();
+            if (!treeListModel.isEmpty()) {
+                mainWindow.chatBox = treeListModel.getElementAt(0);
+            }
+            frame.setLocationRelativeTo(null);
+            frame.setSize(new Dimension(1000, 600));
+            show();
+        });
+
     }
 
     public void addChatBox(ChatBox chatBox) {
         if(mainWindow.chatBox==null) {mainWindow.chatBox = chatBox;}
-        if(!treeListModel.isEmpty()) {
-            treeListModel.remove(chatBox);
-        }
-        treeListModel.add(chatBox);
+        SwingUtilities.invokeLater(() ->
+                                   {
+                                       if (treeListModel.contains(chatBox)) {
+                                           treeListModel.add(chatBox);
+                                       } else {treeListModel.add(chatBox);}
+                                   });
     }
     public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
-        treeListModel.addAll(chatBoxes);
-        mainWindow.chatBox = treeListModel.getElementAt(0);
+        SwingUtilities.invokeLater(() -> {
+            treeListModel.addAll(chatBoxes);
+            mainWindow.chatBox = treeListModel.getElementAt(0);
+        });
     }
 
     public boolean hasChatBoxes(){
         return !treeListModel.isEmpty();
     }
     public void clearMessages(){
-        mainWindow.chatModel.clear();
+        SwingUtilities.invokeLater(mainWindow.chatModel::clear);
     }
 
     // Send a message to the server.
@@ -92,9 +105,11 @@ public class Gui {
         }else{
             username = user.getUsername();
         }
-        mainWindow.chatModel.addElement("<html><b>"+username+": </b>" +
-                         message.toString().replace("\n", "<br><plaintext>     </plaintext>") +
-                         "<br></html>");
+        SwingUtilities.invokeLater(() -> {
+            mainWindow.chatModel.addElement("<html><b>" + username + ": </b>" +
+                                            message.toString().replace("\n", "<br><plaintext>     </plaintext>") +
+                                            "<br></html>");
+        });
     }
 
     public ChatBox getChatBox() {
@@ -206,6 +221,7 @@ public class Gui {
         private final JScrollPane inputScrollPane;
         private final JScrollPane chatBoxListScrollPane;
         private final DefaultListModel<String> chatModel;
+        private ChatBox lastSelectedChatBox;
         private ChatBox chatBox = null;
         private final JPanel panel;
 
@@ -214,6 +230,9 @@ public class Gui {
             // Create the chat area (used to display messages)
             chatModel = new DefaultListModel<>();
             chatList = new JList<>(chatModel);
+            chatList.setSelectionModel(new DefaultListSelectionModel());
+
+
 
             chatList.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
 //        chatArea.setEditable(false);  // Messages should not be editable
@@ -237,13 +256,37 @@ public class Gui {
             messagePane.add(sendButton);
             frame.setResizable(false);
 
+
             // Create the List to display and select chatboxes.
             chatBoxList = new JList<>(treeListModel);
             chatBoxList.setPreferredSize(new Dimension(200, chatBoxList.getPreferredSize().height));
             chatBoxListScrollPane = new JScrollPane(chatBoxList);
+            chatBoxList.setSelectionModel(new DefaultListSelectionModel());
+            chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+
+
 
             // Action listener for the send button
             sendButton.addActionListener(e -> sendMessage());
+
+            // Action listener for the ChatBox list
+            chatBoxList.addListSelectionListener(e->{
+                var listener = chatBoxList.getListSelectionListeners()[0];
+                chatBoxList.removeListSelectionListener(listener);
+                ChatBox selectedChatBox = chatBoxList.getSelectedValue();
+                if (selectedChatBox != null && !e.getValueIsAdjusting()) {
+                System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
+                    selectChatBox(selectedChatBox);
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException ex) {
+//                        throw new RuntimeException(ex);
+//                    }
+                    chatBoxList.setSelectedValue(selectedChatBox, true);
+                    chatBoxList.addListSelectionListener(listener);
+                }
+            });
 
             // Create the layout and add components
             panel = new JPanel();
@@ -256,8 +299,11 @@ public class Gui {
         }
 
         public void selectChatBox(ChatBox chatBox) {
-            this.chatBox = chatBox;
-            addAllMessages(this.chatBox);
+            if(this.chatBox != chatBox) {
+                this.chatBox = chatBox;
+                clearMessages();
+                client.queueMessage(new AskChatBox(chatBox.getChatBoxID()));
+            }
         }
 
         public void sendMessage() {
@@ -361,15 +407,19 @@ public class Gui {
     }
 
 
-    private class TreeListModel<E> extends AbstractListModel<E> {
+    private static class TreeListModel<E> extends AbstractListModel<E> {
         private final TreeSet<E> treeSet;
 
         public TreeListModel(Comparator<E> comparator) {
-            treeSet = new TreeSet<>(comparator);
+            treeSet = new TreeSet<>(comparator.reversed());
         }
 
+        public void addQuietly(E item){
+            treeSet.removeIf(item::equals);
+            treeSet.add(item);
+        }
         public void add(E item) {
-            remove(item);
+            treeSet.removeIf(item::equals);
             treeSet.add(item);
             int index = treeSet.stream().toList().indexOf(item);
             fireIntervalAdded(this, index, index);
@@ -380,7 +430,7 @@ public class Gui {
         }
 
         public boolean contains(E item) {
-            return treeSet.contains(item);
+            return treeSet.stream().toList().contains(item);
         }
 
         public void addAll(Collection<? extends E> items) {
@@ -391,7 +441,6 @@ public class Gui {
 
         public void remove(E item) {
             int index = treeSet.stream().toList().indexOf(item);
-
             if(treeSet.removeIf(item::equals)) {
                 super.fireIntervalRemoved(this, index, index);
             }

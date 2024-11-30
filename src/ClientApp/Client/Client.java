@@ -144,7 +144,7 @@ public class Client {
                 outObj.writeObject(message);
 
             } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+//                throw new RuntimeException(e);
             }
         }
     }
@@ -200,7 +200,7 @@ public class Client {
                     }
                 }
             }
-
+            Thread.sleep(500);
             client.queueMessage(new AskChatBox(client.gui.getChatBox().getChatBoxID()));
             SendChatBox response = (SendChatBox) client.inboundRequestQueue.take();
             client.handleReturnChatBox(response);

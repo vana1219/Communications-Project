@@ -101,7 +101,11 @@ public class Server {
 
             if (bob != null && sally != null) {
                 List<User> participants = Arrays.asList(bob, sally);
-                ChatBox chatBox = messageHandler.createChatBox(participants, "Test Box");
+                ChatBox chatBox = messageHandler.createChatBox(participants, "Test Box 1");
+                messageHandler.createChatBox(participants, "Test Box 2");
+                messageHandler.createChatBox(participants, "Test Box 3");
+
+
                 System.out.println("Created chatbox between Bob Admin and Sally User with ID: " + chatBox.getChatBoxID());
             } else {
                 System.out.println("Error: Could not find Bob or Sally to create chatbox.");
@@ -122,7 +126,7 @@ public class Server {
             String serverIP = getExternalIPAddress();
             System.out.println("Server started on IP: " + serverIP + ", port: " + port);
 
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket client = serverSocket.accept();
                     System.out.println("New client connected: " + client.getInetAddress().getHostAddress());
