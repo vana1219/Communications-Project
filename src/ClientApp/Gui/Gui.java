@@ -412,4 +412,55 @@ public class Gui {
             return treeSet.stream().toList().get(index);
         }
     }
+    
+    private static class CreateChatBox
+    {
+    	//Precondition: pane must be the content pane of the JDialog
+    	//Postcondition: add all contents to content pane in proper layout
+    	public static void addToContentPane(Container pane)
+    	{
+    		
+    		//BoxLayout elements
+    		
+    		JPanel comboPanel = new JPanel();
+    		comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
+    		
+    		JTextField chBoxTxt = new JTextField();
+    		chBoxTxt.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		JButton createButton = new JButton ("Create ChatBox");
+    		createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		
+    		comboPanel.add(chBoxTxt);
+    		comboPanel.add(createButton);
+    		
+    		
+    		
+    		//BorderLayout elements
+    		
+    		JLabel prompt = new JLabel("Users are listed on the left, Participants on the right\n"
+    				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
+    		
+    		JList users = new JList();
+    		users.setPreferredSize( new Dimension (200,100));
+    		JList participants = new JList();
+    		participants.setPreferredSize( new Dimension (200,100));
+    		
+    		pane.add(prompt, BorderLayout.NORTH); // add prompt
+    		pane.add(users, BorderLayout.CENTER); // add user list
+    		pane.add(participants, BorderLayout.EAST); //add participants list
+    		
+    		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+    		
+    		
+    		
+    		
+    		
+    	}
+    	
+    	
+    	
+    	
+    	
+    	
+    }
 }
