@@ -2,8 +2,6 @@ package ClientApp.Gui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -32,7 +30,7 @@ public class Gui {
         frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);// Center the window
-        treeListModel = new TreeListModel<>(Comparator.comparingInt(ChatBox::getChatBoxID));
+        treeListModel = new TreeListModel<>(Comparator.comparing(ChatBox::lastUpdated).thenComparing(ChatBox::getChatBoxID));
 
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
@@ -49,14 +47,14 @@ public class Gui {
 
         if(!treeListModel.isEmpty()) {
             mainWindow.chatBox = treeListModel.getElementAt(0);
-            addAllMessages(mainWindow.chatBox);
         }
         frame.setLocationRelativeTo(null);
-        frame.setSize(new Dimension(1000, 600));;
+        frame.setSize(new Dimension(1000, 600));
         show();
     }
 
     public void addChatBox(ChatBox chatBox) {
+        if(mainWindow.chatBox==null) {mainWindow.chatBox = chatBox;}
         if(!treeListModel.isEmpty()) {
             treeListModel.remove(chatBox);
         }
@@ -64,6 +62,14 @@ public class Gui {
     }
     public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
         treeListModel.addAll(chatBoxes);
+        mainWindow.chatBox = treeListModel.getElementAt(0);
+    }
+
+    public boolean hasChatBoxes(){
+        return !treeListModel.isEmpty();
+    }
+    public void clearMessages(){
+        mainWindow.chatModel.clear();
     }
 
     // Send a message to the server.
@@ -91,7 +97,19 @@ public class Gui {
                          "<br></html>");
     }
 
+    public ChatBox getChatBox() {
+        return mainWindow.chatBox;
+    }
 
+    public ChatBox getChatBox(int chatBoxID) {
+        return treeListModel
+                .treeSet
+                .stream()
+                .filter(chatBox -> chatBox.getChatBoxID()==chatBoxID)
+                .findFirst()
+                .orElse(null);
+
+    }
 
     public User idToUser(int userId, ChatBox chatBox) {
         for(var i:chatBox.getParticipantsList()){
@@ -106,25 +124,14 @@ public class Gui {
         frame.setVisible(true);
     }
 
-    private void addAllMessages(ChatBox chatBox) {
+    public void addAllMessages(ChatBox chatBox) {
        for(var i:chatBox.getMessages()){
            addMessage(i);
        }
     }
   
   
-//    public static void main(String[] args) {
-//        // Run the GUI on the Event Dispatch Thread for thread-safety
-//        SwingUtilities.invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                Gui gui = null;
-//                gui = new Gui(new Client());
-//
-//                gui.display();
-//            }
-//        });
-//    }
+
 
 
     private static class LoginWindow {
@@ -140,13 +147,13 @@ public class Gui {
             JPanel usernamePanel = new JPanel();
             usernamePanel.setLayout(new FlowLayout());
             usernamePanel.add(new JLabel("Username:"));
-            userNameField = new JTextField();
+            userNameField = new JTextField("bob admin");
             userNameField.setPreferredSize(new Dimension(150, userNameField.getPreferredSize().height));
             usernamePanel.add(userNameField);
             JPanel passwordPanel = new JPanel();
             passwordPanel.setLayout(new FlowLayout());
             passwordPanel.add(new JLabel("Password:"));
-            passwordField = new JPasswordField();
+            passwordField = new JPasswordField("BobPass");
             passwordField.setPreferredSize(new Dimension(150, passwordField.getPreferredSize().height));
             passwordPanel.add(passwordField);
             JButton loginButton = getLoginButton();
@@ -166,14 +173,11 @@ public class Gui {
 
         private JButton getLoginButton() {
             JButton loginButton = new JButton("Login");
-            loginButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    login[0] = new Login(userNameField.getText(), String.valueOf(passwordField.getPassword()));
-                    userNameField.setText("");
-                    passwordField.setText("");
-                    latch.countDown();
-                }
+            loginButton.addActionListener(e -> {
+                login[0] = new Login(userNameField.getText(), String.valueOf(passwordField.getPassword()));
+                userNameField.setText("");
+                passwordField.setText("");
+                latch.countDown();
             });
             return loginButton;
         }
@@ -202,7 +206,7 @@ public class Gui {
         private final JScrollPane inputScrollPane;
         private final JScrollPane chatBoxListScrollPane;
         private final DefaultListModel<String> chatModel;
-        private ChatBox chatBox = new ChatBox();
+        private ChatBox chatBox = null;
         private final JPanel panel;
 
         public MainWindow() {
@@ -210,7 +214,6 @@ public class Gui {
             // Create the chat area (used to display messages)
             chatModel = new DefaultListModel<>();
             chatList = new JList<>(chatModel);
-            ChatBox chatBox = new ChatBox();
 
             chatList.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
 //        chatArea.setEditable(false);  // Messages should not be editable
@@ -240,12 +243,7 @@ public class Gui {
             chatBoxListScrollPane = new JScrollPane(chatBoxList);
 
             // Action listener for the send button
-            sendButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    sendMessage();
-                }
-            });
+            sendButton.addActionListener(e -> sendMessage());
 
             // Create the layout and add components
             panel = new JPanel();
@@ -263,7 +261,7 @@ public class Gui {
         }
 
         public void sendMessage() {
-            String message = messageField.getText();
+            String message = messageField.getText().strip().trim().replaceAll("(?m)^\\s+$","");
             if (!message.isEmpty()) {
                 client.queueMessage(new SendMessage(new Message(client.getUserData()
                                                                       .getUserID(), message), chatBox.getChatBoxID()));
@@ -331,21 +329,18 @@ public class Gui {
 
 		private JButton getConnectButton() {
             JButton connectButton = new JButton("Connect");
-            connectButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String serverIP = serverIPField.getText();
-                    String serverPort = serverPortField.getText();
-                    int port;
-                    try {
-                        port = Integer.parseInt(serverPort);
-                        connectionInfo[0] = new ConnectionInfo(serverIP, port);
-                        serverIPField.setText("");
-                        serverPortField.setText("");
-                        latch.countDown();
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(frame, "Invalid port number.", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
+            connectButton.addActionListener(e -> {
+                String serverIP = serverIPField.getText();
+                String serverPort = serverPortField.getText();
+                int port;
+                try {
+                    port = Integer.parseInt(serverPort);
+                    connectionInfo[0] = new ConnectionInfo(serverIP, port);
+                    serverIPField.setText("");
+                    serverPortField.setText("");
+                    latch.countDown();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "Invalid port number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             });
             return connectButton;
@@ -365,6 +360,7 @@ public class Gui {
         }
     }
 
+
     private class TreeListModel<E> extends AbstractListModel<E> {
         private final TreeSet<E> treeSet;
 
@@ -373,10 +369,12 @@ public class Gui {
         }
 
         public void add(E item) {
+            remove(item);
             treeSet.add(item);
             int index = treeSet.stream().toList().indexOf(item);
             fireIntervalAdded(this, index, index);
         }
+
         public boolean isEmpty() {
             return treeSet.isEmpty();
         }
@@ -386,19 +384,24 @@ public class Gui {
         }
 
         public void addAll(Collection<? extends E> items) {
+            if(items == null || items.isEmpty()) {return;}
             treeSet.addAll(items);
-            fireIntervalAdded(this, 0, -1);
+            fireIntervalAdded(this, 0, treeSet.size()-1);
         }
 
         public void remove(E item) {
             int index = treeSet.stream().toList().indexOf(item);
-            treeSet.remove(item);
-            super.fireIntervalRemoved(this, index, index);
+
+            if(treeSet.removeIf(item::equals)) {
+                super.fireIntervalRemoved(this, index, index);
+            }
         }
 
         public void clear() {
+            if(treeSet.isEmpty()) {return;}
+            int end = treeSet.size()-1;
             treeSet.clear();
-            fireIntervalRemoved(this, 0, -1);
+            fireIntervalRemoved(this, 0, end);
         }
 
 
