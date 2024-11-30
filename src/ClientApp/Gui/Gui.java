@@ -27,6 +27,7 @@ public class Gui {
     private final MainWindow mainWindow;
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
+    private final TreeListModel<User> userTreeListModel;
   
     public Gui(Client client) {
         this.client = client;
@@ -34,7 +35,8 @@ public class Gui {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);// Center the window
         treeListModel = new TreeListModel<>(Comparator.comparingInt(ChatBox::getChatBoxID));
-
+        userTreeListModel = new TreeListModel<>(Comparator.comparingInt( User::getUserID )  );
+        
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
         connectionWindow = new ConnectionWindow();// Initialize connection window
@@ -530,4 +532,19 @@ public class Gui {
     	
     	
     }
+    
+    //public void add
+    
+    
+    /*
+     public void addChatBox(ChatBox chatBox) {
+        if(!treeListModel.isEmpty()) {
+            treeListModel.remove(chatBox);
+        }
+        treeListModel.add(chatBox);
+    }
+    public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
+        treeListModel.addAll(chatBoxes);
+    }
+    */
 }
