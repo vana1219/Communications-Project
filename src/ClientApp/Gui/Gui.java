@@ -1,6 +1,9 @@
 package ClientApp.Gui;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -437,6 +440,7 @@ public class Gui {
     	private static DefaultListModel<User> userModel;
     	private static DefaultListModel<User> participantModel;
     	
+    	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
     	public static void setUpContentPane()
@@ -498,7 +502,8 @@ public class Gui {
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
     		
     		
-    		
+    		setUpUserList();
+    		setUpParticipantList();
     		
     		pane.add(prompt, BorderLayout.NORTH); // add prompt
     		pane.add(users, BorderLayout.CENTER); // add user list
@@ -535,17 +540,48 @@ public class Gui {
             
         }
     	
-    	public void setUpUserList()
+    	public static void setUpUserList()
     	{
     		userModel = new DefaultListModel<User>();
     		users = new JList<User>(userModel);
     		
+    		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    		users.setSelectedIndex(0);
+    		
+    		//Initialize list
+    		
+    		
+    		
     	}
     	
-    	public void setUpParticipantList()
+    	public static void setUpParticipantList()
     	{
     		participantModel = new DefaultListModel<User>();
     		participants = new JList<User>(participantModel);
+    		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    		participants.setSelectedIndex(0);
+    		
+    	}
+    	
+    	public class UserListListener implements ListSelectionListener
+    	{
+    		
+			
+			public void valueChanged(ListSelectionEvent e) {
+				
+				
+			}
+    		
+    	}
+    	
+    	public class ParticipantListListener implements ListSelectionListener
+    	{
+    		
+			
+			public void valueChanged(ListSelectionEvent e) {
+				
+				
+			}
     		
     	}
     	
