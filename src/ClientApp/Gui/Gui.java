@@ -2,6 +2,8 @@ package ClientApp.Gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -25,7 +27,7 @@ public class Gui {
     private final MainWindow mainWindow;
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
-    private final TreeListModel<User> userTreeListModel;
+    
   
     public Gui(Client client) {
         this.client = client;
