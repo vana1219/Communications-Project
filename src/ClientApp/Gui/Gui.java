@@ -628,6 +628,7 @@ public class Gui {
     		
     	}
     	
+    	//handles when user is clicking on the list of participants
     	public static class ParticipantListListener implements ListSelectionListener
     	{
     		
@@ -647,6 +648,65 @@ public class Gui {
 						removeParticipant.setEnabled(true);
 					}
 				}
+			}
+    		
+    	}
+    	
+    	//Handles when user is clicking on the AddParticipants button
+    	public static class AddButtonListener implements ActionListener
+    	{
+
+		
+			public void actionPerformed(ActionEvent e) { //user model transfer
+				
+				//userListIndex - index containing users
+				//userModel - container storing the Users itself
+				//participantModel - container storing the Participants itself
+				//users - JList
+				
+				ArrayList<User> temporary = new ArrayList<User> ();
+				
+				//grab the users from the UI list of users
+				
+				
+				for (int i = 0; i < userListIndex.length; i++)
+				{
+					temporary.add(userModel.get(i));
+					
+				}
+				
+				//add the list to the participants UI list
+				
+				for (int j = 0; j < temporary.size(); j++)
+				{
+					
+					//check if it exists already
+					
+					if ( ! participantModel.contains( temporary.get(j) ) ) //duplicate check
+					{
+						participantModel.addElement( temporary.get(j) );
+					}
+					
+					
+					
+				}
+				
+				
+				
+				
+			}
+			
+    		
+    	}
+    	
+    	//Handles when user is clicking on the RemoveParticipants button
+    	public static class RemoveButtonListener implements ActionListener
+    	{
+
+		
+			public void actionPerformed(ActionEvent e) {
+				
+				
 			}
     		
     	}
