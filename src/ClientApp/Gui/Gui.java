@@ -9,9 +9,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
@@ -20,7 +22,7 @@ import Common.Messages.SendMessage;
 import Common.ChatBox.ChatBox;
 import Common.Message.Message;
 import Common.User.User;
-
+import java.util.List;
 
 public class Gui {
     volatile boolean loggedIn = false;
@@ -439,6 +441,8 @@ public class Gui {
     	private static JLabel prompt;
     	private static DefaultListModel<User> userModel;
     	private static DefaultListModel<User> participantModel;
+    	private static int [] userListIndex;
+    	private static int [] participantListIndex;
     	
     	
     	//Precondition: pane must be the content pane of the JDialog
@@ -502,14 +506,21 @@ public class Gui {
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
     		
     		
-    		setUpUserList();
-    		setUpParticipantList();
+    		if ( ! setUpUserList() )
+    		{
+    			//error need to stop trying to open
+    		}
+    		else
+    		{
+    			setUpParticipantList();
+        		
+        		pane.add(prompt, BorderLayout.NORTH); // add prompt
+        		pane.add(users, BorderLayout.CENTER); // add user list
+        		pane.add(participants, BorderLayout.EAST); //add participants list
+        		
+        		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+    		}
     		
-    		pane.add(prompt, BorderLayout.NORTH); // add prompt
-    		pane.add(users, BorderLayout.CENTER); // add user list
-    		pane.add(participants, BorderLayout.EAST); //add participants list
-    		
-    		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
     		
     	}
     	
@@ -540,17 +551,41 @@ public class Gui {
             
         }
     	
-    	public static void setUpUserList()
+    	
+		@SuppressWarnings("unused")
+		public static boolean setUpUserList() //Needs a way to grab Users
     	{
     		userModel = new DefaultListModel<User>();
+    		
+    		//try to add to userModel, if we cannot or its empty then we must stop trying to open the dialog
+    		
+    		
+    		List <User> userList = null; //grab userlist from server *** MUST DO ****
+    		
+    		if ( userList == null || userList.isEmpty() )
+    		{
+    			return false;
+    		}
+    		else
+    		{
+    			for (int i = 0; i < userList.size(); i++)
+        		{
+        			userModel.addElement(userList.get(i)); //add the user list to the GUI container
+        		}
+    		}
+    		
+    		
+    		
     		users = new JList<User>(userModel);
     		
     		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		users.setSelectedIndex(0);
+    		users.addListSelectionListener(new UserListListener());
+    		users.setVisibleRowCount(10);
     		
     		//Initialize list
     		
-    		
+    		return true;
     		
     	}
     	
@@ -560,27 +595,58 @@ public class Gui {
     		participants = new JList<User>(participantModel);
     		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		participants.setSelectedIndex(0);
+    		participants.addListSelectionListener(new ParticipantListListener());
+    		
     		
     	}
     	
-    	public class UserListListener implements ListSelectionListener
+    	//Handles when user is clicking on the list of users
+    	public static class UserListListener implements ListSelectionListener
     	{
     		
 			
 			public void valueChanged(ListSelectionEvent e) {
 				
-				
+				if (e.getValueIsAdjusting() == false)
+				{
+					//get indexes
+					
+					
+					userListIndex = users.getSelectedIndices(); //array is empty if nothing is selected
+					
+					if (userListIndex.length == 0)
+					{
+						addParticipant.setEnabled(false); //nothing selected, disable button
+					}
+					else
+					{
+						addParticipant.setEnabled(true); // item(s) selected enable array
+					}
+					
+				}
 			}
     		
     	}
     	
-    	public class ParticipantListListener implements ListSelectionListener
+    	public static class ParticipantListListener implements ListSelectionListener
     	{
     		
 			
 			public void valueChanged(ListSelectionEvent e) {
 				
-				
+				if (e.getValueIsAdjusting() == false)
+				{
+					participantListIndex = participants.getSelectedIndices();
+					
+					if (participantListIndex.length == 0) //nothing selected, disable button
+					{
+						removeParticipant.setEnabled(false);
+					}
+					else
+					{
+						removeParticipant.setEnabled(true);
+					}
+				}
 			}
     		
     	}
