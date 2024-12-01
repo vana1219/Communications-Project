@@ -671,7 +671,8 @@ public class Gui {
 				
 				for (int i = 0; i < userListIndex.length; i++)
 				{
-					temporary.add(userModel.get(i));
+					
+					temporary.add(userModel.get(  userListIndex[i] ));
 					
 				}
 				
@@ -702,11 +703,22 @@ public class Gui {
     	//Handles when user is clicking on the RemoveParticipants button
     	public static class RemoveButtonListener implements ActionListener
     	{
-
+    		//participantListIndex - index containing participants
 		
 			public void actionPerformed(ActionEvent e) {
 				
+				// grab list of participants to be removed
+				// participantModel - container storing the Participants itself
 				
+				
+				
+				for (int i = 0; i < participantListIndex.length; i++)
+				{
+					participantModel.remove( participantListIndex[i] ); //remove participants
+				}
+				
+				
+		
 			}
     		
     	}
