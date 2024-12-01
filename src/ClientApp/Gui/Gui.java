@@ -1,7 +1,12 @@
 package ClientApp.Gui;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -16,6 +21,7 @@ import Common.ChatBox.ChatBox;
 import Common.Message.Message;
 import Common.User.User;
 
+
 public class Gui {
     volatile boolean loggedIn = false;
     private final Client client;
@@ -24,12 +30,14 @@ public class Gui {
     private final MainWindow mainWindow;
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
+    
   
     public Gui(Client client) {
         this.client = client;
         frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);// Center the window
+
         treeListModel = new TreeListModel<>(Comparator.comparing(ChatBox::lastUpdated).thenComparing(ChatBox::getChatBoxID));
 
         loginWindow = new LoginWindow();
@@ -415,4 +423,170 @@ public class Gui {
             return treeSet.stream().toList().get(index);
         }
     }
+    
+    public class CreateChatBoxDialog extends JDialog implements ActionListener
+    {
+    	private static CreateChatBoxDialog dialog; 
+    	private static JPanel comboPanel;
+    	private static Container pane; //content pane of dialog
+    	private static JTextField chBoxTxt;
+    	private static JLabel chBoxName;
+    	private static JButton createButton;
+    	private static JButton addParticipant;
+    	private static JButton removeParticipant;
+    	private static JList<User> users;
+    	private static JList<User> participants;
+    	private static JLabel prompt;
+    	private static DefaultListModel<User> userModel;
+    	private static DefaultListModel<User> participantModel;
+    	
+    	
+    	//Precondition: pane must be the content pane of the JDialog
+    	//Postcondition: add all contents to content pane in proper layout
+    	public static void setUpContentPane()
+    	{
+    		
+    		//BoxLayout elements
+    		
+    		comboPanel = setupBoxLayout();
+    		
+    		
+    		//BorderLayout elements
+    		
+    		setupLayout();
+    		
+    		
+    		
+    	}
+    	
+    	//Precondition: None
+    	//Post: sets up the box layout portion of the content pane
+    	private static JPanel setupBoxLayout()
+    	{
+    		comboPanel = new JPanel();
+    		comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
+    		
+    		chBoxTxt = new JTextField(20);
+    		chBoxTxt.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		chBoxTxt.addActionListener(dialog);
+    		
+    		chBoxName = new JLabel("Name Inserted Here");
+    		
+    		
+    		createButton = new JButton ("Create ChatBox");
+    		createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		createButton.addActionListener(dialog);
+    		
+    		addParticipant = new JButton("Add Participant From List");
+    		addParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		addParticipant.addActionListener(dialog);
+    		
+    		removeParticipant = new JButton("Remove Participant From List");
+    		removeParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		removeParticipant.addActionListener(dialog);
+    		
+    		comboPanel.add(chBoxTxt);
+    		comboPanel.add(chBoxName);
+    		comboPanel.add(createButton);
+    		comboPanel.add(addParticipant);
+    		comboPanel.add(removeParticipant);
+    		
+    		return comboPanel;
+    	}
+    	
+    	//Precondition: pane must be the content pane of the JDialog
+    	//Postcondition: finished up on BorderLayout and brings it all together
+    	private static void setupLayout()
+    	{
+    		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
+    				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
+    		
+    		
+    		setUpUserList();
+    		setUpParticipantList();
+    		
+    		pane.add(prompt, BorderLayout.NORTH); // add prompt
+    		pane.add(users, BorderLayout.CENTER); // add user list
+    		pane.add(participants, BorderLayout.EAST); //add participants list
+    		
+    		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+    		
+    	}
+    	
+    	
+    	
+    	public void actionPerformed(ActionEvent e) {
+    		
+    		/*
+    		 * How to detect source of event
+    		 * 
+    		 * if (evt.getSource().equals(textField))
+    			{
+    				System.out.println("text field used");
+    			}
+    		
+    		*/
+            if ("Create ChatBox".equals(e.getActionCommand())) {
+            	
+            	//create chatbox request stuff
+            	
+            	
+            	
+            	//Close dialog
+            	
+            	dialog.setVisible(false);
+            	
+            }
+            
+        }
+    	
+    	public static void setUpUserList()
+    	{
+    		userModel = new DefaultListModel<User>();
+    		users = new JList<User>(userModel);
+    		
+    		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    		users.setSelectedIndex(0);
+    		
+    		//Initialize list
+    		
+    		
+    		
+    	}
+    	
+    	public static void setUpParticipantList()
+    	{
+    		participantModel = new DefaultListModel<User>();
+    		participants = new JList<User>(participantModel);
+    		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    		participants.setSelectedIndex(0);
+    		
+    	}
+    	
+    	public class UserListListener implements ListSelectionListener
+    	{
+    		
+			
+			public void valueChanged(ListSelectionEvent e) {
+				
+				
+			}
+    		
+    	}
+    	
+    	public class ParticipantListListener implements ListSelectionListener
+    	{
+    		
+			
+			public void valueChanged(ListSelectionEvent e) {
+				
+				
+			}
+    		
+    	}
+    	
+    	
+    }
+    
+    
 }
