@@ -426,9 +426,11 @@ public class Gui {
         }
     }
     
-    public class CreateChatBoxDialog extends JDialog implements ActionListener
+    public class CreateChatBoxDialog extends JDialog
     {
-    	private static CreateChatBoxDialog dialog; 
+    	
+    	private static JFrame frame;
+    	
     	private static JPanel comboPanel;
     	private static Container pane; //content pane of dialog
     	private static JTextField chBoxTxt;
@@ -443,6 +445,13 @@ public class Gui {
     	private static DefaultListModel<User> participantModel;
     	private static int [] userListIndex;
     	private static int [] participantListIndex;
+    	private static String chatboxName;
+    	
+    	
+    	public CreateChatBoxDialog( JFrame inFrame )
+    	{
+    		frame = inFrame;
+    	}
     	
     	
     	//Precondition: pane must be the content pane of the JDialog
@@ -472,22 +481,22 @@ public class Gui {
     		
     		chBoxTxt = new JTextField(20);
     		chBoxTxt.setAlignmentX(Component.CENTER_ALIGNMENT);
-    		chBoxTxt.addActionListener(dialog);
+    		chBoxTxt.addActionListener( new TxtBoxListener()  );
     		
     		chBoxName = new JLabel("Name Inserted Here");
     		
     		
     		createButton = new JButton ("Create ChatBox");
     		createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-    		createButton.addActionListener(dialog);
+    		createButton.addActionListener(  new CreateButtonListener()  );
     		
     		addParticipant = new JButton("Add Participant From List");
     		addParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
-    		addParticipant.addActionListener(dialog);
+    		addParticipant.addActionListener( new AddButtonListener()  );
     		
     		removeParticipant = new JButton("Remove Participant From List");
     		removeParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
-    		removeParticipant.addActionListener(dialog);
+    		removeParticipant.addActionListener( new RemoveButtonListener() );
     		
     		comboPanel.add(chBoxTxt);
     		comboPanel.add(chBoxName);
@@ -526,33 +535,10 @@ public class Gui {
     	
     	
     	
-    	public void actionPerformed(ActionEvent e) {
-    		
-    		/*
-    		 * How to detect source of event
-    		 * 
-    		 * if (evt.getSource().equals(textField))
-    			{
-    				System.out.println("text field used");
-    			}
-    		
-    		*/
-            if ("Create ChatBox".equals(e.getActionCommand())) {
-            	
-            	//create chatbox request stuff
-            	
-            	
-            	
-            	//Close dialog
-            	
-            	dialog.setVisible(false);
-            	
-            }
-            
-        }
     	
     	
-		@SuppressWarnings("unused")
+    	
+		
 		public static boolean setUpUserList() //Needs a way to grab Users
     	{
     		userModel = new DefaultListModel<User>();
@@ -560,7 +546,7 @@ public class Gui {
     		//try to add to userModel, if we cannot or its empty then we must stop trying to open the dialog
     		
     		
-    		List <User> userList = null; //grab userlist from server *** MUST DO ****
+    		ArrayList <User> userList = new ArrayList<User>(); //grab userlist from server *** MUST DO ****
     		
     		if ( userList == null || userList.isEmpty() )
     		{
@@ -722,6 +708,46 @@ public class Gui {
 			}
     		
     	}
+    	
+    	//ChatBox Name Listener
+    	//Upon hitting "enter" when typing in the textfield, the label will update with chatbox name
+    	public static class TxtBoxListener implements ActionListener
+    	{
+    		
+    		/*
+    			private static JTextField chBoxTxt;
+    			private static JLabel chBoxName;
+    			private static String chatboxName;
+    		 */
+    		
+			public void actionPerformed(ActionEvent e) {
+				
+				chatboxName = chBoxTxt.getText(); //set chatbox name
+				chBoxName.setText(chatboxName); //set the label
+			}
+    		
+    	}
+    	
+    	
+    	//Create button
+    	public static class CreateButtonListener implements ActionListener
+    	{
+    		/*
+        	 * private static DefaultListModel<User> participantModel;
+        	 * private static String chatboxName;
+        	*/
+			
+			public void actionPerformed(ActionEvent e) {
+				
+				//grab the info for participants list and chatbox name
+				
+				
+				//close the dialog
+			}
+    		
+    	}
+    	
+    	
     	
     	
     }
