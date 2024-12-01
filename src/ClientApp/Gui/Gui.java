@@ -429,7 +429,13 @@ public class Gui {
     public class CreateChatBoxDialog extends JDialog
     {
     	
-    	private static JFrame frame;
+    	/*
+    	 * TO DO:
+    	 * 
+    	 * 
+    	 */
+    	
+ 
     	
     	private static JPanel comboPanel;
     	private static Container pane; //content pane of dialog
@@ -448,9 +454,39 @@ public class Gui {
     	private static String chatboxName;
     	
     	
+    	private static CreateChatBoxDialog dialog;
+    	
     	public CreateChatBoxDialog( JFrame inFrame )
     	{
-    		frame = inFrame;
+    		super (inFrame, "createChatBox", true);
+    		
+    		dialog =  this;
+    		
+    		
+    		//Call Initialization
+    		
+    		if (  Setup()  )
+    		{
+    			
+    		}
+    		else
+    		{
+    			
+    		}
+    		
+    		//ready to display
+    		
+    		this.pack();
+    		this.setLocationRelativeTo(null);
+    		this.setVisible(true);
+    		
+    	}
+    	
+    	public static boolean Setup()
+    	{
+    		
+    		return true;
+    		
     	}
     	
     	
@@ -729,7 +765,7 @@ public class Gui {
     	}
     	
     	
-    	//Create button
+    	//Create ChatBox button
     	public static class CreateButtonListener implements ActionListener
     	{
     		/*
@@ -741,8 +777,24 @@ public class Gui {
 				
 				//grab the info for participants list and chatbox name
 				
+				ArrayList<User> temp = new ArrayList<User>();
+				
+				for (int i = 0; i < participantModel.getSize(); i++)
+				{
+					temp.add( participantModel.get(i) );
+				}
+				
+				//Make request to send chatbox
+				
+				
+				
+				//.queueMessage(new CreateChat(participants, name))
+				
 				
 				//close the dialog
+				
+				dialog.setVisible(false);
+				
 			}
     		
     	}
