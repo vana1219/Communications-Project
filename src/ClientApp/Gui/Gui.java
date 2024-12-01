@@ -760,6 +760,7 @@ public class Gui {
 				
 				chatboxName = chBoxTxt.getText(); //set chatbox name
 				chBoxName.setText(chatboxName); //set the label
+				chBoxTxt.selectAll(); //highlights the text field
 			}
     		
     	}
