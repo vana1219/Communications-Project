@@ -171,8 +171,9 @@ public class ClientHandler implements Runnable {
 	// Handle Logout
 	private void handleLogout() {
 		authenticationSystem.logout(user.getUserID());
-		sendNotification("Logout successful.");
-		closeConnection();
+		sendMessage(new LogoutResponse());
+
+        closeConnection();
 	}
 
 	   // Handle BanUser
