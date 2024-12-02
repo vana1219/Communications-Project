@@ -944,14 +944,12 @@ public class Gui {
 
         }
 
-        // Handles when user clicks on Ban User button
+     // Handles when user clicks on Ban User button
         public class BanUserButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
                     client.queueMessage(new BanUser(selectedUser.getUserID()));
-                    JOptionPane.showMessageDialog(pane, "User " + selectedUser.getUsername() + " has been banned.",
-                            "Success", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
@@ -962,8 +960,6 @@ public class Gui {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
                     client.queueMessage(new UnbanUser(selectedUser.getUserID()));
-                    JOptionPane.showMessageDialog(pane, "User " + selectedUser.getUsername() + " has been unbanned.",
-                            "Success", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
