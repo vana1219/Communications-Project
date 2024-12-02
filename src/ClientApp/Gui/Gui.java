@@ -2,7 +2,6 @@ package ClientApp.Gui;
 
 import javax.swing.*;
 import java.util.List;
-import javax.swing.JMenuItem;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -29,10 +28,8 @@ public class Gui {
     private final ConnectionWindow connectionWindow;
     private final TreeListModel<ChatBox> treeListModel;
     private final CreateChatBoxDialog chatBoxDialog;
-    private final AdminOptionsWindow adminOptionsWindow; // Added AdminOptionsWindow
-    private final JList<User> users;
+    private final AdminOptionsWindow adminOptionsWindow;
     private final DefaultListModel<User> userModel;
-    private DefaultListModel<User> participantModel;
 
     public Gui(Client client) {
         try {
@@ -48,14 +45,27 @@ public class Gui {
         treeListModel = new TreeListModel<>(
                 Comparator.comparing(ChatBox::lastUpdated).thenComparing(ChatBox::getChatBoxID));
         userModel = new DefaultListModel<>();
-        users = new JList<>(userModel);
 
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
-        connectionWindow = new ConnectionWindow(); // Initialize connection window
+        connectionWindow = new ConnectionWindow();
 
         chatBoxDialog = new CreateChatBoxDialog(frame);
-        adminOptionsWindow = new AdminOptionsWindow(frame); // Initialize AdminOptionsWindow
+        adminOptionsWindow = new AdminOptionsWindow(frame);
+    }
+
+    public void displayChatLog(String chatLog) {
+        if (adminOptionsWindow != null && adminOptionsWindow.getChatLogDialog() != null) {
+            adminOptionsWindow.getChatLogDialog().displayChatLog(chatLog);
+        }
+    }
+
+    public void updateChatBoxList(List<ChatBox> chatBoxes) {
+        SwingUtilities.invokeLater(() -> {
+            if (adminOptionsWindow != null) {
+                adminOptionsWindow.showChatLogDialog(chatBoxes);
+            }
+        });
     }
 
     // Method to get connection info from the user
@@ -124,21 +134,23 @@ public class Gui {
         return loginWindow.getLogin();
     }
 
-    // Add a message to the display.
     public void addMessage(Message message) {
         User user = idToUser(message.getSenderID(), mainWindow.chatBox);
-        String username;
+        String resolvedUsername;
         if (user == null) {
-            username = String.valueOf(message.getSenderID());
+            resolvedUsername = String.valueOf(message.getSenderID());
         } else {
-            username = user.getUsername();
+            resolvedUsername = user.getUsername();
+            if (user.isBanned()) {
+                resolvedUsername += " (banned)";
+            }
         }
+        final String displayUsername = resolvedUsername; 
         SwingUtilities.invokeLater(() -> {
-            mainWindow.chatModel.addElement("<html><b>" + username + ": </b>"
+            mainWindow.chatModel.addElement("<html><b>" + displayUsername + ": </b>"
                     + message.toString().replace("\n", "<br><plaintext>     </plaintext>") + "<br></html>");
         });
     }
-
     public ChatBox getChatBox() {
         return mainWindow.chatBox;
     }
@@ -770,6 +782,9 @@ public class Gui {
         private JLabel prompt;
         private int[] userListIndex;
         private JScrollPane userScrPane;
+        private ChatLogDialog chatLogDialog;
+        
+        
 
         public AdminOptionsWindow(JFrame inFrame) {
             super(inFrame, "Admin Options", true);
@@ -782,6 +797,69 @@ public class Gui {
             // Ready to display
             this.pack();
             this.setLocationRelativeTo(null);
+        }
+        
+        public void showChatLogDialog(List<ChatBox> chatBoxes) {
+            chatLogDialog = new ChatLogDialog(this, chatBoxes, client);
+            chatLogDialog.setVisible(true);
+        }
+
+        public ChatLogDialog getChatLogDialog() {
+            return chatLogDialog;
+        }
+        
+        public class ChatLogDialog extends JDialog {
+            private final JList<ChatBox> chatBoxList;
+            private final DefaultListModel<ChatBox> chatBoxListModel;
+            private final JTextArea chatLogArea;
+            private final JButton getLogButton;
+            private final JButton closeButton;
+            private final Client client;
+
+            public ChatLogDialog(AdminOptionsWindow adminOptionsWindow, List<ChatBox> chatBoxes, Client client) {
+                super(adminOptionsWindow, "Chat Logs", true);
+                this.client = client;
+
+                chatBoxListModel = new DefaultListModel<>();
+                chatBoxListModel.addAll(chatBoxes);
+
+                chatBoxList = new JList<>(chatBoxListModel);
+                chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+                chatLogArea = new JTextArea();
+                chatLogArea.setEditable(false);
+
+                getLogButton = new JButton("Get Log");
+                getLogButton.addActionListener(e -> requestChatLog());
+
+                closeButton = new JButton("Close");
+                closeButton.addActionListener(e -> dispose());
+
+                JPanel buttonPanel = new JPanel();
+                buttonPanel.add(getLogButton);
+                buttonPanel.add(closeButton);
+
+                setLayout(new BorderLayout());
+                add(new JScrollPane(chatBoxList), BorderLayout.WEST);
+                add(new JScrollPane(chatLogArea), BorderLayout.CENTER);
+                add(buttonPanel, BorderLayout.SOUTH);
+
+                setSize(600, 400);
+                setLocationRelativeTo(adminOptionsWindow);
+            }
+
+            private void requestChatLog() {
+                ChatBox selectedChatBox = chatBoxList.getSelectedValue();
+                if (selectedChatBox != null) {
+                    client.queueMessage(new AskChatLog(selectedChatBox.getChatBoxID()));
+                } else {
+                    JOptionPane.showMessageDialog(this, "Please select a chatbox.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+
+            public void displayChatLog(String chatLog) {
+                SwingUtilities.invokeLater(() -> chatLogArea.setText(chatLog));
+            }
         }
 
         // Precondition: pane must be the content pane of the JDialog
@@ -868,11 +946,10 @@ public class Gui {
 
         // Handles when user clicks on Ban User button
         public class BanUserButtonListener implements ActionListener {
-
             public void actionPerformed(ActionEvent e) {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
-                    client.queueMessage(new BanUser(String.valueOf(selectedUser.getUserID())));
+                    client.queueMessage(new BanUser(selectedUser.getUserID()));
                     JOptionPane.showMessageDialog(pane, "User " + selectedUser.getUsername() + " has been banned.",
                             "Success", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -881,11 +958,10 @@ public class Gui {
 
         // Handles when user clicks on Unban User button
         public class UnbanUserButtonListener implements ActionListener {
-
             public void actionPerformed(ActionEvent e) {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
-                    client.queueMessage(new UnbanUser(String.valueOf(selectedUser.getUserID())));
+                    client.queueMessage(new UnbanUser(selectedUser.getUserID()));
                     JOptionPane.showMessageDialog(pane, "User " + selectedUser.getUsername() + " has been unbanned.",
                             "Success", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -894,15 +970,31 @@ public class Gui {
 
         // Handles when user clicks on View Chat Logs button
         public class ViewChatLogButtonListener implements ActionListener {
-
             public void actionPerformed(ActionEvent e) {
-                User selectedUser = users.getSelectedValue();
-                if (selectedUser != null) {
-                    // Implement logic to view chat logs
-                    // For example, send a request to the server to get chat logs for this user
-                    client.queueMessage(new AskChatLog(String.valueOf(selectedUser.getUserID())));
-                }
+                client.queueMessage(new AskChatBoxList());
             }
         }
     }
-} 
+    // Custom cell renderer for User lists
+    public class UserListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list,
+                                                      Object value,
+                                                      int index,
+                                                      boolean isSelected,
+                                                      boolean cellHasFocus) {
+            // Let the default renderer set up the label
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof User user) {
+                String displayName = user.getUsername();
+                if (user.isBanned()) {
+                    displayName += " (banned)";
+                }
+                label.setText(displayName);
+            }
+            return label;
+        }
+    }
+}
+

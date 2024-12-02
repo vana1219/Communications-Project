@@ -4,8 +4,8 @@ import Common.MessageInterface;
 import Common.MessageType;
 import java.io.Serializable;
 
-public record BanUser(int userID) implements MessageInterface, Serializable {
-    private static final MessageType type = MessageType.BAN_USER;
+public class AskChatBoxList implements MessageInterface, Serializable {
+    private static final MessageType type = MessageType.REQUEST_CHATBOX_LIST;
 
     public MessageType getType() {
         return type;

@@ -1,5 +1,6 @@
 package ServerApp.AuthenticationSystem;
 
+import Common.Admin.Admin;
 import Common.User.User;
 
 import java.io.*;
@@ -12,7 +13,7 @@ import java.nio.file.*;
  */
 public class AuthenticationSystem {
     // Attributes
-    private ConcurrentHashMap<Integer, User> userDB;
+    public static ConcurrentHashMap<Integer, User> userDB;
     private final String usersDirectory;
 
     // Constructor
@@ -37,6 +38,30 @@ public class AuthenticationSystem {
         }
     }
 
+    public boolean banUser(int userID) {
+        User userToBan = userDB.get(userID);
+        if (userToBan != null && !userToBan.isBanned()) {
+            userToBan.setBanned(true);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean unbanUser(int userID) {
+        User userToUnban = userDB.get(userID);
+        if (userToUnban != null && userToUnban.isBanned()) {
+            userToUnban.setBanned(false);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isAdmin(int userID) {
+        User user = userDB.get(userID);
+        return user instanceof Admin;
+    }
+
+    
     // Registers a user in the system
     public boolean registerUser(User user) {
         if (user != null && !usernameExists(user.getUsername())) {
@@ -65,9 +90,9 @@ public class AuthenticationSystem {
         for (User user : userDB.values()) {
             if (user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)) {
             	// If the user is online already, reject double login
-            	if (user.isOnline() == true) {
-            		return null;
-            	}
+ //           	if (user.isOnline() == true) {
+ //           		return null;
+ //           	}
                 user.setOnline(true);
                 saveUserToFile(user); // Save updated user to file
                 return user;

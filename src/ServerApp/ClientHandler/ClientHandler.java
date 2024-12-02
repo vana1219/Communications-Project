@@ -5,6 +5,7 @@ import ServerApp.MessageHandler.MessageHandler;
 import Common.Admin.Admin;
 import ServerApp.AuthenticationSystem.AuthenticationSystem;
 import Common.ChatBox.ChatBox;
+import Common.Message.Message;
 import Common.User.User;
 import Common.MessageInterface;
 import Common.Messages.*;
@@ -81,8 +82,69 @@ public class ClientHandler implements Runnable {
             case REQUEST_USER_LIST -> handleRequestUserList();
             case REQUEST_CHATBOX -> handleRequestChatBox((AskChatBox) message);
             case CREATE_CHATBOX -> handleCreateChatBox((CreateChat) message);
+            case REQUEST_CHATBOX_LIST -> handleRequestChatBoxList();
+            case VIEW_CHATBOX_LOG -> handleViewChatBoxLog((AskChatLog) message);
             default -> sendNotification("Unknown message type received.");
         }
+    }
+    
+    private void handleRequestChatBoxList() {
+        if (!authenticationSystem.isAdmin(user.getUserID())) {
+            sendNotification("Access denied. Admin privileges required to view chatbox list.");
+            return;
+        }
+
+        Collection<ChatBox> chatBoxes = server.getChatBoxes().values();
+        List<ChatBox> chatBoxList = new ArrayList<>(chatBoxes);
+        SendChatBoxList response = new SendChatBoxList(chatBoxList);
+        sendMessage(response);
+    }
+    
+    private void handleViewChatBoxLog(AskChatLog askChatLog) {
+        if (!authenticationSystem.isAdmin(user.getUserID())) {
+            sendNotification("Access denied. Admin privileges required to view chat logs.");
+            return;
+        }
+
+        int chatBoxID = askChatLog.chatBoxID();
+        ChatBox chatBox = messageHandler.getChatBox(chatBoxID);
+
+        if (chatBox != null) {
+            StringBuilder chatLogBuilder = new StringBuilder();
+            for (Message message : chatBox.getMessages()) {
+                chatLogBuilder.append(message.getTimestamp()).append(" - ")
+                              .append(message.getSenderID()).append(": ")
+                              .append(message.toString()).append("\n");
+            }
+            String chatLog = chatLogBuilder.toString();
+            SendChatLog response = new SendChatLog(chatLog);
+            sendMessage(response);
+        } else {
+            sendNotification("ChatBox not found.");
+        }
+    }
+    
+    public boolean banUser(int userID) {
+        User userToBan = AuthenticationSystem.userDB.get(userID);
+        if (userToBan != null && !userToBan.isBanned()) {
+            userToBan.setBanned(true);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean unbanUser(int userID) {
+        User userToUnban = AuthenticationSystem.userDB.get(userID);
+        if (userToUnban != null && userToUnban.isBanned()) {
+            userToUnban.setBanned(false);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isAdmin(int userID) {
+        User user = AuthenticationSystem.userDB.get(userID);
+        return user instanceof Admin;
     }
 
 	// Handle Login
@@ -177,56 +239,32 @@ public class ClientHandler implements Runnable {
 	}
 
 	   // Handle BanUser
-    private void handleBanUser(BanUser banUser) {
-        if (!(user instanceof Admin adminUser)) {
-            System.out.println("User " + (user != null ? user.getUsername() : "Unknown") + " attempted to ban a user without admin privileges.");
-            sendNotification("Access denied. Admin privileges required to ban a user.");
-            return;
-        }
+	private void handleBanUser(BanUser banUser) {
+	    int userIDToBan = banUser.userID();
 
-        int userIDToBan;
-        try {
-            userIDToBan = Integer.parseInt(banUser.userID());
-        } catch (NumberFormatException e) {
-            sendNotification("Invalid user ID provided.");
-            return;
-        }
-
-        boolean success = adminUser.banUser(userIDToBan);
-        if (success) {
-            System.out.println("Admin " + adminUser.getUsername() + " banned user with ID: " + userIDToBan);
-            sendNotification("User banned successfully.");
-        } else {
-            System.out.println("Admin " + adminUser.getUsername() + " failed to ban user with ID: " + userIDToBan);
-            sendNotification("Failed to ban user. User may not exist or is already banned.");
-        }
-    }
+	    boolean success = authenticationSystem.banUser(userIDToBan);
+	    if (success) {
+	        System.out.println("Admin " + user.getUsername() + " banned user with ID: " + userIDToBan);
+	        sendNotification("User banned successfully.");
+	    } else {
+	        System.out.println("Admin " + user.getUsername() + " failed to ban user with ID: " + userIDToBan);
+	        sendNotification("Failed to ban user. User may not exist or is already banned.");
+	    }
+	}
 
     // Handle UnbanUser
-    private void handleUnbanUser(UnbanUser unbanUser) {
-        if (!(user instanceof Admin adminUser)) {
-            System.out.println("User " + (user != null ? user.getUsername() : "Unknown") + " attempted to unban a user without admin privileges.");
-            sendNotification("Access denied. Admin privileges required to unban a user.");
-            return;
-        }
+	private void handleUnbanUser(UnbanUser unbanUser) {
+	    int userIDToUnban = unbanUser.userID();
 
-        int userIDToUnban;
-        try {
-            userIDToUnban = Integer.parseInt(unbanUser.userID());
-        } catch (NumberFormatException e) {
-            sendNotification("Invalid user ID provided.");
-            return;
-        }
-
-        boolean success = adminUser.unbanUser(userIDToUnban);
-        if (success) {
-            System.out.println("Admin " + adminUser.getUsername() + " unbanned user with ID: " + userIDToUnban);
-            sendNotification("User unbanned successfully.");
-        } else {
-            System.out.println("Admin " + adminUser.getUsername() + " failed to unban user with ID: " + userIDToUnban);
-            sendNotification("Failed to unban user. User may not exist or is not banned.");
-        }
-    }
+	    boolean success = authenticationSystem.unbanUser(userIDToUnban);
+	    if (success) {
+	        System.out.println("Admin " + user.getUsername() + " unbanned user with ID: " + userIDToUnban);
+	        sendNotification("User unbanned successfully.");
+	    } else {
+	        System.out.println("Admin " + user.getUsername() + " failed to unban user with ID: " + userIDToUnban);
+	        sendNotification("Failed to unban user. User may not exist or is not banned.");
+	    }
+	}
 
     // Handle RequestUserList
     private void handleRequestUserList() {
