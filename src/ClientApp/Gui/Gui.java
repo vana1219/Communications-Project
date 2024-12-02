@@ -1,12 +1,19 @@
 package ClientApp.Gui;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
@@ -16,6 +23,7 @@ import Common.Messages.SendMessage;
 import Common.ChatBox.ChatBox;
 import Common.Message.Message;
 import Common.User.User;
+import java.util.List;
 
 public class Gui {
     private final Client client;
@@ -24,6 +32,7 @@ public class Gui {
     private final MainWindow mainWindow;
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
+    
   
     public Gui(Client client) {
         try {
@@ -454,4 +463,384 @@ public class Gui {
             return treeSet.stream().toList().get(index);
         }
     }
+    
+    public class CreateChatBoxDialog extends JDialog
+    {
+    	
+    	/*
+    	 * TO DO:
+    	 * 
+    	 * 
+    	 */
+    	
+ 
+    	
+    	private static JPanel comboPanel;
+    	private static Container pane; //content pane of dialog
+    	private static JTextField chBoxTxt;
+    	private static JLabel chBoxName;
+    	private static JButton createButton;
+    	private static JButton addParticipant;
+    	private static JButton removeParticipant;
+    	private static JList<User> users;
+    	private static JList<User> participants;
+    	private static JLabel prompt;
+    	private static DefaultListModel<User> userModel;
+    	private static DefaultListModel<User> participantModel;
+    	private static int [] userListIndex;
+    	private static int [] participantListIndex;
+    	private static String chatboxName;
+    	
+    	
+    	private static CreateChatBoxDialog dialog;
+    	
+    	public CreateChatBoxDialog( JFrame inFrame )
+    	{
+    		super (inFrame, "createChatBox", true);
+    		
+    		dialog =  this;
+    		
+    		
+    		//Call Initialization
+    		
+    		if (  Setup()  )
+    		{
+    			
+    		}
+    		else
+    		{
+    			
+    		}
+    		
+    		//ready to display
+    		
+    		this.pack();
+    		this.setLocationRelativeTo(null);
+    		this.setVisible(true);
+    		
+    	}
+    	
+    	public static boolean Setup()
+    	{
+    		
+    		return true;
+    		
+    	}
+    	
+    	
+    	//Precondition: pane must be the content pane of the JDialog
+    	//Postcondition: add all contents to content pane in proper layout
+    	public static void setUpContentPane()
+    	{
+    		
+    		//BoxLayout elements
+    		
+    		comboPanel = setupBoxLayout();
+    		
+    		
+    		//BorderLayout elements
+    		
+    		setupLayout();
+    		
+    		
+    		
+    	}
+    	
+    	//Precondition: None
+    	//Post: sets up the box layout portion of the content pane
+    	private static JPanel setupBoxLayout()
+    	{
+    		comboPanel = new JPanel();
+    		comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
+    		
+    		chBoxTxt = new JTextField(20);
+    		chBoxTxt.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		chBoxTxt.addActionListener( new TxtBoxListener()  );
+    		
+    		chBoxName = new JLabel("Name Inserted Here");
+    		
+    		
+    		createButton = new JButton ("Create ChatBox");
+    		createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		createButton.addActionListener(  new CreateButtonListener()  );
+    		
+    		addParticipant = new JButton("Add Participant From List");
+    		addParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		addParticipant.addActionListener( new AddButtonListener()  );
+    		
+    		removeParticipant = new JButton("Remove Participant From List");
+    		removeParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		removeParticipant.addActionListener( new RemoveButtonListener() );
+    		
+    		comboPanel.add(chBoxTxt);
+    		comboPanel.add(chBoxName);
+    		comboPanel.add(createButton);
+    		comboPanel.add(addParticipant);
+    		comboPanel.add(removeParticipant);
+    		
+    		return comboPanel;
+    	}
+    	
+    	//Precondition: pane must be the content pane of the JDialog
+    	//Postcondition: finished up on BorderLayout and brings it all together
+    	private static void setupLayout()
+    	{
+    		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
+    				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
+    		
+    		
+    		if ( ! setUpUserList() )
+    		{
+    			//error need to stop trying to open
+    		}
+    		else
+    		{
+    			setUpParticipantList();
+        		
+        		pane.add(prompt, BorderLayout.NORTH); // add prompt
+        		pane.add(users, BorderLayout.CENTER); // add user list
+        		pane.add(participants, BorderLayout.EAST); //add participants list
+        		
+        		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+    		}
+    		
+    		
+    	}
+    	
+    	
+    	
+    	
+    	
+    	
+		
+		public static boolean setUpUserList() //Needs a way to grab Users
+    	{
+    		userModel = new DefaultListModel<User>();
+    		
+    		//try to add to userModel, if we cannot or its empty then we must stop trying to open the dialog
+    		
+    		
+    		ArrayList <User> userList = new ArrayList<User>(); //grab userlist from server *** MUST DO ****
+    		
+    		if ( userList == null || userList.isEmpty() )
+    		{
+    			return false;
+    		}
+    		else
+    		{
+    			for (int i = 0; i < userList.size(); i++)
+        		{
+        			userModel.addElement(userList.get(i)); //add the user list to the GUI container
+        		}
+    		}
+    		
+    		
+    		
+    		users = new JList<User>(userModel);
+    		
+    		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    		users.setSelectedIndex(0);
+    		users.addListSelectionListener(new UserListListener());
+    		users.setVisibleRowCount(10);
+    		
+    		//Initialize list
+    		
+    		return true;
+    		
+    	}
+    	
+    	public static void setUpParticipantList()
+    	{
+    		participantModel = new DefaultListModel<User>();
+    		participants = new JList<User>(participantModel);
+    		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    		participants.setSelectedIndex(0);
+    		participants.addListSelectionListener(new ParticipantListListener());
+    		
+    		
+    	}
+    	
+    	//Handles when user is clicking on the list of users
+    	public static class UserListListener implements ListSelectionListener
+    	{
+    		
+			
+			public void valueChanged(ListSelectionEvent e) {
+				
+				if (e.getValueIsAdjusting() == false)
+				{
+					//get indexes
+					
+					
+					userListIndex = users.getSelectedIndices(); //array is empty if nothing is selected
+					
+					if (userListIndex.length == 0)
+					{
+						addParticipant.setEnabled(false); //nothing selected, disable button
+					}
+					else
+					{
+						addParticipant.setEnabled(true); // item(s) selected enable array
+					}
+					
+				}
+			}
+    		
+    	}
+    	
+    	//handles when user is clicking on the list of participants
+    	public static class ParticipantListListener implements ListSelectionListener
+    	{
+    		
+			
+			public void valueChanged(ListSelectionEvent e) {
+				
+				if (e.getValueIsAdjusting() == false)
+				{
+					participantListIndex = participants.getSelectedIndices();
+					
+					if (participantListIndex.length == 0) //nothing selected, disable button
+					{
+						removeParticipant.setEnabled(false);
+					}
+					else
+					{
+						removeParticipant.setEnabled(true);
+					}
+				}
+			}
+    		
+    	}
+    	
+    	//Handles when user is clicking on the AddParticipants button
+    	public static class AddButtonListener implements ActionListener
+    	{
+
+		
+			public void actionPerformed(ActionEvent e) { //user model transfer
+				
+				//userListIndex - index containing users
+				//userModel - container storing the Users itself
+				//participantModel - container storing the Participants itself
+				//users - JList
+				
+				ArrayList<User> temporary = new ArrayList<User> ();
+				
+				//grab the users from the UI list of users
+				
+				
+				for (int i = 0; i < userListIndex.length; i++)
+				{
+					
+					temporary.add(userModel.get(  userListIndex[i] ));
+					
+				}
+				
+				//add the list to the participants UI list
+				
+				for (int j = 0; j < temporary.size(); j++)
+				{
+					
+					//check if it exists already
+					
+					if ( ! participantModel.contains( temporary.get(j) ) ) //duplicate check
+					{
+						participantModel.addElement( temporary.get(j) );
+					}
+					
+					
+					
+				}
+				
+				
+				
+				
+			}
+			
+    		
+    	}
+    	
+    	//Handles when user is clicking on the RemoveParticipants button
+    	public static class RemoveButtonListener implements ActionListener
+    	{
+    		//participantListIndex - index containing participants
+		
+			public void actionPerformed(ActionEvent e) {
+				
+				// grab list of participants to be removed
+				// participantModel - container storing the Participants itself
+				
+				
+				
+				for (int i = 0; i < participantListIndex.length; i++)
+				{
+					participantModel.remove( participantListIndex[i] ); //remove participants
+				}
+				
+				
+		
+			}
+    		
+    	}
+    	
+    	//ChatBox Name Listener
+    	//Upon hitting "enter" when typing in the textfield, the label will update with chatbox name
+    	public static class TxtBoxListener implements ActionListener
+    	{
+    		
+    		/*
+    			private static JTextField chBoxTxt;
+    			private static JLabel chBoxName;
+    			private static String chatboxName;
+    		 */
+    		
+			public void actionPerformed(ActionEvent e) {
+				
+				chatboxName = chBoxTxt.getText(); //set chatbox name
+				chBoxName.setText(chatboxName); //set the label
+			}
+    		
+    	}
+    	
+    	
+    	//Create ChatBox button
+    	public static class CreateButtonListener implements ActionListener
+    	{
+    		/*
+        	 * private static DefaultListModel<User> participantModel;
+        	 * private static String chatboxName;
+        	*/
+			
+			public void actionPerformed(ActionEvent e) {
+				
+				//grab the info for participants list and chatbox name
+				
+				ArrayList<User> temp = new ArrayList<User>();
+				
+				for (int i = 0; i < participantModel.getSize(); i++)
+				{
+					temp.add( participantModel.get(i) );
+				}
+				
+				//Make request to send chatbox
+				
+				
+				
+				//.queueMessage(new CreateChat(participants, name))
+				
+				
+				//close the dialog
+				
+				dialog.setVisible(false);
+				
+			}
+    		
+    	}
+    	
+    	
+    	
+    	
+    }
+    
+    
 }
