@@ -519,7 +519,7 @@ public class Gui {
 		private int[] participantListIndex;
 		private String chatboxName;
 		private JScrollPane userScrPane;
-		private JScrollPane partcipantScrPane;
+		private JScrollPane participantScrPane;
 
 		public CreateChatBoxDialog(JFrame inFrame) {
 			super(inFrame, "createChatBox", true);
@@ -602,7 +602,7 @@ public class Gui {
 
 			pane.add(prompt, BorderLayout.NORTH); // add prompt
 			pane.add(userScrPane, BorderLayout.CENTER); // add user list
-			pane.add(partcipantScrPane, BorderLayout.EAST); // add participants list
+			pane.add(participantScrPane, BorderLayout.EAST); // add participants list
 
 			pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
 
@@ -638,10 +638,10 @@ public class Gui {
 
 			participantModel.clear();
 
-			partcipantScrPane = new JScrollPane(participants, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            participantScrPane = new JScrollPane(participants, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                                                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-			partcipantScrPane.setOpaque(true);
+			participantScrPane.setOpaque(true);
 		}
 
 		// Handles when user is clicking on the list of users
