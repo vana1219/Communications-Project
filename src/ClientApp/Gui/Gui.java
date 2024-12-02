@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
@@ -520,7 +519,7 @@ public class Gui {
 
 
     	private JPanel comboPanel;
-    	private Container pane; //content pane of dialog
+    	private final Container pane; //content pane of dialog
     	private JTextField chBoxTxt;
     	private JLabel chBoxName;
     	private JButton createButton;
@@ -648,7 +647,7 @@ public class Gui {
     	{
 
 
-			users = new JList<User>(userModel);
+			users = new JList<>(userModel);
     		
     		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		users.setSelectedIndex(0);
@@ -670,8 +669,8 @@ public class Gui {
 
     	public void setUpParticipantList()
     	{
-    		participantModel = new DefaultListModel<User>();
-    		participants = new JList<User>(participantModel);
+    		participantModel = new DefaultListModel<>();
+    		participants = new JList<>(participantModel);
     		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		participants.setSelectedIndex(0);
     		participants.addListSelectionListener(new ParticipantListListener());
@@ -692,7 +691,7 @@ public class Gui {
 			
 			public void valueChanged(ListSelectionEvent e) {
 				
-				if (e.getValueIsAdjusting() == false)
+				if (!e.getValueIsAdjusting())
 				{
 					//get indexes
 					
@@ -721,10 +720,10 @@ public class Gui {
 			
 			public void valueChanged(ListSelectionEvent e) {
 				
-				if (e.getValueIsAdjusting() == false)
+				if (!e.getValueIsAdjusting())
 				{
 					participantListIndex = participants.getSelectedIndices();
-					
+
 					if (participantListIndex.length == 0) //nothing selected, disable button
 					{
 						removeParticipant.setEnabled(false);
@@ -750,26 +749,26 @@ public class Gui {
                 //participantModel - container storing the Participants itself
                 //users - JList
 
-                ArrayList<User> temporary = new ArrayList<User>();
+                ArrayList<User> temporary = new ArrayList<>();
 
                 //grab the users from the UI list of users
 
 
-                for (int i = 0; i < userListIndex.length; i++) {
+                for (int listIndex : userListIndex) {
 
-                    temporary.add(userModel.get(userListIndex[i]));
+                    temporary.add(userModel.get(listIndex));
 
                 }
 
                 //add the list to the participants UI list
 
-                for (int j = 0; j < temporary.size(); j++) {
+                for (User user : temporary) {
 
                     //check if it exists already
 
-                    if (!participantModel.contains(temporary.get(j))) //duplicate check
+                    if (!participantModel.contains(user)) //duplicate check
                     {
-                        participantModel.addElement(temporary.get(j));
+                        participantModel.addElement(user);
                     }
 
 
@@ -792,8 +791,8 @@ public class Gui {
                 // participantModel - container storing the Participants itself
 
 
-                for (int i = 0; i < participantListIndex.length; i++) {
-                    participantModel.remove(participantListIndex[i]); //remove participants
+                for (int listIndex : participantListIndex) {
+                    participantModel.remove(listIndex); //remove participants
                 }
 
 
@@ -836,7 +835,7 @@ public class Gui {
 				
 				//grab the info for participants list and chatbox name
 				
-				ArrayList<User> participantList = new ArrayList<User>();
+				ArrayList<User> participantList = new ArrayList<>();
 				
 				for (int i = 0; i < participantModel.getSize(); i++)
 				{
