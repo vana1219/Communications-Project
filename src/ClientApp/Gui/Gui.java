@@ -35,8 +35,8 @@ public class Gui {
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
     private final CreateChatBoxDialog chatBoxDialog;
-    private JList<User> users;
-    private DefaultListModel<User> userModel;
+    private final JList<User> users;
+    private final DefaultListModel<User> userModel;
 	private DefaultListModel<User> participantModel;
 
     public Gui(Client client) {
@@ -54,6 +54,7 @@ public class Gui {
                                                       .thenComparing(ChatBox::getChatBoxID));
         userModel = new DefaultListModel<>();
         users = new JList<>(userModel);
+
 
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
@@ -639,14 +640,6 @@ public class Gui {
 
 
     		}
-
-
-
-
-
-
-
-
 
 
 
