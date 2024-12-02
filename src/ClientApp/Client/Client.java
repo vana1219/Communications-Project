@@ -14,6 +14,7 @@ import ClientApp.Gui.ConnectionInfo;
 import Common.ChatBox.ChatBox;
 import Common.MessageInterface;
 import Common.MessageType;
+import Common.Admin.Admin;
 import Common.Messages.*;
 import Common.Message.Message;
 import Common.User.User;
@@ -119,6 +120,9 @@ public class Client {
 
     private void receiveLoginResponse(LoginResponse loginResponse) {
         userData = loginResponse.user();
+
+        // Add this print statement to confirm user type
+        System.out.println("Logged in user is admin: " + (userData instanceof Admin));
 
         if (loginResponse.chatBoxList() != null && !loginResponse.chatBoxList().isEmpty()) {
             SwingUtilities.invokeLater(() -> gui.addAllChatBoxes(loginResponse.chatBoxList()));
