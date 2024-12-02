@@ -16,11 +16,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
-import Common.Messages.AskChatBox;
-import Common.Messages.AskUserList;
-import Common.Messages.CreateChat;
-import Common.Messages.Login;
-import Common.Messages.SendMessage;
+import Common.Messages.*;
 import Common.ChatBox.ChatBox;
 import Common.Message.Message;
 import Common.User.User;
@@ -84,9 +80,7 @@ public class Gui {
 
 	public void showCreateUser() {
 		client.queueMessage(new AskUserList());
-		SwingUtilities.invokeLater(() -> {
-			chatBoxDialog.setVisible(true);
-		});
+		SwingUtilities.invokeLater(() -> chatBoxDialog.setVisible(true));
 	}
 
 	public void updateUserList(Collection<User> users) {
@@ -148,6 +142,10 @@ public class Gui {
 	public ChatBox getChatBox() {
 		return mainWindow.chatBox;
 	}
+
+    private void logout() {
+        client.queueMessage(new Logout());
+    }
 
 	public ChatBox getChatBox(int chatBoxID) {
 		return treeListModel.treeSet.stream().filter(chatBox -> chatBox.getChatBoxID() == chatBoxID).findFirst()
@@ -250,7 +248,7 @@ public class Gui {
 		private ChatBox chatBox = null;
 		private final JPanel panel;
 		private final JMenuBar menuBar;
-		private final JMenu menu;
+        private final JMenu userMenu;
 		private final List<JMenuItem> menuItems;
 
 		public MainWindow() {
@@ -288,32 +286,34 @@ public class Gui {
 
 			// Create the List to display and select chatboxes.
 
-			chatBoxList = new JList<>(treeListModel);
-			chatBoxList.setPreferredSize(new Dimension(200, chatBoxList.getPreferredSize().height));
-			chatBoxListScrollPane = new JScrollPane(chatBoxList);
-			chatBoxList.setSelectionModel(new DefaultListSelectionModel());
-			chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			// Action listener for the ChatBox list
-			chatBoxList.addListSelectionListener(e -> {
-				ChatBox selectedChatBox = chatBoxList.getSelectedValue();
-				if (selectedChatBox != null && !e.getValueIsAdjusting()) {
-					System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
-					selectChatBox(selectedChatBox);
-				}
-			});
+            {
+                chatBoxList = new JList<>(treeListModel);
+                chatBoxList.setPreferredSize(new Dimension(200, chatBoxList.getPreferredSize().height));
+                chatBoxListScrollPane = new JScrollPane(chatBoxList);
+                chatBoxList.setSelectionModel(new DefaultListSelectionModel());
+                chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                // Action listener for the ChatBox list
+                chatBoxList.addListSelectionListener(e -> {
+                    ChatBox selectedChatBox = chatBoxList.getSelectedValue();
+                    if (selectedChatBox != null && !e.getValueIsAdjusting()) {
+                        System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
+                        selectChatBox(selectedChatBox);
+                    }
+                });
+            }
 
 			// create menu bar
 			menuBar = new JMenuBar();
-			menu = new JMenu("User");
+            userMenu = new JMenu("User");
 			menuItems = new ArrayList<>();
-			menuItems.add(new JMenuItem("Create Chat"));
-			menuItems.getFirst().addActionListener(e -> showCreateUser());
+			userMenu.add(new JMenuItem("Create Chat")).addActionListener(e -> showCreateUser());
+            userMenu.add(new JMenuItem("Logout")).addActionListener(e -> logout());
 
 			for (var i : menuItems) {
 				menu.add(i);
 			}
 
-			menuBar.add(menu);
+            menuBar.add(userMenu);
 
 			// Create the layout and add components
 			panel = new JPanel();
