@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
 import Common.Messages.AskChatBox;
+import Common.Messages.CreateChat;
 import Common.Messages.Login;
 import Common.Messages.SendMessage;
 import Common.ChatBox.ChatBox;
@@ -33,6 +34,8 @@ public class Gui {
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
     private final CreateChatBoxDialog chatBoxDialog;
+    private DefaultListModel<User> userModel;
+	private DefaultListModel<User> participantModel;
   
     public Gui(Client client) {
         try {
@@ -489,7 +492,6 @@ public class Gui {
     	private JList<User> users;
     	private JList<User> participants;
     	private JLabel prompt;
-    	private DefaultListModel<User> userModel;
     	private DefaultListModel<User> participantModel;
     	private int [] userListIndex;
     	private int [] participantListIndex;
@@ -509,14 +511,7 @@ public class Gui {
     		
     		//Call Initialization
     		
-    		if (  setUpContentPane()  )
-    		{
-    			
-    		}
-    		else
-    		{
-    			
-    		}
+    		setUpContentPane();
     		
     		//ready to display
     		
@@ -533,7 +528,7 @@ public class Gui {
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
-    	public boolean setUpContentPane()
+    	public void setUpContentPane()
     	{
     		
     		//BoxLayout elements
@@ -543,7 +538,7 @@ public class Gui {
     		
     		//BorderLayout elements
     		
-    		return setupLayout();
+    		setupLayout();
     		
     		
     		
@@ -589,36 +584,29 @@ public class Gui {
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: finished up on BorderLayout and brings it all together
-    	private boolean setupLayout()
+    	private void setupLayout()
     	{
     		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
     		
     		
-    		if ( ! setUpUserList() )
-    		{
-    			//error need to stop trying to open
-
-    			return false;
-
-    		}
-    		else
-    		{
-    			setUpParticipantList();
+    		setUpUserList();
+    		
+    		setUpParticipantList();
         		
 
-    			pane.add(prompt, BorderLayout.NORTH); // add prompt
-        		pane.add(userScrPane, BorderLayout.CENTER); // add user list
-        		pane.add(partcipantScrPane, BorderLayout.EAST); //add participants list
+    		pane.add(prompt, BorderLayout.NORTH); // add prompt
+        	pane.add(userScrPane, BorderLayout.CENTER); // add user list
+        	pane.add(partcipantScrPane, BorderLayout.EAST); //add participants list
         		
-        		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+        	pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
         		
-        		return true;
+        	
 
     		}
     		
     		
-    	}
+    	
     	
     	
     	
@@ -627,35 +615,12 @@ public class Gui {
     	
 		
 
-		public boolean setUpUserList() //Needs a way to grab Users
+		public void setUpUserList() //Needs a way to grab Users
 
     	{
-    		userModel = new DefaultListModel<User>();
-    		
-    		//try to add to userModel, if we cannot or its empty then we must stop trying to open the dialog
     		
     		
-    		ArrayList <User> userList = new ArrayList<User>(); //grab userlist from server *** MUST DO ****
-    		
-    		
-    		
-    		
-    		
-    		if ( userList == null || userList.isEmpty() )
-    		{
-    			return false;
-    		}
-    		else
-    		{
-    			for (int i = 0; i < userList.size(); i++)
-        		{
-        			userModel.addElement(userList.get(i)); //add the user list to the GUI container
-        		}
-    		}
-    		
-    		
-    		
-    		users = new JList<User>(userModel);
+			users = new JList<User>(userModel);
     		
     		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		users.setSelectedIndex(0);
@@ -670,8 +635,8 @@ public class Gui {
     		
     		userScrPane.setOpaque(true);
     		
-
-    		return true;
+    		
+    		
     		
     	}
     	
@@ -682,7 +647,8 @@ public class Gui {
     		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		participants.setSelectedIndex(0);
     		participants.addListSelectionListener(new ParticipantListListener());
-
+    		
+    		participantModel.clear();
     		
     		partcipantScrPane = new JScrollPane(participants, 
     				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
@@ -693,7 +659,6 @@ public class Gui {
     	//Handles when user is clicking on the list of users
 
     	public class UserListListener implements ListSelectionListener
-
     	{
     		
 			
@@ -723,7 +688,6 @@ public class Gui {
     	//handles when user is clicking on the list of participants
 
     	public class ParticipantListListener implements ListSelectionListener
-
     	{
     		
 			
@@ -865,6 +829,9 @@ public class Gui {
 				//Make request to send chatbox
 				//new CreateChat(participants, name)
 				
+				//client.queueMessage(new CreateChat(participants, name))
+				
+				client.queueMessage( new CreateChat(participantList, chatboxName) );
 				
 				//.queueMessage(new CreateChat(participants, name))
 				
@@ -880,9 +847,9 @@ public class Gui {
     	}
     	
     	
-    	
-    	
+
     }
-    
-    
 }
+    
+    
+
