@@ -40,30 +40,22 @@ public class Client {
 
     private void handleServerResponses() {
         MessageInterface response;
-        while (!Thread.currentThread().isInterrupted()) {
+        while (true) {
             try {
                 response = inboundRequestQueue.take();
                 switch (response.getType()) {
-                    case MessageType.LOGIN_RESPONSE:
-                        receiveLoginResponse((LoginResponse) response);
-                        break;
-                    case MessageType.NOTIFICATION:
-                        handleNotification((Notification) response);
-                        break;
-                    case MessageType.RETURN_CHATBOX:
-                        handleReturnChatBox((SendChatBox) response);
-                        break;
-                    case MessageType.RETURN_USER_LIST:
-                        handleReturnUserList((SendUserList) response);
-                        break;
-                    case MessageType.SEND_MESSAGE:
-                        handleSendMessage((SendMessage) response);
-                        break;
-                    case MessageType.RETURN_CHATBOX_LOG:
-                        handleReturnChatBoxLog((SendChatLog) response);
-                        break;
-                    default:
-                        break;
+                    case MessageType.LOGIN_RESPONSE -> receiveLoginResponse((LoginResponse) response);
+                    case MessageType.NOTIFICATION -> handleNotification((Notification) response);
+                    case MessageType.RETURN_CHATBOX -> handleReturnChatBox((SendChatBox) response);
+                    case MessageType.RETURN_USER_LIST -> handleReturnUserList((SendUserList) response);
+                    case MessageType.SEND_MESSAGE -> handleSendMessage((SendMessage) response);
+                    case MessageType.RETURN_CHATBOX_LOG -> handleReturnChatBoxLog((SendChatLog) response);
+                    case MessageType.LOGOUT_RESPONSE -> {
+                        JOptionPane.showMessageDialog(null, "Logout Successful.", "Notification", JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+                    default -> {
+                    }
                 }
             } catch (InterruptedException e) {
                 System.err.println("Error handling server response: " + e.getMessage());
@@ -215,6 +207,10 @@ public class Client {
             client.gui.showMain();
             // Handle server responses
             client.handleServerResponses();
+
+            receiverThread.interrupt();
+            senderThread.interrupt();
+            System.exit(0);
 
         } catch (IOException | InterruptedException e) {
             System.err.println("I/O error: " + e.getMessage());
