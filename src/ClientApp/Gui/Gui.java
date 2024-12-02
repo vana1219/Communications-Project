@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
 import Common.Messages.AskChatBox;
+import Common.Messages.CreateChat;
 import Common.Messages.Login;
 import Common.Messages.SendMessage;
 import Common.ChatBox.ChatBox;
@@ -33,6 +34,7 @@ public class Gui {
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
     private final CreateChatBoxDialog chatBoxDialog;
+    private DefaultListModel<User> userModel;
   
     public Gui(Client client) {
         try {
@@ -489,7 +491,6 @@ public class Gui {
     	private JList<User> users;
     	private JList<User> participants;
     	private JLabel prompt;
-    	private DefaultListModel<User> userModel;
     	private DefaultListModel<User> participantModel;
     	private int [] userListIndex;
     	private int [] participantListIndex;
@@ -630,29 +631,6 @@ public class Gui {
 		public boolean setUpUserList() //Needs a way to grab Users
 
     	{
-    		userModel = new DefaultListModel<User>();
-    		
-    		//try to add to userModel, if we cannot or its empty then we must stop trying to open the dialog
-    		
-    		
-    		ArrayList <User> userList = new ArrayList<User>(); //grab userlist from server *** MUST DO ****
-    		
-    		
-    		
-    		
-    		
-    		if ( userList == null || userList.isEmpty() )
-    		{
-    			return false;
-    		}
-    		else
-    		{
-    			for (int i = 0; i < userList.size(); i++)
-        		{
-        			userModel.addElement(userList.get(i)); //add the user list to the GUI container
-        		}
-    		}
-    		
     		
     		
     		users = new JList<User>(userModel);
@@ -682,7 +660,8 @@ public class Gui {
     		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		participants.setSelectedIndex(0);
     		participants.addListSelectionListener(new ParticipantListListener());
-
+    		
+    		participantModel.clear();
     		
     		partcipantScrPane = new JScrollPane(participants, 
     				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
@@ -865,6 +844,9 @@ public class Gui {
 				//Make request to send chatbox
 				//new CreateChat(participants, name)
 				
+				//client.queueMessage(new CreateChat(participants, name))
+				
+				client.queueMessage( new CreateChat(participantList, chatboxName) );
 				
 				//.queueMessage(new CreateChat(participants, name))
 				
