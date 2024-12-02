@@ -58,6 +58,10 @@ public class User implements Serializable {
         return isBanned;
     }
 
+    public String toString(){
+        return username;
+    }
+
     public void setBanned(boolean isBanned) {
         this.isBanned = isBanned;
     }
