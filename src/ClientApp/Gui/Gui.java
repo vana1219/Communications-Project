@@ -53,6 +53,17 @@ public class Gui {
         chatBoxDialog = new CreateChatBoxDialog(frame);
         adminOptionsWindow = new AdminOptionsWindow(frame);
     }
+    
+    public void updateChatBox(ChatBox chatBox) {
+        SwingUtilities.invokeLater(() -> {
+            treeListModel.remove(chatBox);
+            treeListModel.add(chatBox);
+
+            if (mainWindow.chatBox != null && mainWindow.chatBox.getChatBoxID() == chatBox.getChatBoxID()) {
+                mainWindow.chatBox = chatBox;
+            }
+        });
+    }
 
     public void displayChatLog(String chatLog) {
         if (adminOptionsWindow != null && adminOptionsWindow.getChatLogDialog() != null) {
@@ -619,6 +630,7 @@ public class Gui {
 
         public void setUpUserList() {
             users = new JList<>(userModel);
+            users.setCellRenderer(new UserListCellRenderer()); // Set the cell renderer
 
             users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             users.setSelectedIndex(0);
@@ -635,6 +647,7 @@ public class Gui {
         public void setUpParticipantList() {
             participantModel = new DefaultListModel<>();
             participants = new JList<>(participantModel);
+            participants.setCellRenderer(new UserListCellRenderer()); // Set the cell renderer
             participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             participants.setSelectedIndex(0);
             participants.addListSelectionListener(new ParticipantListListener());
@@ -689,34 +702,28 @@ public class Gui {
 
         // Handles when user is clicking on the AddParticipants button
         public class AddButtonListener implements ActionListener {
-
-            public void actionPerformed(ActionEvent e) { // user model transfer
-
+            public void actionPerformed(ActionEvent e) {
                 ArrayList<User> temporary = new ArrayList<>();
 
-                // grab the users from the UI list of users
-
+                // Grab the users from the UI list of users
                 for (int listIndex : userListIndex) {
-
-                    temporary.add(userModel.get(listIndex));
-
+                    User selectedUser = userModel.get(listIndex);
+                    if (selectedUser.isBanned()) {
+                        JOptionPane.showMessageDialog(CreateChatBoxDialog.this,
+                                "Cannot add banned user: " + selectedUser.getUsername(), "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        continue; // Skip adding this user
+                    }
+                    temporary.add(selectedUser);
                 }
 
-                // add the list to the participants UI list
-
+                // Add the list to the participants UI list
                 for (User user : temporary) {
-
-                    // check if it exists already
-
-                    if (!participantModel.contains(user)) // duplicate check
-                    {
+                    if (!participantModel.contains(user)) {
                         participantModel.addElement(user);
                     }
-
                 }
-
             }
-
         }
 
         // Handles when user is clicking on the RemoveParticipants button
@@ -912,6 +919,7 @@ public class Gui {
 
         public void setUpUserList() {
             users = new JList<>(userModel);
+            users.setCellRenderer(new UserListCellRenderer()); // Set the cell renderer
 
             users.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             users.setSelectedIndex(0);

@@ -87,16 +87,25 @@ public class Client {
     private void handleNotification(Notification notification) {
         String text = notification.text();
         JOptionPane.showMessageDialog(null, text, "Notification", JOptionPane.INFORMATION_MESSAGE);
+
+        if (text.contains("User banned successfully") || text.contains("User unbanned successfully")) {
+            // Request updated user list
+            queueMessage(new AskUserList());
+            // Also, request the current chatbox to update participants
+            if (gui.getChatBox() != null) {
+                queueMessage(new AskChatBox(gui.getChatBox().getChatBoxID()));
+            }
+        }
     }
 
     // Handle SendChatBox messages
     private void handleReturnChatBox(SendChatBox sendChatBox) {
         ChatBox chatBox = sendChatBox.chatBox();
-        if (gui.getChatBox().equals(chatBox)) {
+        gui.updateChatBox(chatBox);
+
+        if (gui.getChatBox().getChatBoxID() == chatBox.getChatBoxID()) {
             gui.clearMessages();
             gui.addAllMessages(chatBox);
-        } else if(!gui.containsChatBox(chatBox)) {
-            gui.addChatBox(chatBox);
         }
     }
 

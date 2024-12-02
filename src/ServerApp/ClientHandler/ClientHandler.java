@@ -17,6 +17,7 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 public class ClientHandler implements Runnable {
 
@@ -287,6 +288,16 @@ public class ClientHandler implements Runnable {
         ChatBox chatBox = messageHandler.getChatBox(chatBoxID);
         if (chatBox != null) {
             if (chatBox.getParticipants().contains(user)) {
+                // Update participants with up-to-date User objects
+                HashSet<User> updatedParticipants = new HashSet<>();
+                for (User participant : chatBox.getParticipants()) {
+                    User updatedUser = authenticationSystem.findUser(participant.getUserID());
+                    if (updatedUser != null) {
+                        updatedParticipants.add(updatedUser);
+                    }
+                }
+                chatBox.setParticipants(updatedParticipants);
+
                 SendChatBox response = new SendChatBox(chatBox);
                 sendMessage(response);
             } else {

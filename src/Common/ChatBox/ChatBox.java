@@ -83,6 +83,10 @@ public class ChatBox implements Serializable {
         this.isHidden = false;
         this.name = "ChatBox " + this.chatBoxID;
     }
+    
+    public void setParticipants(HashSet<User> participants) {
+        this.participants = participants;
+    }
 
     // Getters
 
