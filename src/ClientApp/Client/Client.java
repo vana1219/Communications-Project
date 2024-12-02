@@ -40,22 +40,34 @@ public class Client {
 
     private void handleServerResponses() {
         MessageInterface response;
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 response = inboundRequestQueue.take();
                 switch (response.getType()) {
-                    case MessageType.LOGIN_RESPONSE -> receiveLoginResponse((LoginResponse) response);
-                    case MessageType.NOTIFICATION -> handleNotification((Notification) response);
-                    case MessageType.RETURN_CHATBOX -> handleReturnChatBox((SendChatBox) response);
-                    case MessageType.RETURN_USER_LIST -> handleReturnUserList((SendUserList) response);
-                    case MessageType.SEND_MESSAGE -> handleSendMessage((SendMessage) response);
-                    case MessageType.RETURN_CHATBOX_LOG -> handleReturnChatBoxLog((SendChatLog) response);
-                    case MessageType.LOGOUT_RESPONSE -> {
-                        JOptionPane.showMessageDialog(null, "Logout Successful.", "Notification", JOptionPane.INFORMATION_MESSAGE);
-                        return;
-                    }
-                    default -> {
-                    }
+                    // Existing cases...
+                    case MessageType.LOGIN_RESPONSE:
+                        receiveLoginResponse((LoginResponse) response);
+                        break;
+                    case MessageType.NOTIFICATION:
+                        handleNotification((Notification) response);
+                        break;
+                    case MessageType.RETURN_CHATBOX:
+                        handleReturnChatBox((SendChatBox) response);
+                        break;
+                    case MessageType.RETURN_USER_LIST:
+                        handleReturnUserList((SendUserList) response);
+                        break;
+                    case MessageType.SEND_MESSAGE:
+                        handleSendMessage((SendMessage) response);
+                        break;
+                    case MessageType.RETURN_CHATBOX_LOG:
+                        handleReturnChatBoxLog((SendChatLog) response);
+                        break;
+                    case MessageType.RETURN_CHATBOX_LIST:
+                        handleReturnChatBoxList((SendChatBoxList) response);
+                        break;
+                    default:
+                        break;
                 }
             } catch (InterruptedException e) {
                 System.err.println("Error handling server response: " + e.getMessage());
@@ -65,20 +77,35 @@ public class Client {
 
     // Add methods to handle the server responses
 
+    private void handleReturnChatBoxList(SendChatBoxList sendChatBoxList) {
+        List<ChatBox> chatBoxes = sendChatBoxList.getChatBoxes();
+        gui.updateChatBoxList(chatBoxes);
+    }
+
+    
     // Handle Notification messages
     private void handleNotification(Notification notification) {
         String text = notification.text();
         JOptionPane.showMessageDialog(null, text, "Notification", JOptionPane.INFORMATION_MESSAGE);
+
+        if (text.contains("User banned successfully") || text.contains("User unbanned successfully")) {
+            // Request updated user list
+            queueMessage(new AskUserList());
+            // Also, request the current chatbox to update participants
+            if (gui.getChatBox() != null) {
+                queueMessage(new AskChatBox(gui.getChatBox().getChatBoxID()));
+            }
+        }
     }
 
     // Handle SendChatBox messages
     private void handleReturnChatBox(SendChatBox sendChatBox) {
         ChatBox chatBox = sendChatBox.chatBox();
-        if (gui.getChatBox().equals(chatBox)) {
+        gui.updateChatBox(chatBox);
+
+        if (gui.getChatBox().getChatBoxID() == chatBox.getChatBoxID()) {
             gui.clearMessages();
             gui.addAllMessages(chatBox);
-        } else if(!gui.containsChatBox(chatBox)) {
-            gui.addChatBox(chatBox);
         }
     }
 
@@ -106,7 +133,7 @@ public class Client {
     // Handle SendChatLog messages
     private void handleReturnChatBoxLog(SendChatLog sendChatLog) {
         String chatBoxLog = sendChatLog.chatBoxLog();
-        // Process chatBoxLog as needed
+        gui.displayChatLog(chatBoxLog);
     }
 
 
@@ -207,10 +234,6 @@ public class Client {
             client.gui.showMain();
             // Handle server responses
             client.handleServerResponses();
-
-            receiverThread.interrupt();
-            senderThread.interrupt();
-            System.exit(0);
 
         } catch (IOException | InterruptedException e) {
             System.err.println("I/O error: " + e.getMessage());

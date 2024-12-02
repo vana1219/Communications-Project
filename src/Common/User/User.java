@@ -62,8 +62,8 @@ public class User implements Serializable {
         return username;
     }
 
-    public void setBanned(boolean isBanned) {
-        this.isBanned = isBanned;
+    public void setBanned(boolean banned) {
+        isBanned = banned;
     }
 
     @Override
