@@ -637,6 +637,10 @@ public class Gui {
     		
     		ArrayList <User> userList = new ArrayList<User>(); //grab userlist from server *** MUST DO ****
     		
+    		
+    		
+    		
+    		
     		if ( userList == null || userList.isEmpty() )
     		{
     			return false;
@@ -851,15 +855,15 @@ public class Gui {
 				
 				//grab the info for participants list and chatbox name
 				
-				ArrayList<User> temp = new ArrayList<User>();
+				ArrayList<User> participantList = new ArrayList<User>();
 				
 				for (int i = 0; i < participantModel.getSize(); i++)
 				{
-					temp.add( participantModel.get(i) );
+					participantList.add( participantModel.get(i) );
 				}
 				
 				//Make request to send chatbox
-				
+				//new CreateChat(participants, name)
 				
 				
 				//.queueMessage(new CreateChat(participants, name))
