@@ -64,6 +64,10 @@ public class AuthenticationSystem {
     public User validateCredentials(String username, String password) {
         for (User user : userDB.values()) {
             if (user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)) {
+            	// If the user is online already, reject double login
+            	if (user.isOnline() == true) {
+            		return null;
+            	}
                 user.setOnline(true);
                 saveUserToFile(user); // Save updated user to file
                 return user;

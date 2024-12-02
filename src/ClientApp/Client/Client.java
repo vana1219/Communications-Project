@@ -197,7 +197,7 @@ public class Client {
                         client.loggedIn = true;
                         System.out.println("Logged in.");
                     } else {
-                        JOptionPane.showMessageDialog(null, "Invalid username or password", "Login Failed",
+                        JOptionPane.showMessageDialog(null, "Invalid credentials or double login.", "Login Failed",
                                                       JOptionPane.ERROR_MESSAGE);
                     }
                 }
