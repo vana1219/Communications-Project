@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 import ClientApp.Client.Client;
 import Common.Messages.AskChatBox;
+import Common.Messages.AskUserList;
 import Common.Messages.CreateChat;
 import Common.Messages.Login;
 import Common.Messages.SendMessage;
@@ -34,9 +35,10 @@ public class Gui {
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
     private final CreateChatBoxDialog chatBoxDialog;
+    private JList<User> users;
     private DefaultListModel<User> userModel;
 	private DefaultListModel<User> participantModel;
-  
+
     public Gui(Client client) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -46,16 +48,19 @@ public class Gui {
         this.client = client;
         frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
         frame.setLocationRelativeTo(null);// Center the window
         treeListModel = new TreeListModel<>(Comparator.comparing(ChatBox::lastUpdated)
                                                       .thenComparing(ChatBox::getChatBoxID));
+        userModel = new DefaultListModel<>();
+        users = new JList<>(userModel);
 
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
         connectionWindow = new ConnectionWindow();// Initialize connection window
-        
+
         chatBoxDialog = new CreateChatBoxDialog(frame);
-        
+
     }
 
     // Method to get connection info from the user
@@ -77,10 +82,25 @@ public class Gui {
 
     }
 
+    public void showCreateUser() {
+        client.queueMessage(new AskUserList());
+        SwingUtilities.invokeLater(() -> {
+            chatBoxDialog.setVisible(true);
+        });
+    }
+
+    public void updateUserList(Collection<User> users) {
+        userModel.clear();
+        userModel.addAll(users);
+    }
+
     public void addChatBox(ChatBox chatBox) {
-        if(mainWindow.chatBox==null) {mainWindow.chatBox = chatBox;}
+        if (mainWindow.chatBox == null) {
+            mainWindow.chatBox = chatBox;
+        }
         SwingUtilities.invokeLater(() -> treeListModel.add(chatBox));
     }
+
     public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
         SwingUtilities.invokeLater(() -> {
             treeListModel.addAll(chatBoxes);
@@ -88,14 +108,15 @@ public class Gui {
         });
     }
 
-    public boolean hasChatBoxes(){
+    public boolean hasChatBoxes() {
         return !treeListModel.isEmpty();
     }
 
     public boolean containsChatBox(ChatBox chatBox) {
         return treeListModel.contains(chatBox);
     }
-    public void clearMessages(){
+
+    public void clearMessages() {
         SwingUtilities.invokeLater(mainWindow.chatModel::clear);
     }
 
@@ -109,14 +130,13 @@ public class Gui {
         return loginWindow.getLogin();
     }
 
-  
     // Add a message to the display.
     public void addMessage(Message message) {
         User user = idToUser(message.getSenderID(), mainWindow.chatBox);
         String username;
         if (user == null) {
             username = String.valueOf(message.getSenderID());
-        }else{
+        } else {
             username = user.getUsername();
         }
         SwingUtilities.invokeLater(() -> {
@@ -134,15 +154,16 @@ public class Gui {
         return treeListModel
                 .treeSet
                 .stream()
-                .filter(chatBox -> chatBox.getChatBoxID()==chatBoxID)
+                .filter(chatBox -> chatBox.getChatBoxID() == chatBoxID)
                 .findFirst()
                 .orElse(null);
 
     }
 
+
     public User idToUser(int userId, ChatBox chatBox) {
-        for(var i:chatBox.getParticipantsList()){
-            if(i.getUserID() == userId){
+        for (var i : chatBox.getParticipantsList()) {
+            if (i.getUserID() == userId) {
                 return i;
             }
         }
@@ -154,13 +175,10 @@ public class Gui {
     }
 
     public void addAllMessages(ChatBox chatBox) {
-       for(var i:chatBox.getMessages()){
-           addMessage(i);
-       }
+        for (var i : chatBox.getMessages()) {
+            addMessage(i);
+        }
     }
-  
-  
-
 
 
     private static class LoginWindow {
@@ -238,64 +256,80 @@ public class Gui {
         private ChatBox lastSelectedChatBox;
         private ChatBox chatBox = null;
         private final JPanel panel;
+        private final JMenuBar menuBar;
+        private final JMenu menu;
+        private final List<JMenuItem> menuItems;
 
         public MainWindow() {
             frame.setSize(600, 500);
             // Create the chat area (used to display messages)
-            chatModel = new DefaultListModel<>();
-            chatList = new JList<>(chatModel);
-            chatList.setSelectionModel(new DefaultListSelectionModel());
+            {
+                chatModel = new DefaultListModel<>();
+                chatList = new JList<>(chatModel);
+                chatList.setSelectionModel(new DefaultListSelectionModel());
+                chatList.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
 
-
-
-            chatList.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-//        chatArea.setEditable(false);  // Messages should not be editable
-
-            // Create the scroll pane for the chat area
-            chatScrollPane = new JScrollPane(chatList);
-            chatScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                // Create the scroll pane for the chat area
+                chatScrollPane = new JScrollPane(chatList);
+                chatScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+            }
 
             // Create the message input field
+            {
+                messageField = new JTextArea();
+                messageField.setLineWrap(true);
+                messageField.setWrapStyleWord(true);
+                inputScrollPane = new JScrollPane(messageField);
+                inputScrollPane.setPreferredSize(new Dimension(500, 60));
+                messagePane = new JPanel();
+                messagePane.add(inputScrollPane);
+            }
 
-            messageField = new JTextArea();
-            messageField.setLineWrap(true);
-            messageField.setWrapStyleWord(true);
-            inputScrollPane = new JScrollPane(messageField);
-            inputScrollPane.setPreferredSize(new Dimension(500, 60));
-            messagePane = new JPanel();
-            messagePane.add(inputScrollPane);
 
             // Create the send button
-            sendButton = new JButton("Send");
-            messagePane.add(sendButton);
-            frame.setResizable(false);
+            {
+                sendButton = new JButton("Send");
+                messagePane.add(sendButton);
+                // Action listener for the send button
+                sendButton.addActionListener(e -> sendMessage());
+            }
 
 
             // Create the List to display and select chatboxes.
+
             chatBoxList = new JList<>(treeListModel);
             chatBoxList.setPreferredSize(new Dimension(200, chatBoxList.getPreferredSize().height));
             chatBoxListScrollPane = new JScrollPane(chatBoxList);
             chatBoxList.setSelectionModel(new DefaultListSelectionModel());
             chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-
-
-
-            // Action listener for the send button
-            sendButton.addActionListener(e -> sendMessage());
-
             // Action listener for the ChatBox list
-            chatBoxList.addListSelectionListener(e->{
+            chatBoxList.addListSelectionListener(e -> {
                 ChatBox selectedChatBox = chatBoxList.getSelectedValue();
                 if (selectedChatBox != null && !e.getValueIsAdjusting()) {
-                System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
+                    System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
                     selectChatBox(selectedChatBox);
                 }
             });
 
+
+            //create menu bar
+            menuBar = new JMenuBar();
+            menu = new JMenu("User");
+            menuItems = new ArrayList<>();
+            menuItems.add(new JMenuItem("Create Chat"));
+            menuItems.getFirst().addActionListener(e -> showCreateUser());
+
+            for (var i : menuItems) {
+                menu.add(i);
+            }
+
+            menuBar.add(menu);
+
+
             // Create the layout and add components
             panel = new JPanel();
             panel.setLayout(new BorderLayout());
+            panel.add(menuBar, BorderLayout.NORTH);
             panel.add(chatScrollPane, BorderLayout.CENTER);
             panel.add(new JPanel(), BorderLayout.SOUTH);
             panel.add(messagePane, BorderLayout.SOUTH);
@@ -304,7 +338,7 @@ public class Gui {
         }
 
         public void selectChatBox(ChatBox chatBox) {
-            if(this.chatBox != chatBox) {
+            if (this.chatBox != chatBox) {
                 this.chatBox = chatBox;
                 clearMessages();
                 client.queueMessage(new AskChatBox(chatBox.getChatBoxID()));
@@ -312,7 +346,7 @@ public class Gui {
         }
 
         public void sendMessage() {
-            String message = messageField.getText().strip().trim().replaceAll("(?m)^\\s+$","");
+            String message = messageField.getText().strip().trim().replaceAll("(?m)^\\s+$", "");
             if (!message.isEmpty()) {
                 client.queueMessage(new SendMessage(new Message(client.getUserData()
                                                                       .getUserID(), message), chatBox.getChatBoxID()));
@@ -378,7 +412,7 @@ public class Gui {
             }
         }
 
-		private JButton getConnectButton() {
+        private JButton getConnectButton() {
             JButton connectButton = new JButton("Connect");
             connectButton.addActionListener(e -> {
                 String serverIP = serverIPField.getText();
@@ -419,10 +453,11 @@ public class Gui {
             treeSet = new TreeSet<>(comparator.reversed());
         }
 
-        public void addQuietly(E item){
+        public void addQuietly(E item) {
             treeSet.removeIf(item::equals);
             treeSet.add(item);
         }
+
         public void add(E item) {
             treeSet.removeIf(item::equals);
             treeSet.add(item);
@@ -439,21 +474,25 @@ public class Gui {
         }
 
         public void addAll(Collection<? extends E> items) {
-            if(items == null || items.isEmpty()) {return;}
+            if (items == null || items.isEmpty()) {
+                return;
+            }
             treeSet.addAll(items);
-            fireIntervalAdded(this, 0, treeSet.size()-1);
+            fireIntervalAdded(this, 0, treeSet.size() - 1);
         }
 
         public void remove(E item) {
             int index = treeSet.stream().toList().indexOf(item);
-            if(treeSet.removeIf(item::equals)) {
+            if (treeSet.removeIf(item::equals)) {
                 super.fireIntervalRemoved(this, index, index);
             }
         }
 
         public void clear() {
-            if(treeSet.isEmpty()) {return;}
-            int end = treeSet.size()-1;
+            if (treeSet.isEmpty()) {
+                return;
+            }
+            int end = treeSet.size() - 1;
             treeSet.clear();
             fireIntervalRemoved(this, 0, end);
         }
@@ -469,18 +508,15 @@ public class Gui {
             return treeSet.stream().toList().get(index);
         }
     }
-    
-    public class CreateChatBoxDialog extends JDialog
-    {
-    	
-    	/*
-    	 * TO DO:
-    	 * 
-    	 * 
-    	 */
-    	
- 
-    	
+
+    public class CreateChatBoxDialog extends JDialog {
+
+        /*
+         * TO DO:
+         *
+         *
+         */
+
 
     	private JPanel comboPanel;
     	private Container pane; //content pane of dialog
@@ -501,10 +537,9 @@ public class Gui {
     	
     	
 
-    	public CreateChatBoxDialog( JFrame inFrame )
-    	{
-    		super (inFrame, "createChatBox", true);
-    		
+        public CreateChatBoxDialog(JFrame inFrame) {
+            super(inFrame, "createChatBox", true);
+
 
     		
     		pane = getContentPane(); //set content pane
@@ -512,32 +547,32 @@ public class Gui {
     		//Call Initialization
     		
     		setUpContentPane();
-    		
+
     		//ready to display
-    		
+
     		//set content pane opaque
-    		
-    		
-    		
+
+
+
     		this.pack();
     		this.setLocationRelativeTo(null);
     		//this.setVisible(true);
-    		
+
     	}
-    	
-    	
+
+
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
     	public void setUpContentPane()
     	{
-    		
+
     		//BoxLayout elements
-    		
+
     		comboPanel = setupBoxLayout();
-    		
-    		
+
+
     		//BorderLayout elements
-    		
+
     		setupLayout();
     		
     		
@@ -553,12 +588,12 @@ public class Gui {
     		
     		chBoxTxt = new JTextField(20);
 
-    		chBoxTxt.addActionListener( new TxtBoxListener()  );
-    		
-    		chBoxName = new JLabel("Name Inserted Here");
-    		
-    		
-    		createButton = new JButton ("Create ChatBox");
+            chBoxTxt.addActionListener(new TxtBoxListener());
+
+            chBoxName = new JLabel("Name Inserted Here");
+
+
+            createButton = new JButton("Create ChatBox");
 
     		//createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
     		createButton.addActionListener(  new CreateButtonListener()  );
@@ -587,39 +622,39 @@ public class Gui {
     	private void setupLayout()
     	{
     		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
-    				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
-    		
-    		
+    				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right");
+
+
     		setUpUserList();
-    		
+
     		setUpParticipantList();
         		
 
     		pane.add(prompt, BorderLayout.NORTH); // add prompt
         	pane.add(userScrPane, BorderLayout.CENTER); // add user list
         	pane.add(partcipantScrPane, BorderLayout.EAST); //add participants list
-        		
+
         	pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
-        		
-        	
+
+
 
     		}
-    		
-    		
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-		
+
+
+
+
+
+
+
+
+
+
 
 		public void setUpUserList() //Needs a way to grab Users
 
     	{
-    		
-    		
+
+
 			users = new JList<User>(userModel);
     		
     		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -630,16 +665,16 @@ public class Gui {
     		//Initialize list
     		
 
-    		userScrPane = new JScrollPane(users, 
+    		userScrPane = new JScrollPane(users,
     				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
-    		
+
     		userScrPane.setOpaque(true);
-    		
-    		
-    		
-    		
+
+
+
+
     	}
-    	
+
     	public void setUpParticipantList()
     	{
     		participantModel = new DefaultListModel<User>();
@@ -647,15 +682,15 @@ public class Gui {
     		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		participants.setSelectedIndex(0);
     		participants.addListSelectionListener(new ParticipantListListener());
-    		
+
     		participantModel.clear();
-    		
-    		partcipantScrPane = new JScrollPane(participants, 
+
+    		partcipantScrPane = new JScrollPane(participants,
     				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
-    		
+
     		partcipantScrPane.setOpaque(true);
     	}
-    	
+
     	//Handles when user is clicking on the list of users
 
     	public class UserListListener implements ListSelectionListener
@@ -712,100 +747,89 @@ public class Gui {
     	
     	//Handles when user is clicking on the AddParticipants button
 
-    	public class AddButtonListener implements ActionListener
-    	{
+        public class AddButtonListener implements ActionListener {
 
-		
-			public void actionPerformed(ActionEvent e) { //user model transfer
-				
-				//userListIndex - index containing users
-				//userModel - container storing the Users itself
-				//participantModel - container storing the Participants itself
-				//users - JList
-				
-				ArrayList<User> temporary = new ArrayList<User> ();
-				
-				//grab the users from the UI list of users
-				
-				
-				for (int i = 0; i < userListIndex.length; i++)
-				{
-					
-					temporary.add(userModel.get(  userListIndex[i] ));
-					
-				}
-				
-				//add the list to the participants UI list
-				
-				for (int j = 0; j < temporary.size(); j++)
-				{
-					
-					//check if it exists already
-					
-					if ( ! participantModel.contains( temporary.get(j) ) ) //duplicate check
-					{
-						participantModel.addElement( temporary.get(j) );
-					}
-					
-					
-					
-				}
-				
-				
-				
-				
-			}
-			
-    		
-    	}
-    	
-    	//Handles when user is clicking on the RemoveParticipants button
 
-    	public class RemoveButtonListener implements ActionListener
-    	{
-    		//participantListIndex - index containing participants
-		
-			public void actionPerformed(ActionEvent e) {
-				
-				// grab list of participants to be removed
-				// participantModel - container storing the Participants itself
-				
-				
-				
-				for (int i = 0; i < participantListIndex.length; i++)
-				{
-					participantModel.remove( participantListIndex[i] ); //remove participants
-				}
-				
-				
-		
-			}
-    		
-    	}
-    	
-    	//ChatBox Name Listener
-    	//Upon hitting "enter" when typing in the textfield, the label will update with chatbox name
-    	public class TxtBoxListener implements ActionListener
-    	{
+            public void actionPerformed(ActionEvent e) { //user model transfer
+
+                //userListIndex - index containing users
+                //userModel - container storing the Users itself
+                //participantModel - container storing the Participants itself
+                //users - JList
+
+                ArrayList<User> temporary = new ArrayList<User>();
+
+                //grab the users from the UI list of users
+
+
+                for (int i = 0; i < userListIndex.length; i++) {
+
+                    temporary.add(userModel.get(userListIndex[i]));
+
+                }
+
+                //add the list to the participants UI list
+
+                for (int j = 0; j < temporary.size(); j++) {
+
+                    //check if it exists already
+
+                    if (!participantModel.contains(temporary.get(j))) //duplicate check
+                    {
+                        participantModel.addElement(temporary.get(j));
+                    }
+
+
+                }
+
+
+            }
+
+
+        }
+
+        //Handles when user is clicking on the RemoveParticipants button
+
+        public class RemoveButtonListener implements ActionListener {
+            //participantListIndex - index containing participants
+
+            public void actionPerformed(ActionEvent e) {
+
+                // grab list of participants to be removed
+                // participantModel - container storing the Participants itself
+
+
+                for (int i = 0; i < participantListIndex.length; i++) {
+                    participantModel.remove(participantListIndex[i]); //remove participants
+                }
+
+
+            }
+
+        }
+
+        //ChatBox Name Listener
+        //Upon hitting "enter" when typing in the textfield, the label will update with chatbox name
+        public class TxtBoxListener implements ActionListener {
     		
     		/*
     			private static JTextField chBoxTxt;
     			private static JLabel chBoxName;
     			private static String chatboxName;
     		 */
-    		
-			public void actionPerformed(ActionEvent e) {
-				
-				chatboxName = chBoxTxt.getText(); //set chatbox name
-				chBoxName.setText(chatboxName); //set the label
-				chBoxTxt.selectAll(); //highlights the text field
 
-			}
-    		
-    	}
-    	
-    	
-    	//Create ChatBox button
+            public void actionPerformed(ActionEvent e) {
+
+                chatboxName = chBoxTxt.getText(); //set chatbox name
+                chBoxName.setText(chatboxName); //set the label
+                chBoxTxt.selectAll(); //highlights the text field
+
+            }
+
+        }
+
+
+        //Create ChatBox button
 
     	public class CreateButtonListener implements ActionListener
 
@@ -830,16 +854,16 @@ public class Gui {
 				//new CreateChat(participants, name)
 				
 				//client.queueMessage(new CreateChat(participants, name))
-				
+
 				client.queueMessage( new CreateChat(participantList, chatboxName) );
-				
+
 				//.queueMessage(new CreateChat(participants, name))
 				
 				
 				//close the dialog
 				
 
-				setVisible(false);
+                setVisible(false);
 
 				
 			}
@@ -850,6 +874,6 @@ public class Gui {
 
     }
 }
-    
-    
+
+
 
