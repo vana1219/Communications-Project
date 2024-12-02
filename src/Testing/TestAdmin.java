@@ -35,7 +35,6 @@ class TestAdmin {
         admin = new Admin("BobAdmin", "Bob123", messageHandler, authenticationSys);
         authenticationSys.registerUser(admin);
         user = new User("test", "test123");
-        authenticationSys.registerUser(user);
     }
 
     @Test
@@ -46,20 +45,30 @@ class TestAdmin {
 
     @Test
     void testDeleteUser() {
+    	admin.addUser(user);
         System.out.println("UserIDelete :" + user.getUserID());
         assertTrue(admin.deleteUser(user.getUserID()));
     }
 
     @Test
     void testResetPasswordforUser() {
+    	admin.addUser(user);
         System.out.println("UserIDReset :" + user.getUserID());
         assertTrue(admin.resetUserPassword(user.getUserID(), "newPass"));
     }
 
     @Test
     void testBanUser() {
-        System.out.println("UserIDBan :" + user.getUserID());
-        assertTrue(admin.banUser(user.getUserID()));
+    	admin.addUser(user);
+        int id=user.getUserID();
+        assertTrue(admin.banUser(id));
+    }
+    @Test
+    void testUnBanUser() {
+    	admin.addUser(user);
+        int id=user.getUserID();
+        admin.banUser(id);
+        assertTrue(admin.unbanUser(id));
     }
     @Test
     void testToSendSystemMessage() {
