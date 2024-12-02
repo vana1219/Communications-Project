@@ -35,6 +35,7 @@ public class Gui {
     private final TreeListModel<ChatBox> treeListModel;
     private final CreateChatBoxDialog chatBoxDialog;
     private DefaultListModel<User> userModel;
+	private DefaultListModel<User> participantModel;
   
     public Gui(Client client) {
         try {
@@ -510,14 +511,7 @@ public class Gui {
     		
     		//Call Initialization
     		
-    		if (  setUpContentPane()  )
-    		{
-    			
-    		}
-    		else
-    		{
-    			
-    		}
+    		setUpContentPane();
     		
     		//ready to display
     		
@@ -534,7 +528,7 @@ public class Gui {
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
-    	public boolean setUpContentPane()
+    	public void setUpContentPane()
     	{
     		
     		//BoxLayout elements
@@ -544,7 +538,7 @@ public class Gui {
     		
     		//BorderLayout elements
     		
-    		return setupLayout();
+    		setupLayout();
     		
     		
     		
@@ -590,36 +584,29 @@ public class Gui {
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: finished up on BorderLayout and brings it all together
-    	private boolean setupLayout()
+    	private void setupLayout()
     	{
     		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
     		
     		
-    		if ( ! setUpUserList() )
-    		{
-    			//error need to stop trying to open
-
-    			return false;
-
-    		}
-    		else
-    		{
-    			setUpParticipantList();
+    		setUpUserList();
+    		
+    		setUpParticipantList();
         		
 
-    			pane.add(prompt, BorderLayout.NORTH); // add prompt
-        		pane.add(userScrPane, BorderLayout.CENTER); // add user list
-        		pane.add(partcipantScrPane, BorderLayout.EAST); //add participants list
+    		pane.add(prompt, BorderLayout.NORTH); // add prompt
+        	pane.add(userScrPane, BorderLayout.CENTER); // add user list
+        	pane.add(partcipantScrPane, BorderLayout.EAST); //add participants list
         		
-        		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+        	pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
         		
-        		return true;
+        	
 
     		}
     		
     		
-    	}
+    	
     	
     	
     	
@@ -628,12 +615,12 @@ public class Gui {
     	
 		
 
-		public boolean setUpUserList() //Needs a way to grab Users
+		public void setUpUserList() //Needs a way to grab Users
 
     	{
     		
     		
-    		users = new JList<User>(userModel);
+			users = new JList<User>(userModel);
     		
     		users.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		users.setSelectedIndex(0);
@@ -648,8 +635,8 @@ public class Gui {
     		
     		userScrPane.setOpaque(true);
     		
-
-    		return true;
+    		
+    		
     		
     	}
     	
@@ -672,7 +659,6 @@ public class Gui {
     	//Handles when user is clicking on the list of users
 
     	public class UserListListener implements ListSelectionListener
-
     	{
     		
 			
@@ -702,7 +688,6 @@ public class Gui {
     	//handles when user is clicking on the list of participants
 
     	public class ParticipantListListener implements ListSelectionListener
-
     	{
     		
 			
@@ -862,9 +847,9 @@ public class Gui {
     	}
     	
     	
-    	
-    	
+
     }
-    
-    
 }
+    
+    
+
