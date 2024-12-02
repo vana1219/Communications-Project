@@ -32,7 +32,7 @@ public class Gui {
     private final MainWindow mainWindow;
     private final ConnectionWindow connectionWindow; // Added connection window
     private final TreeListModel<ChatBox> treeListModel;
-    
+    private final CreateChatBoxDialog chatBoxDialog;
   
     public Gui(Client client) {
         try {
@@ -50,6 +50,9 @@ public class Gui {
         loginWindow = new LoginWindow();
         mainWindow = new MainWindow();
         connectionWindow = new ConnectionWindow();// Initialize connection window
+        
+        chatBoxDialog = new CreateChatBoxDialog(frame);
+        
     }
 
     // Method to get connection info from the user
@@ -475,35 +478,38 @@ public class Gui {
     	
  
     	
-    	private static JPanel comboPanel;
-    	private static Container pane; //content pane of dialog
-    	private static JTextField chBoxTxt;
-    	private static JLabel chBoxName;
-    	private static JButton createButton;
-    	private static JButton addParticipant;
-    	private static JButton removeParticipant;
-    	private static JList<User> users;
-    	private static JList<User> participants;
-    	private static JLabel prompt;
-    	private static DefaultListModel<User> userModel;
-    	private static DefaultListModel<User> participantModel;
-    	private static int [] userListIndex;
-    	private static int [] participantListIndex;
-    	private static String chatboxName;
+
+    	private JPanel comboPanel;
+    	private Container pane; //content pane of dialog
+    	private JTextField chBoxTxt;
+    	private JLabel chBoxName;
+    	private JButton createButton;
+    	private JButton addParticipant;
+    	private JButton removeParticipant;
+    	private JList<User> users;
+    	private JList<User> participants;
+    	private JLabel prompt;
+    	private DefaultListModel<User> userModel;
+    	private DefaultListModel<User> participantModel;
+    	private int [] userListIndex;
+    	private int [] participantListIndex;
+    	private String chatboxName; 
+    	private JScrollPane userScrPane;
+    	private JScrollPane partcipantScrPane;
     	
     	
-    	private static CreateChatBoxDialog dialog;
-    	
+
     	public CreateChatBoxDialog( JFrame inFrame )
     	{
     		super (inFrame, "createChatBox", true);
     		
-    		dialog =  this;
+
     		
+    		pane = getContentPane(); //set content pane
     		
     		//Call Initialization
     		
-    		if (  Setup()  )
+    		if (  setUpContentPane()  )
     		{
     			
     		}
@@ -514,23 +520,20 @@ public class Gui {
     		
     		//ready to display
     		
+    		//set content pane opaque
+    		
+    		
+    		
     		this.pack();
     		this.setLocationRelativeTo(null);
-    		this.setVisible(true);
-    		
-    	}
-    	
-    	public static boolean Setup()
-    	{
-    		
-    		return true;
+    		//this.setVisible(true);
     		
     	}
     	
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: add all contents to content pane in proper layout
-    	public static void setUpContentPane()
+    	public boolean setUpContentPane()
     	{
     		
     		//BoxLayout elements
@@ -540,7 +543,7 @@ public class Gui {
     		
     		//BorderLayout elements
     		
-    		setupLayout();
+    		return setupLayout();
     		
     		
     		
@@ -548,28 +551,29 @@ public class Gui {
     	
     	//Precondition: None
     	//Post: sets up the box layout portion of the content pane
-    	private static JPanel setupBoxLayout()
+    	private JPanel setupBoxLayout()
     	{
     		comboPanel = new JPanel();
     		comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
     		
     		chBoxTxt = new JTextField(20);
-    		chBoxTxt.setAlignmentX(Component.CENTER_ALIGNMENT);
+
     		chBoxTxt.addActionListener( new TxtBoxListener()  );
     		
     		chBoxName = new JLabel("Name Inserted Here");
     		
     		
     		createButton = new JButton ("Create ChatBox");
-    		createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    		//createButton.setAlignmentX(Component.CENTER_ALIGNMENT);
     		createButton.addActionListener(  new CreateButtonListener()  );
     		
     		addParticipant = new JButton("Add Participant From List");
-    		addParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		//addParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
     		addParticipant.addActionListener( new AddButtonListener()  );
     		
     		removeParticipant = new JButton("Remove Participant From List");
-    		removeParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
+    		//removeParticipant.setAlignmentX(Component.CENTER_ALIGNMENT);
     		removeParticipant.addActionListener( new RemoveButtonListener() );
     		
     		comboPanel.add(chBoxTxt);
@@ -578,12 +582,14 @@ public class Gui {
     		comboPanel.add(addParticipant);
     		comboPanel.add(removeParticipant);
     		
+    		comboPanel.setOpaque(true);
+    		
     		return comboPanel;
     	}
     	
     	//Precondition: pane must be the content pane of the JDialog
     	//Postcondition: finished up on BorderLayout and brings it all together
-    	private static void setupLayout()
+    	private boolean setupLayout()
     	{
     		prompt = new JLabel("Users are listed on the left, Participants on the right\n"
     				+ "Below that we have name of new ChatBox on the left and create ChatBox button to the right"); 
@@ -592,16 +598,23 @@ public class Gui {
     		if ( ! setUpUserList() )
     		{
     			//error need to stop trying to open
+
+    			return false;
+
     		}
     		else
     		{
     			setUpParticipantList();
         		
-        		pane.add(prompt, BorderLayout.NORTH); // add prompt
-        		pane.add(users, BorderLayout.CENTER); // add user list
-        		pane.add(participants, BorderLayout.EAST); //add participants list
+
+    			pane.add(prompt, BorderLayout.NORTH); // add prompt
+        		pane.add(userScrPane, BorderLayout.CENTER); // add user list
+        		pane.add(partcipantScrPane, BorderLayout.EAST); //add participants list
         		
         		pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+        		
+        		return true;
+
     		}
     		
     		
@@ -613,7 +626,9 @@ public class Gui {
     	
     	
 		
-		public static boolean setUpUserList() //Needs a way to grab Users
+
+		public boolean setUpUserList() //Needs a way to grab Users
+
     	{
     		userModel = new DefaultListModel<User>();
     		
@@ -645,23 +660,36 @@ public class Gui {
     		
     		//Initialize list
     		
+
+    		userScrPane = new JScrollPane(users, 
+    				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+    		
+    		userScrPane.setOpaque(true);
+    		
+
     		return true;
     		
     	}
     	
-    	public static void setUpParticipantList()
+    	public void setUpParticipantList()
     	{
     		participantModel = new DefaultListModel<User>();
     		participants = new JList<User>(participantModel);
     		participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     		participants.setSelectedIndex(0);
     		participants.addListSelectionListener(new ParticipantListListener());
+
     		
+    		partcipantScrPane = new JScrollPane(participants, 
+    				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
     		
+    		partcipantScrPane.setOpaque(true);
     	}
     	
     	//Handles when user is clicking on the list of users
-    	public static class UserListListener implements ListSelectionListener
+
+    	public class UserListListener implements ListSelectionListener
+
     	{
     		
 			
@@ -689,7 +717,9 @@ public class Gui {
     	}
     	
     	//handles when user is clicking on the list of participants
-    	public static class ParticipantListListener implements ListSelectionListener
+
+    	public class ParticipantListListener implements ListSelectionListener
+
     	{
     		
 			
@@ -713,7 +743,8 @@ public class Gui {
     	}
     	
     	//Handles when user is clicking on the AddParticipants button
-    	public static class AddButtonListener implements ActionListener
+
+    	public class AddButtonListener implements ActionListener
     	{
 
 		
@@ -761,7 +792,8 @@ public class Gui {
     	}
     	
     	//Handles when user is clicking on the RemoveParticipants button
-    	public static class RemoveButtonListener implements ActionListener
+
+    	public class RemoveButtonListener implements ActionListener
     	{
     		//participantListIndex - index containing participants
 		
@@ -785,7 +817,7 @@ public class Gui {
     	
     	//ChatBox Name Listener
     	//Upon hitting "enter" when typing in the textfield, the label will update with chatbox name
-    	public static class TxtBoxListener implements ActionListener
+    	public class TxtBoxListener implements ActionListener
     	{
     		
     		/*
@@ -798,13 +830,17 @@ public class Gui {
 				
 				chatboxName = chBoxTxt.getText(); //set chatbox name
 				chBoxName.setText(chatboxName); //set the label
+				chBoxTxt.selectAll(); //highlights the text field
+
 			}
     		
     	}
     	
     	
     	//Create ChatBox button
-    	public static class CreateButtonListener implements ActionListener
+
+    	public class CreateButtonListener implements ActionListener
+
     	{
     		/*
         	 * private static DefaultListModel<User> participantModel;
@@ -831,7 +867,9 @@ public class Gui {
 				
 				//close the dialog
 				
-				dialog.setVisible(false);
+
+				setVisible(false);
+
 				
 			}
     		
