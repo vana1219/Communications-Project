@@ -92,6 +92,7 @@ public class Client {
     // Handle SendUserList messages
     private void handleReturnUserList(SendUserList sendUserList) {
         List<User> userList = sendUserList.userList();
+        gui.updateUserList(userList);
         // Process user list as needed
     }
 
