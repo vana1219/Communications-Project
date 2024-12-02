@@ -22,7 +22,7 @@ import javax.swing.*;
 
 public class Client {
     private boolean loggedIn = false;
-    private final  BlockingQueue<MessageInterface> inboundRequestQueue;
+    private final BlockingQueue<MessageInterface> inboundRequestQueue;
     private final BlockingQueue<MessageInterface> outboundResponseQueue;
     private User userData;
     private final Gui gui;
@@ -81,10 +81,11 @@ public class Client {
     // Handle SendChatBox messages
     private void handleReturnChatBox(SendChatBox sendChatBox) {
         ChatBox chatBox = sendChatBox.chatBox();
-        gui.addChatBox(chatBox);
         if (gui.getChatBox().equals(chatBox)) {
             gui.clearMessages();
             gui.addAllMessages(chatBox);
+        } else if(!gui.containsChatBox(chatBox)) {
+            gui.addChatBox(chatBox);
         }
     }
 
@@ -144,7 +145,7 @@ public class Client {
                 outObj.writeObject(message);
 
             } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+//                throw new RuntimeException(e);
             }
         }
     }
@@ -179,8 +180,8 @@ public class Client {
             client.outObj = new ObjectOutputStream(client.socket.getOutputStream());
             client.inObj = new ObjectInputStream(client.socket.getInputStream());
 
-            senderThread = new Thread(null,client::messageSender,"SenderThread");
-            receiverThread = new Thread(null,client::messageReceiver,"ReceiverThread");
+            senderThread = new Thread(null, client::messageSender, "SenderThread");
+            receiverThread = new Thread(null, client::messageReceiver, "ReceiverThread");
             senderThread.start();
             receiverThread.start();
 
@@ -200,7 +201,7 @@ public class Client {
                     }
                 }
             }
-
+            Thread.sleep(500);
             client.queueMessage(new AskChatBox(client.gui.getChatBox().getChatBoxID()));
             SendChatBox response = (SendChatBox) client.inboundRequestQueue.take();
             client.handleReturnChatBox(response);
