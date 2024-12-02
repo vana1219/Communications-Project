@@ -64,12 +64,7 @@ public class Gui {
 
     public void addChatBox(ChatBox chatBox) {
         if(mainWindow.chatBox==null) {mainWindow.chatBox = chatBox;}
-        SwingUtilities.invokeLater(() ->
-                                   {
-                                       if (treeListModel.contains(chatBox)) {
-                                           treeListModel.add(chatBox);
-                                       } else {treeListModel.add(chatBox);}
-                                   });
+        SwingUtilities.invokeLater(() -> treeListModel.add(chatBox));
     }
     public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
         SwingUtilities.invokeLater(() -> {
@@ -80,6 +75,10 @@ public class Gui {
 
     public boolean hasChatBoxes(){
         return !treeListModel.isEmpty();
+    }
+
+    public boolean containsChatBox(ChatBox chatBox) {
+        return treeListModel.contains(chatBox);
     }
     public void clearMessages(){
         SwingUtilities.invokeLater(mainWindow.chatModel::clear);
@@ -272,19 +271,10 @@ public class Gui {
 
             // Action listener for the ChatBox list
             chatBoxList.addListSelectionListener(e->{
-                var listener = chatBoxList.getListSelectionListeners()[0];
-                chatBoxList.removeListSelectionListener(listener);
                 ChatBox selectedChatBox = chatBoxList.getSelectedValue();
                 if (selectedChatBox != null && !e.getValueIsAdjusting()) {
                 System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
                     selectChatBox(selectedChatBox);
-//                    try {
-//                        Thread.sleep(1000);
-//                    } catch (InterruptedException ex) {
-//                        throw new RuntimeException(ex);
-//                    }
-                    chatBoxList.setSelectedValue(selectedChatBox, true);
-                    chatBoxList.addListSelectionListener(listener);
                 }
             });
 
