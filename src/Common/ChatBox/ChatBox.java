@@ -15,11 +15,16 @@ public class ChatBox implements Serializable {
 
     // Static atomic integer for generating unique chatBoxIDs
     private static final AtomicInteger chatBoxIdGenerator = new AtomicInteger(0);
+    
+    // Reset the chatBoxIdGenerator for testing
+    public static void resetChatBoxIdGenerator() {
+        chatBoxIdGenerator.set(0);
+    }
 
     // Attributes
     private int chatBoxID;
     private final String name;
-    private HashSet<User> participants;
+    private Collection<User> participants;
     private final SortedSet<Message> messages;
     private boolean isHidden;
     LocalDateTime creationTime;
@@ -74,6 +79,15 @@ public class ChatBox implements Serializable {
         this.creationTime = LocalDateTime.now();
     }
 
+    private ChatBox(boolean t){
+        this.chatBoxID = 0;
+        this.participants = null;
+        this.messages = new TreeSet<>(MESSAGE_TIMESTAMP_COMPARATOR);
+        this.isHidden = false;
+        this.name = "System Notifications";
+        this.creationTime = LocalDateTime.now();
+    }
+
     // **New Constructor with participants**
     // Initializes a ChatBox with a unique ID, optional name, and participants
     public ChatBox(List<User> participantsList) {
@@ -84,7 +98,7 @@ public class ChatBox implements Serializable {
         this.name = "ChatBox " + this.chatBoxID;
     }
     
-    public void setParticipants(HashSet<User> participants) {
+    public void setParticipants(Collection<User> participants) {
         this.participants = participants;
     }
 
@@ -99,8 +113,12 @@ public class ChatBox implements Serializable {
         return name;
     }
 
+    public static ChatBox getSystemChatBox() {
+        return new ChatBox(true);
+    }
+
     // Returns the set of participants in the ChatBox
-    public HashSet<User> getParticipants() {
+    public Collection<User> getParticipants() {
         return participants;
     }
 

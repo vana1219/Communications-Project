@@ -22,6 +22,7 @@ class TestChatBox {
 
     @BeforeEach
     public void setUp() {
+    	ChatBox.resetChatBoxIdGenerator(); 
         user1 = new User("Sally", "pass123");
         user2 = new User("Bob", "pass456");
         chatBox = new ChatBox("Test ChatBox");
@@ -35,7 +36,7 @@ class TestChatBox {
     @Test
     void testGetChatBoxNameandGetChatBoxID() {
     	assertEquals("Test ChatBox",chatBox.getName());
-    	assertEquals(1, chatBox.getChatBoxID());
+    	assertEquals(3, chatBox.getChatBoxID());
     }
     @Test 
     void testGetParrticipants() {

@@ -89,9 +89,10 @@ public class Server {
     private void createInitialChatBoxes() {
         // Check if chatbox between Bob and Sally exists
         boolean chatBoxExists = chatBoxes.values().stream().anyMatch(chatBox -> {
-            HashSet<User> participants = chatBox.getParticipants();
+            Collection<User> participants = chatBox.getParticipants();
             return participants.stream().anyMatch(u -> u.getUsername().equals("Bob Admin")) &&
-                   participants.stream().anyMatch(u -> u.getUsername().equals("Sally User"));
+                   participants.stream().anyMatch(u -> u.getUsername().equals("Sally User")) &&
+                   chatBox.getChatBoxID()!=0;
         });
 
         if (!chatBoxExists) {
