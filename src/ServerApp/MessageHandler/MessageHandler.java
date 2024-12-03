@@ -1,5 +1,6 @@
 package ServerApp.MessageHandler;
 
+import Common.Admin.Admin;
 import ServerApp.StorageManager.StorageManager;
 import Common.ChatBox.ChatBox;
 import Common.Message.Message;
@@ -21,15 +22,24 @@ public class MessageHandler {
     private final ConcurrentHashMap<Integer, ChatBox> chatBoxes; // In-memory chatboxes
     private final ConcurrentHashMap<Integer, User> userDB; // In-memory users
     private final Server server; // Reference to the Server instance
-
+    private final ChatBox systemChatBox;
     // Constructor
     // *Initializes MessageHandler with storageManager, chatBoxes, userDB, and server*
     // INPUT: storageManager (StorageManager), chatBoxes (ConcurrentHashMap<Integer, ChatBox>), userDB (ConcurrentHashMap<Integer, User>), server (Server)
     public MessageHandler(StorageManager storageManager, ConcurrentHashMap<Integer, ChatBox> chatBoxes, ConcurrentHashMap<Integer, User> userDB, Server server) {
+        ChatBox systemChatBoxTemp;
         this.storageManager = storageManager;
         this.chatBoxes = chatBoxes;
         this.userDB = userDB;
         this.server = server;
+        systemChatBoxTemp = getChatBox(0);
+        if(systemChatBoxTemp == null) {
+            systemChatBoxTemp = ChatBox.getSystemChatBox();
+            systemChatBoxTemp.setParticipants(userDB.values());
+            chatBoxes.put(0, systemChatBoxTemp);
+            storeChatBox(systemChatBoxTemp);
+        }
+            systemChatBox = systemChatBoxTemp;
     }
 
     // *Finds the ClientHandler for a given user ID*
@@ -87,7 +97,7 @@ public class MessageHandler {
     // OUTPUT: true if successful, false otherwise
     public boolean sendMessage(int chatBoxID, Message message) {
         ChatBox chatBox = chatBoxes.get(chatBoxID);
-        if (chatBox != null) {
+        if (chatBox != null && (chatBoxID!=0 || userDB.get(message.getSenderID() )instanceof Admin)) {
             chatBox.addMessage(new Message(message));
             storeChatBox(chatBox); // Store updated chatbox in persistent storage
             updateParticipants(chatBoxID); // Update all participants with the new chatbox
