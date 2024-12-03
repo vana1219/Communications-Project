@@ -406,7 +406,7 @@ public class Gui {
 
             // Create menu bar
             menuBar = new JMenuBar();
-            menu = new JMenu("User");
+            menu = new JMenu("MAIN MENU (click here)");
             menuItems = new ArrayList<>();
 
             // Create "Create Chat" menu item
