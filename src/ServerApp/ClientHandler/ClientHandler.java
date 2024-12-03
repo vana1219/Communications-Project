@@ -85,7 +85,35 @@ public class ClientHandler implements Runnable {
             case CREATE_CHATBOX -> handleCreateChatBox((CreateChat) message);
             case REQUEST_CHATBOX_LIST -> handleRequestChatBoxList();
             case VIEW_CHATBOX_LOG -> handleViewChatBoxLog((AskChatLog) message);
+            case HIDE_CHATBOX -> handleHideChatBox((HideChatBox) message);
+            case UNHIDE_CHATBOX -> handleUnhideChatBox((UnhideChatBox) message);
             default -> sendNotification("Unknown message type received.");
+        }
+    }
+    
+    private void handleHideChatBox(HideChatBox hideChatBox) {
+        if (!(user instanceof Admin)) {
+            sendNotification("Access denied. Admin privileges required to hide chatboxes.");
+            return;
+        }
+        boolean success = messageHandler.hideChatBox(hideChatBox.chatBoxID());
+        if (success) {
+            sendNotification("Chatbox hidden successfully.");
+        } else {
+            sendNotification("Failed to hide chatbox. Chatbox may not exist.");
+        }
+    }
+
+    private void handleUnhideChatBox(UnhideChatBox unhideChatBox) {
+        if (!(user instanceof Admin)) {
+            sendNotification("Access denied. Admin privileges required to unhide chatboxes.");
+            return;
+        }
+        boolean success = messageHandler.unhideChatBox(unhideChatBox.chatBoxID());
+        if (success) {
+            sendNotification("Chatbox unhidden successfully.");
+        } else {
+            sendNotification("Failed to unhide chatbox. Chatbox may not exist.");
         }
     }
     

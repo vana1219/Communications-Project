@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
-
 public class Gui {
     private final Client client;
     private final JFrame frame;
@@ -60,10 +59,19 @@ public class Gui {
     public void updateChatBox(ChatBox chatBox) {
         SwingUtilities.invokeLater(() -> {
             treeListModel.remove(chatBox);
-            treeListModel.add(chatBox);
+            if (!chatBox.isHidden()) {
+                treeListModel.add(chatBox);
+            }
 
             if (mainWindow.chatBox != null && mainWindow.chatBox.getChatBoxID() == chatBox.getChatBoxID()) {
-                setChatBox(chatBox);
+                if (chatBox.isHidden()) {
+                    // If the current chatbox is hidden, clear messages and set chatbox to null
+                    clearMessages();
+                    mainWindow.chatBox = null;
+                    mainWindow.chatLabel.setText("ChatBox Hidden");
+                } else {
+                    setChatBox(chatBox);
+                }
             }
         });
     }
@@ -82,7 +90,7 @@ public class Gui {
     public void updateChatBoxList(List<ChatBox> chatBoxes) {
         SwingUtilities.invokeLater(() -> {
             if (adminOptionsWindow != null) {
-                adminOptionsWindow.showChatLogDialog(chatBoxes);
+                adminOptionsWindow.showChatBoxListDialog(chatBoxes);
             }
         });
     }
@@ -119,16 +127,25 @@ public class Gui {
     }
 
     public void addChatBox(ChatBox chatBox) {
-        if (mainWindow.chatBox == null) {
-            setChatBox(chatBox);
+        if (!chatBox.isHidden()) {
+            if (mainWindow.chatBox == null) {
+                setChatBox(chatBox);
+            }
+            SwingUtilities.invokeLater(() -> treeListModel.add(chatBox));
         }
-        SwingUtilities.invokeLater(() -> treeListModel.add(chatBox));
     }
 
     public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
         SwingUtilities.invokeLater(() -> {
-            treeListModel.addAll(chatBoxes);
-            setChatBox(treeListModel.getElementAt(0));
+            treeListModel.clear();
+            for (ChatBox chatBox : chatBoxes) {
+                if (!chatBox.isHidden()) {
+                    treeListModel.add(chatBox);
+                }
+            }
+            if (!treeListModel.isEmpty()) {
+                setChatBox(treeListModel.getElementAt(0));
+            }
         });
     }
 
@@ -155,6 +172,9 @@ public class Gui {
     }
 
     public void addMessage(Message message) {
+        if (mainWindow.chatBox == null) {
+            return;
+        }
         User user = idToUser(message.getSenderID(), mainWindow.chatBox);
         String resolvedUsername;
         if (user == null) {
@@ -394,7 +414,6 @@ public class Gui {
             createChatMenuItem.addActionListener(e -> showCreateChat());
             menuItems.add(createChatMenuItem);
 
-
             // Create "Admin Options" menu item
             JMenuItem adminOptionsMenuItem = new JMenuItem("Admin Options");
             adminOptionsMenuItem.addActionListener(e -> {
@@ -432,6 +451,11 @@ public class Gui {
         }
 
         public void selectChatBox(ChatBox chatBox) {
+            if (chatBox.isHidden()) {
+                JOptionPane.showMessageDialog(frame, "This chatbox is currently hidden.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             if (this.chatBox != chatBox) {
                 setChatBox(chatBox);
                 clearMessages();
@@ -440,6 +464,11 @@ public class Gui {
         }
 
         public void sendMessage() {
+            if (chatBox == null || chatBox.isHidden()) {
+                JOptionPane.showMessageDialog(frame, "Cannot send messages to a hidden chatbox.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             String message = messageField.getText().strip().trim().replaceAll("(?m)^\\s+$", "");
             if (!message.isEmpty()) {
                 client.queueMessage(new SendMessage(new Message(client.getUserData().getUserID(), message),
@@ -570,8 +599,9 @@ public class Gui {
             if (items == null || items.isEmpty()) {
                 return;
             }
+            treeSet.clear();
             treeSet.addAll(items);
-            fireIntervalAdded(this, 0, treeSet.size() - 1);
+            fireContentsChanged(this, 0, treeSet.size() - 1);
         }
 
         public void remove(E item) {
@@ -851,13 +881,15 @@ public class Gui {
         private JButton banUserButton;
         private JButton unbanUserButton;
         private JButton viewChatLogButton;
-        private JButton createUserButton; // Add Create User button
+        private JButton createUserButton;
+        private JButton hideChatBoxButton; // Add Hide ChatBox button
+        private JButton unhideChatBoxButton; // Add Unhide ChatBox button
         private JList<User> users;
         private JLabel prompt;
         private int[] userListIndex;
         private JScrollPane userScrPane;
         private ChatLogDialog chatLogDialog;
-
+        private ChatBoxListDialog chatBoxListDialog;
 
         public AdminOptionsWindow(JFrame inFrame) {
             super(inFrame, "Admin Options", true);
@@ -879,6 +911,11 @@ public class Gui {
 
         public ChatLogDialog getChatLogDialog() {
             return chatLogDialog;
+        }
+
+        public void showChatBoxListDialog(List<ChatBox> chatBoxes) {
+            chatBoxListDialog = new ChatBoxListDialog(this, chatBoxes, client);
+            chatBoxListDialog.setVisible(true);
         }
 
         public class ChatLogDialog extends JDialog {
@@ -935,6 +972,66 @@ public class Gui {
             }
         }
 
+        // **ChatBoxListDialog** class for Hide/Unhide ChatBox
+        public class ChatBoxListDialog extends JDialog {
+            private final JList<ChatBox> chatBoxList;
+            private final DefaultListModel<ChatBox> chatBoxListModel;
+            private final JButton hideButton;
+            private final JButton unhideButton;
+            private final JButton closeButton;
+            private final Client client;
+
+            public ChatBoxListDialog(AdminOptionsWindow adminOptionsWindow, List<ChatBox> chatBoxes, Client client) {
+                super(adminOptionsWindow, "Manage ChatBoxes", true);
+                this.client = client;
+
+                chatBoxListModel = new DefaultListModel<>();
+                chatBoxListModel.addAll(chatBoxes);
+
+                chatBoxList = new JList<>(chatBoxListModel);
+                chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+                hideButton = new JButton("Hide ChatBox");
+                hideButton.addActionListener(e -> hideChatBox());
+
+                unhideButton = new JButton("Unhide ChatBox");
+                unhideButton.addActionListener(e -> unhideChatBox());
+
+                closeButton = new JButton("Close");
+                closeButton.addActionListener(e -> dispose());
+
+                JPanel buttonPanel = new JPanel();
+                buttonPanel.add(hideButton);
+                buttonPanel.add(unhideButton);
+                buttonPanel.add(closeButton);
+
+                setLayout(new BorderLayout());
+                add(new JScrollPane(chatBoxList), BorderLayout.CENTER);
+                add(buttonPanel, BorderLayout.SOUTH);
+
+                setSize(400, 300);
+                setLocationRelativeTo(adminOptionsWindow);
+            }
+
+            private void hideChatBox() {
+                ChatBox selectedChatBox = chatBoxList.getSelectedValue();
+                if (selectedChatBox != null) {
+                    client.queueMessage(new HideChatBox(selectedChatBox.getChatBoxID()));
+                } else {
+                    JOptionPane.showMessageDialog(this, "Please select a chatbox to hide.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+
+            private void unhideChatBox() {
+                ChatBox selectedChatBox = chatBoxList.getSelectedValue();
+                if (selectedChatBox != null) {
+                    client.queueMessage(new UnhideChatBox(selectedChatBox.getChatBoxID()));
+                } else {
+                    JOptionPane.showMessageDialog(this, "Please select a chatbox to unhide.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+
         // Precondition: pane must be the content pane of the JDialog
         // Postcondition: add all contents to content pane in proper layout
         public void setUpContentPane() {
@@ -961,12 +1058,20 @@ public class Gui {
             viewChatLogButton = new JButton("View Chat Logs");
             viewChatLogButton.addActionListener(new ViewChatLogButtonListener());
 
+            hideChatBoxButton = new JButton("Hide ChatBox");
+            hideChatBoxButton.addActionListener(new HideChatBoxButtonListener());
+
+            unhideChatBoxButton = new JButton("Unhide ChatBox");
+            unhideChatBoxButton.addActionListener(new UnhideChatBoxButtonListener());
+
             createUserButton = new JButton("Create User"); // Initialize Create User button
             createUserButton.addActionListener(new CreateUserButtonListener());
 
             comboPanel.add(banUserButton);
             comboPanel.add(unbanUserButton);
             comboPanel.add(viewChatLogButton);
+            comboPanel.add(hideChatBoxButton);
+            comboPanel.add(unhideChatBoxButton);
             comboPanel.add(createUserButton); // Add Create User button to the panel
 
             comboPanel.setOpaque(true);
@@ -1016,7 +1121,9 @@ public class Gui {
                     boolean hasSelection = userListIndex.length > 0;
                     banUserButton.setEnabled(hasSelection);
                     unbanUserButton.setEnabled(hasSelection);
-                    viewChatLogButton.setEnabled(hasSelection);
+                    viewChatLogButton.setEnabled(true); // Always enabled
+                    hideChatBoxButton.setEnabled(true); // Always enabled
+                    unhideChatBoxButton.setEnabled(true); // Always enabled
                 }
             }
 
@@ -1048,6 +1155,20 @@ public class Gui {
 
         // Handles when user clicks on View Chat Logs button
         public class ViewChatLogButtonListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                client.queueMessage(new AskChatBoxList());
+            }
+        }
+
+        // **HideChatBoxButtonListener** inner class
+        private class HideChatBoxButtonListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                client.queueMessage(new AskChatBoxList());
+            }
+        }
+
+        // **UnhideChatBoxButtonListener** inner class
+        private class UnhideChatBoxButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 client.queueMessage(new AskChatBoxList());
             }
