@@ -35,10 +35,10 @@ public class MessageHandler {
         systemChatBoxTemp = getChatBox(0);
         if(systemChatBoxTemp == null) {
             systemChatBoxTemp = ChatBox.getSystemChatBox();
-            systemChatBoxTemp.setParticipants(userDB.values());
             chatBoxes.put(0, systemChatBoxTemp);
             storeChatBox(systemChatBoxTemp);
         }
+            systemChatBoxTemp.setParticipants(userDB.values());
             systemChatBox = systemChatBoxTemp;
     }
 
