@@ -22,6 +22,7 @@ class TestChatBox {
 
     @BeforeEach
     public void setUp() {
+    	ChatBox.resetChatBoxIdGenerator(); 
         user1 = new User("Sally", "pass123");
         user2 = new User("Bob", "pass456");
         chatBox = new ChatBox("Test ChatBox");

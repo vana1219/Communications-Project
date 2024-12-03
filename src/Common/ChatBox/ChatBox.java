@@ -15,6 +15,11 @@ public class ChatBox implements Serializable {
 
     // Static atomic integer for generating unique chatBoxIDs
     private static final AtomicInteger chatBoxIdGenerator = new AtomicInteger(0);
+    
+    // Reset the chatBoxIdGenerator for testing
+    public static void resetChatBoxIdGenerator() {
+        chatBoxIdGenerator.set(0);
+    }
 
     // Attributes
     private int chatBoxID;
