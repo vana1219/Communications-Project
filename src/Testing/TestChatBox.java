@@ -21,23 +21,25 @@ class TestChatBox {
 
 
     @BeforeEach
-    public void setUp() {
+    public void startChatBox() {
     	ChatBox.resetChatBoxIdGenerator(); 
         user1 = new User("Sally", "pass123");
         user2 = new User("Bob", "pass456");
         chatBox = new ChatBox("Test ChatBox");
         this.participants = new HashSet<>();
-
     }
+    
     @Test
-    void  testConstructor() {
+    void testConstructor() {
     	assertNotNull(chatBox);
     }
+    
     @Test
     void testGetChatBoxNameandGetChatBoxID() {
     	assertEquals("Test ChatBox",chatBox.getName());
-    	assertEquals(3, chatBox.getChatBoxID());
+    	assertEquals(1, chatBox.getChatBoxID());
     }
+    
     @Test 
     void testGetParrticipants() {
     	chatBox.addParticipant(user1);
@@ -45,19 +47,19 @@ class TestChatBox {
     	chatBox.setParticipants(participants);
     	assertNotNull(chatBox.getParticipants());
     }
+    
     @Test 
     void testRemoveParticiapant() {
     	chatBox.addParticipant(user1);
     	assertTrue(chatBox.removeParticipant(user1));
     }
+    
     @Test 
     void testGetChatBoxEmpty() {
-    	ChatBox emptyChatBox=chatBox.getEmpty();
+    	ChatBox emptyChatBox = chatBox.getEmpty();
     	assertNotNull(emptyChatBox);
-    	assertEquals( chatBox.getChatBoxID(), emptyChatBox.getChatBoxID());
+    	assertEquals(chatBox.getChatBoxID(), emptyChatBox.getChatBoxID());
     	assertEquals(chatBox.getParticipants(), emptyChatBox.getParticipants());
     }
-    
-
 }
 
