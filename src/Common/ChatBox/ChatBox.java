@@ -131,6 +131,11 @@ public class ChatBox implements Serializable {
     public boolean isHidden() {
         return isHidden;
     }
+    
+    public void setHidden(boolean hidden) {
+        this.isHidden = hidden;
+    }
+
 
     // Methods
 
@@ -197,7 +202,6 @@ public class ChatBox implements Serializable {
         // Do not copy messages
         return empty;
     }
-
 
     // Implement equals and hashCode based on chatBoxID
     @Override
