@@ -124,24 +124,7 @@ public class ClientHandler implements Runnable {
             sendNotification("ChatBox not found.");
         }
     }
-    
-    public boolean banUser(int userID) {
-        User userToBan = AuthenticationSystem.userDB.get(userID);
-        if (userToBan != null && !userToBan.isBanned()) {
-            userToBan.setBanned(true);
-            return true;
-        }
-        return false;
-    }
 
-    public boolean unbanUser(int userID) {
-        User userToUnban = AuthenticationSystem.userDB.get(userID);
-        if (userToUnban != null && userToUnban.isBanned()) {
-            userToUnban.setBanned(false);
-            return true;
-        }
-        return false;
-    }
 
     public boolean isAdmin(int userID) {
         User user = AuthenticationSystem.userDB.get(userID);
@@ -155,8 +138,11 @@ public class ClientHandler implements Runnable {
 
 		// Validate credentials using AuthenticationSystem
 		User authenticatedUser = authenticationSystem.validateCredentials(username, password);
-
 		if (authenticatedUser != null) {
+            if(authenticatedUser.isBanned()) {
+            sendNotification("User is banned.");
+            return;
+        }
 			// Successful login
 			this.user = authenticatedUser;
 			System.out.println("User logged in: " + user.getUsername());
@@ -232,10 +218,9 @@ public class ClientHandler implements Runnable {
 	}
 
 	// Handle Logout
-	private void handleLogout() {
+	public void handleLogout() {
 		authenticationSystem.logout(user.getUserID());
 		sendMessage(new LogoutResponse());
-
         closeConnection();
 	}
 
@@ -245,6 +230,7 @@ public class ClientHandler implements Runnable {
 
 	    boolean success = authenticationSystem.banUser(userIDToBan);
 	    if (success) {
+            messageHandler.forceLogout(userIDToBan);
 	        System.out.println("Admin " + user.getUsername() + " banned user with ID: " + userIDToBan);
 	        sendNotification("User banned successfully.");
 	    } else {

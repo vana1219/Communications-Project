@@ -42,6 +42,12 @@ public class MessageHandler {
                 .orElse(null);
     }
 
+    public void forceLogout(int userID){
+        ClientHandler clientHandler = findClientHandler(userID);
+        if(clientHandler != null){clientHandler.handleLogout();}
+
+    }
+
     // *Creates a new chatbox with specified participants*
     // INPUT: participants (List<User>)
     // OUTPUT: ChatBox object

@@ -53,7 +53,7 @@ public class Gui {
         chatBoxDialog = new CreateChatBoxDialog(frame);
         adminOptionsWindow = new AdminOptionsWindow(frame);
     }
-    
+
     public void updateChatBox(ChatBox chatBox) {
         SwingUtilities.invokeLater(() -> {
             treeListModel.remove(chatBox);
@@ -87,6 +87,7 @@ public class Gui {
     public void showMain() {
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().add(mainWindow.panel);
+            frame.setTitle(frame.getTitle()+" Logged in as: " + client.getUserData().getUsername());
 
             if (!treeListModel.isEmpty()) {
                 mainWindow.chatBox = treeListModel.getElementAt(0);
@@ -97,7 +98,7 @@ public class Gui {
         });
     }
 
-    public void showCreateUser() {
+    public void showCreateChat() {
         client.queueMessage(new AskUserList());
         SwingUtilities.invokeLater(() -> {
             chatBoxDialog.setVisible(true);
@@ -156,7 +157,7 @@ public class Gui {
                 resolvedUsername += " (banned)";
             }
         }
-        final String displayUsername = resolvedUsername; 
+        final String displayUsername = resolvedUsername;
         SwingUtilities.invokeLater(() -> {
             mainWindow.chatModel.addElement("<html><b>" + displayUsername + ": </b>"
                     + message.toString().replace("\n", "<br><plaintext>     </plaintext>") + "<br></html>");
@@ -321,7 +322,6 @@ public class Gui {
             chatBoxList.addListSelectionListener(e -> {
                 ChatBox selectedChatBox = chatBoxList.getSelectedValue();
                 if (selectedChatBox != null && !e.getValueIsAdjusting()) {
-                    System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
                     selectChatBox(selectedChatBox);
                 }
             });
@@ -333,8 +333,11 @@ public class Gui {
 
             // Create "Create Chat" menu item
             JMenuItem createChatMenuItem = new JMenuItem("Create Chat");
-            createChatMenuItem.addActionListener(e -> showCreateUser());
+            createChatMenuItem.addActionListener(e -> showCreateChat());
             menuItems.add(createChatMenuItem);
+
+            // Create "Logout" menu Item
+            menu.add(new JMenuItem("Logout")).addActionListener(e -> client.queueMessage(new Logout()));
 
             // Create "Admin Options" menu item
             JMenuItem adminOptionsMenuItem = new JMenuItem("Admin Options");
@@ -790,8 +793,8 @@ public class Gui {
         private int[] userListIndex;
         private JScrollPane userScrPane;
         private ChatLogDialog chatLogDialog;
-        
-        
+
+
 
         public AdminOptionsWindow(JFrame inFrame) {
             super(inFrame, "Admin Options", true);
@@ -805,7 +808,7 @@ public class Gui {
             this.pack();
             this.setLocationRelativeTo(null);
         }
-        
+
         public void showChatLogDialog(List<ChatBox> chatBoxes) {
             chatLogDialog = new ChatLogDialog(this, chatBoxes, client);
             chatLogDialog.setVisible(true);
@@ -814,7 +817,7 @@ public class Gui {
         public ChatLogDialog getChatLogDialog() {
             return chatLogDialog;
         }
-        
+
         public class ChatLogDialog extends JDialog {
             private final JList<ChatBox> chatBoxList;
             private final DefaultListModel<ChatBox> chatBoxListModel;
@@ -957,6 +960,10 @@ public class Gui {
             public void actionPerformed(ActionEvent e) {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
+                    if(selectedUser.equals( client.getUserData())){
+                        JOptionPane.showMessageDialog(frame,"You can't ban yourself.");
+                        return;
+                    }
                     client.queueMessage(new BanUser(selectedUser.getUserID()));
                 }
             }

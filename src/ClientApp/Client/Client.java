@@ -40,7 +40,7 @@ public class Client {
 
     private void handleServerResponses() {
         MessageInterface response;
-        while (!Thread.currentThread().isInterrupted()) {
+        while (true) {
             try {
                 response = inboundRequestQueue.take();
                 switch (response.getType()) {
@@ -66,6 +66,9 @@ public class Client {
                     case MessageType.RETURN_CHATBOX_LIST:
                         handleReturnChatBoxList((SendChatBoxList) response);
                         break;
+                    case MessageType.LOGOUT_RESPONSE:
+                        JOptionPane.showMessageDialog(null, "Logout successful");
+                        return;
                     default:
                         break;
                 }
@@ -112,7 +115,7 @@ public class Client {
     // Handle SendUserList messages
     private void handleReturnUserList(SendUserList sendUserList) {
         List<User> userList = sendUserList.userList();
-        gui.updateUserList(userList);
+        SwingUtilities.invokeLater(() -> gui.updateUserList(userList));
         // Process user list as needed
     }
 
@@ -223,6 +226,8 @@ public class Client {
                         JOptionPane.showMessageDialog(null, "Invalid credentials or double login.", "Login Failed",
                                                       JOptionPane.ERROR_MESSAGE);
                     }
+                }else if(response.getType() == MessageType.NOTIFICATION){
+                    JOptionPane.showMessageDialog(null, ((Notification)response).text(), "Notification", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
             Thread.sleep(500);
@@ -234,6 +239,7 @@ public class Client {
             client.gui.showMain();
             // Handle server responses
             client.handleServerResponses();
+            System.exit(0);
 
         } catch (IOException | InterruptedException e) {
             System.err.println("I/O error: " + e.getMessage());
