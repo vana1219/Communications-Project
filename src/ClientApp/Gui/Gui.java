@@ -33,9 +33,19 @@ public class Gui {
     private final AdminOptionsWindow adminOptionsWindow;
     private final DefaultListModel<User> userModel;
 
+    // Define color scheme
+    private static final Color BACKGROUND_COLOR = new Color(245, 245, 245); // Light gray
+    private static final Color PANEL_COLOR = new Color(230, 230, 250); // Lavender
+    private static final Color MENU_COLOR = new Color(220, 220, 220); // Light gray
+    private static final Color BUTTON_COLOR = new Color(200, 200, 200); // Gray
+    private static final Color CHAT_AREA_COLOR = new Color(255, 255, 255); // White
+    private static final Color MESSAGE_INPUT_COLOR = new Color(255, 255, 255); // White
+
     public Gui(Client client) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // Optionally set default background color
+            // UIManager.put("Panel.background", BACKGROUND_COLOR);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -44,6 +54,8 @@ public class Gui {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.setLocationRelativeTo(null); // Center the window
+        frame.getContentPane().setBackground(BACKGROUND_COLOR);
+
         treeListModel = new TreeListModel<>(
                 Comparator.comparing(ChatBox::lastUpdated).thenComparing(ChatBox::getChatBoxID));
         userModel = new DefaultListModel<>();
@@ -222,8 +234,6 @@ public class Gui {
                 count = timeAgo.toMinutes();
                 unit = ChronoUnit.MINUTES.toString();
             } else if (timeAgo.toSeconds() > 0) {
-//                count = timeAgo.toSeconds();
-//                unit = ChronoUnit.SECONDS.toString();
                 return "moments ago";
             } else return "now";
         }
@@ -282,23 +292,32 @@ public class Gui {
 
         public LoginWindow() {
             frame = new JFrame("Login");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setResizable(false);
+            frame.setSize(300, 200);
+            frame.setLocationRelativeTo(null);
+            frame.getContentPane().setBackground(BACKGROUND_COLOR);
+
             login = new Login[1];
-            JPanel usernamePanel = new JPanel();
-            usernamePanel.setLayout(new FlowLayout());
+            JPanel usernamePanel = new JPanel(new FlowLayout());
+            usernamePanel.setBackground(BACKGROUND_COLOR);
             usernamePanel.add(new JLabel("Username:"));
             userNameField = new JTextField("Bob Admin");
             userNameField.setPreferredSize(new Dimension(150, userNameField.getPreferredSize().height));
             usernamePanel.add(userNameField);
-            JPanel passwordPanel = new JPanel();
-            passwordPanel.setLayout(new FlowLayout());
+
+            JPanel passwordPanel = new JPanel(new FlowLayout());
+            passwordPanel.setBackground(BACKGROUND_COLOR);
             passwordPanel.add(new JLabel("Password:"));
             passwordField = new JPasswordField("BobPass");
             passwordField.setPreferredSize(new Dimension(150, passwordField.getPreferredSize().height));
             passwordPanel.add(passwordField);
+
             JButton loginButton = getLoginButton();
 
             JPanel loginPanel = new JPanel();
             loginPanel.setLayout(new BoxLayout(loginPanel, BoxLayout.Y_AXIS));
+            loginPanel.setBackground(BACKGROUND_COLOR);
             loginPanel.add(usernamePanel);
             loginPanel.add(passwordPanel);
             loginPanel.add(loginButton);
@@ -312,6 +331,8 @@ public class Gui {
 
         private JButton getLoginButton() {
             JButton loginButton = new JButton("Login");
+            loginButton.setBackground(BUTTON_COLOR);
+            loginButton.setFont(new Font("Arial", Font.BOLD, 14));
             loginButton.addActionListener(e -> {
                 login[0] = new Login(userNameField.getText(), String.valueOf(passwordField.getPassword()));
                 userNameField.setText("");
@@ -358,16 +379,27 @@ public class Gui {
             // Create the chat area (used to display messages)
             {
                 rightPanel = new JPanel();
+                rightPanel.setBackground(PANEL_COLOR);
+
                 chatModel = new DefaultListModel<>();
                 chatList = new JList<>(chatModel);
                 chatList.setSelectionModel(new DefaultListSelectionModel());
-                chatList.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+                chatList.setFont(new Font("Arial", Font.PLAIN, 14));
                 chatList.setFixedCellWidth(400);
+                chatList.setBackground(CHAT_AREA_COLOR);
 
                 // Create the scroll pane for the chat area
                 chatScrollPane = new JScrollPane(chatList);
                 chatScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
                 chatScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                chatScrollPane.getViewport().setBackground(CHAT_AREA_COLOR);
+                chatScrollPane.setBorder(BorderFactory.createEmptyBorder());
+
+                chatLabel = new JLabel();
+                chatLabel.setFont(new Font("Arial", Font.BOLD, 16));
+                chatLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+                chatLabel.setBackground(PANEL_COLOR);
+                chatLabel.setOpaque(true);
             }
 
             // Create the message input field
@@ -375,16 +407,24 @@ public class Gui {
                 messageField = new JTextArea();
                 messageField.setLineWrap(true);
                 messageField.setWrapStyleWord(true);
+                messageField.setBackground(MESSAGE_INPUT_COLOR);
+                messageField.setFont(new Font("Arial", Font.PLAIN, 14));
+
                 inputScrollPane = new JScrollPane(messageField);
                 inputScrollPane.setPreferredSize(new Dimension(500, 60));
-                messagePane = new JPanel();
-                messagePane.add(inputScrollPane);
+                inputScrollPane.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
+                messagePane = new JPanel(new BorderLayout());
+                messagePane.add(inputScrollPane, BorderLayout.CENTER);
+                messagePane.setBackground(BACKGROUND_COLOR);
             }
 
             // Create the send button
             {
                 sendButton = new JButton("Send");
-                messagePane.add(sendButton);
+                sendButton.setBackground(BUTTON_COLOR);
+                sendButton.setFont(new Font("Arial", Font.BOLD, 14));
+                messagePane.add(sendButton, BorderLayout.EAST);
                 // Action listener for the send button
                 sendButton.addActionListener(e -> sendMessage());
             }
@@ -393,7 +433,13 @@ public class Gui {
 
             chatBoxList = new JList<>(treeListModel);
             chatBoxList.setPreferredSize(new Dimension(200, chatBoxList.getPreferredSize().height));
+            chatBoxList.setBackground(PANEL_COLOR);
+            chatBoxList.setFont(new Font("Arial", Font.PLAIN, 14));
+
             chatBoxListScrollPane = new JScrollPane(chatBoxList);
+            chatBoxListScrollPane.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            chatBoxListScrollPane.getViewport().setBackground(PANEL_COLOR);
+
             chatBoxList.setSelectionModel(new DefaultListSelectionModel());
             chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             // Action listener for the ChatBox list
@@ -406,16 +452,24 @@ public class Gui {
 
             // Create menu bar
             menuBar = new JMenuBar();
+            menuBar.setBackground(MENU_COLOR);
+            menuBar.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
             menu = new JMenu("MAIN MENU (click here)");
+            menu.setFont(new Font("Arial", Font.BOLD, 14));
+            menu.setBackground(MENU_COLOR);
+
             menuItems = new ArrayList<>();
 
             // Create "Create Chat" menu item
             JMenuItem createChatMenuItem = new JMenuItem("Create Chat");
+            createChatMenuItem.setFont(new Font("Arial", Font.PLAIN, 14));
             createChatMenuItem.addActionListener(e -> showCreateChat());
             menuItems.add(createChatMenuItem);
 
             // Create "Admin Options" menu item
             JMenuItem adminOptionsMenuItem = new JMenuItem("Admin Options");
+            adminOptionsMenuItem.setFont(new Font("Arial", Font.PLAIN, 14));
             adminOptionsMenuItem.addActionListener(e -> {
                 if (client.getUserData() instanceof Admin) {
                     showAdminOptions();
@@ -432,22 +486,25 @@ public class Gui {
             }
 
             // Create "Logout" menu Item
-            menu.add(new JMenuItem("Logout")).addActionListener(e -> client.queueMessage(new Logout()));
+            JMenuItem logoutMenuItem = new JMenuItem("Logout");
+            logoutMenuItem.setFont(new Font("Arial", Font.PLAIN, 14));
+            logoutMenuItem.addActionListener(e -> client.queueMessage(new Logout()));
+            menu.add(logoutMenuItem);
 
             menuBar.add(menu);
 
             // Create the layout and add components
-            panel = new JPanel();
+            panel = new JPanel(new BorderLayout());
+            panel.setBackground(BACKGROUND_COLOR);
+
             rightPanel.setLayout(new BorderLayout());
-            rightPanel.add(chatScrollPane, BorderLayout.CENTER);
-            chatLabel = new JLabel();
             rightPanel.add(chatLabel, BorderLayout.NORTH);
-            panel.setLayout(new BorderLayout());
+            rightPanel.add(chatScrollPane, BorderLayout.CENTER);
+
             panel.add(menuBar, BorderLayout.NORTH);
-            panel.add(rightPanel, BorderLayout.CENTER);
-            panel.add(new JPanel(), BorderLayout.SOUTH);
-            panel.add(messagePane, BorderLayout.SOUTH);
             panel.add(chatBoxListScrollPane, BorderLayout.WEST);
+            panel.add(rightPanel, BorderLayout.CENTER);
+            panel.add(messagePane, BorderLayout.SOUTH);
         }
 
         public void selectChatBox(ChatBox chatBox) {
@@ -461,6 +518,15 @@ public class Gui {
                 clearMessages();
                 client.queueMessage(new AskChatBox(chatBox.getChatBoxID()));
             }
+
+            // Disable message input for system chatbox if user is not an admin
+            if (chatBox.getChatBoxID() == 0 && !(client.getUserData() instanceof Admin)) {
+                messageField.setEnabled(false);
+                sendButton.setEnabled(false);
+            } else {
+                messageField.setEnabled(true);
+                sendButton.setEnabled(true);
+            }
         }
 
         public void sendMessage() {
@@ -469,14 +535,21 @@ public class Gui {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            // Prevent non-admin users from sending messages to the system chatbox
+            if (chatBox.getChatBoxID() == 0 && !(client.getUserData() instanceof Admin)) {
+                JOptionPane.showMessageDialog(frame, "You do not have permission to send messages in this chatbox.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             String message = messageField.getText().strip().trim().replaceAll("(?m)^\\s+$", "");
             if (!message.isEmpty()) {
                 client.queueMessage(new SendMessage(new Message(client.getUserData().getUserID(), message),
                         chatBox.getChatBoxID()));
-                messageField.setText("");// Clear the input field
+                messageField.setText(""); // Clear the input field
             }
         }
-
     }
 
     // Inner class for the connection window
@@ -489,9 +562,16 @@ public class Gui {
 
         public ConnectionWindow() {
             frame = new JFrame("Connect to Server");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setResizable(false);
+            frame.setSize(300, 200);
+            frame.setLocationRelativeTo(null);
+            frame.getContentPane().setBackground(BACKGROUND_COLOR);
+
             connectionInfo = new ConnectionInfo[1];
-            JPanel serverIPPanel = new JPanel();
-            serverIPPanel.setLayout(new FlowLayout());
+
+            JPanel serverIPPanel = new JPanel(new FlowLayout());
+            serverIPPanel.setBackground(BACKGROUND_COLOR);
             serverIPPanel.add(new JLabel("Server IP:"));
             serverIPField = new JTextField();
             serverIPField.setPreferredSize(new Dimension(150, serverIPField.getPreferredSize().height));
@@ -501,8 +581,8 @@ public class Gui {
 
             serverIPPanel.add(serverIPField);
 
-            JPanel serverPortPanel = new JPanel();
-            serverPortPanel.setLayout(new FlowLayout());
+            JPanel serverPortPanel = new JPanel(new FlowLayout());
+            serverPortPanel.setBackground(BACKGROUND_COLOR);
             serverPortPanel.add(new JLabel("Server Port:"));
             serverPortField = new JTextField();
             serverPortField.setPreferredSize(new Dimension(150, serverPortField.getPreferredSize().height));
@@ -515,6 +595,7 @@ public class Gui {
 
             JPanel connectPanel = new JPanel();
             connectPanel.setLayout(new BoxLayout(connectPanel, BoxLayout.Y_AXIS));
+            connectPanel.setBackground(BACKGROUND_COLOR);
             connectPanel.add(serverIPPanel);
             connectPanel.add(serverPortPanel);
             connectPanel.add(connectButton);
@@ -537,6 +618,8 @@ public class Gui {
 
         private JButton getConnectButton() {
             JButton connectButton = new JButton("Connect");
+            connectButton.setBackground(BUTTON_COLOR);
+            connectButton.setFont(new Font("Arial", Font.BOLD, 14));
             connectButton.addActionListener(e -> {
                 String serverIP = serverIPField.getText();
                 String serverPort = serverPortField.getText();
