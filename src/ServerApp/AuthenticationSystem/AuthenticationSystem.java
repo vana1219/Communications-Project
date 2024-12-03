@@ -90,9 +90,9 @@ public class AuthenticationSystem {
         for (User user : userDB.values()) {
             if (user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)) {
 //            	 If the user is online already, reject double login
-//            	if (user.isOnline()) {
-//            		return null;
-  //          	}
+            	if (user.isOnline()) {
+            		return null;
+            	}
                 if(!user.isBanned()) {
                     user.setOnline(true);
                     saveUserToFile(user);// Save updated user to file
