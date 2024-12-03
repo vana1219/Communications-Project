@@ -34,12 +34,12 @@ public class Gui {
     private final DefaultListModel<User> userModel;
 
     // Define color scheme
-    private static final Color BACKGROUND_COLOR = new Color(240, 248, 255); // Alice Blue
-    private static final Color PANEL_COLOR = new Color(224, 255, 255); // Light Cyan
+    private static final Color BACKGROUND_COLOR = new Color(230, 230, 250); // Lavender
+    private static final Color PANEL_COLOR = new Color(230, 230, 250); // Lavender
     private static final Color MENU_COLOR = new Color(175, 238, 238); // Pale Turquoise
-    private static final Color BUTTON_COLOR = new Color(173, 216, 230); // Light Blue
-    private static final Color CHAT_AREA_COLOR = new Color(255, 250, 250); // Snow
-    private static final Color MESSAGE_INPUT_COLOR = new Color(255, 255, 224); // Light Yellow
+    private static final Color BUTTON_COLOR = new Color(230, 230, 250); // Lavander
+    private static final Color CHAT_AREA_COLOR = new Color(240, 255, 240); // Honeydew
+    private static final Color MESSAGE_INPUT_COLOR = new Color(193, 255, 193); // Pale Green
     private static final Color LABEL_COLOR = new Color(25, 25, 112); // Midnight Blue
     private static final Color TEXT_COLOR = new Color(0, 0, 0); // Black
 
