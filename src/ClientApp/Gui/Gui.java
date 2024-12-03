@@ -321,7 +321,6 @@ public class Gui {
             chatBoxList.addListSelectionListener(e -> {
                 ChatBox selectedChatBox = chatBoxList.getSelectedValue();
                 if (selectedChatBox != null && !e.getValueIsAdjusting()) {
-                    System.out.println(chatBoxList.getSelectedValue().getName() + " Selected");
                     selectChatBox(selectedChatBox);
                 }
             });
