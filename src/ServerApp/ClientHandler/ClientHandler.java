@@ -124,24 +124,7 @@ public class ClientHandler implements Runnable {
             sendNotification("ChatBox not found.");
         }
     }
-    
-    public boolean banUser(int userID) {
-        User userToBan = AuthenticationSystem.userDB.get(userID);
-        if (userToBan != null && !userToBan.isBanned()) {
-            userToBan.setBanned(true);
-            return true;
-        }
-        return false;
-    }
 
-    public boolean unbanUser(int userID) {
-        User userToUnban = AuthenticationSystem.userDB.get(userID);
-        if (userToUnban != null && userToUnban.isBanned()) {
-            userToUnban.setBanned(false);
-            return true;
-        }
-        return false;
-    }
 
     public boolean isAdmin(int userID) {
         User user = AuthenticationSystem.userDB.get(userID);
