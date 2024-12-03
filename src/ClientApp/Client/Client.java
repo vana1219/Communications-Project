@@ -40,7 +40,7 @@ public class Client {
 
     private void handleServerResponses() {
         MessageInterface response;
-        while (!Thread.currentThread().isInterrupted()) {
+        while (true) {
             try {
                 response = inboundRequestQueue.take();
                 switch (response.getType()) {
@@ -66,6 +66,9 @@ public class Client {
                     case MessageType.RETURN_CHATBOX_LIST:
                         handleReturnChatBoxList((SendChatBoxList) response);
                         break;
+                    case MessageType.LOGOUT_RESPONSE:
+                        JOptionPane.showMessageDialog(null, "Logout successful");
+                        return;
                     default:
                         break;
                 }
@@ -234,6 +237,7 @@ public class Client {
             client.gui.showMain();
             // Handle server responses
             client.handleServerResponses();
+            System.exit(0);
 
         } catch (IOException | InterruptedException e) {
             System.err.println("I/O error: " + e.getMessage());
