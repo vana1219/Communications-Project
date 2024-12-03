@@ -336,6 +336,9 @@ public class Gui {
             createChatMenuItem.addActionListener(e -> showCreateUser());
             menuItems.add(createChatMenuItem);
 
+            // Create "Logout" menu Item
+            menu.add(new JMenuItem("Logout")).addActionListener(e -> client.queueMessage(new Logout()));
+
             // Create "Admin Options" menu item
             JMenuItem adminOptionsMenuItem = new JMenuItem("Admin Options");
             adminOptionsMenuItem.addActionListener(e -> {
