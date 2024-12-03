@@ -190,6 +190,9 @@ public class AuthenticationSystem {
             int maxUserId = 0;
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(usersDirectory))) {
                 for (Path path : directoryStream) {
+                	if (Files.isDirectory(path) || !path.getFileName().toString().matches("\\d+")) {
+                        continue;
+                    }
                     try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
                         User user = (User) ois.readObject();
                         userDB.put(user.getUserID(), user);
