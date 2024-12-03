@@ -87,6 +87,7 @@ public class Gui {
     public void showMain() {
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().add(mainWindow.panel);
+            frame.setTitle(frame.getTitle()+" Logged in as: " + client.getUserData().getUsername());
 
             if (!treeListModel.isEmpty()) {
                 mainWindow.chatBox = treeListModel.getElementAt(0);
@@ -97,7 +98,7 @@ public class Gui {
         });
     }
 
-    public void showCreateUser() {
+    public void showCreateChat() {
         client.queueMessage(new AskUserList());
         SwingUtilities.invokeLater(() -> {
             chatBoxDialog.setVisible(true);
@@ -332,7 +333,7 @@ public class Gui {
 
             // Create "Create Chat" menu item
             JMenuItem createChatMenuItem = new JMenuItem("Create Chat");
-            createChatMenuItem.addActionListener(e -> showCreateUser());
+            createChatMenuItem.addActionListener(e -> showCreateChat());
             menuItems.add(createChatMenuItem);
 
             // Create "Logout" menu Item
@@ -959,6 +960,10 @@ public class Gui {
             public void actionPerformed(ActionEvent e) {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
+                    if(selectedUser.equals( client.getUserData())){
+                        JOptionPane.showMessageDialog(frame,"You can't ban yourself.");
+                        return;
+                    }
                     client.queueMessage(new BanUser(selectedUser.getUserID()));
                 }
             }
