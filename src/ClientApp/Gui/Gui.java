@@ -34,12 +34,14 @@ public class Gui {
     private final DefaultListModel<User> userModel;
 
     // Define color scheme
-    private static final Color BACKGROUND_COLOR = new Color(245, 245, 245); // Light gray
-    private static final Color PANEL_COLOR = new Color(230, 230, 250); // Lavender
-    private static final Color MENU_COLOR = new Color(220, 220, 220); // Light gray
-    private static final Color BUTTON_COLOR = new Color(200, 200, 200); // Gray
-    private static final Color CHAT_AREA_COLOR = new Color(255, 255, 255); // White
-    private static final Color MESSAGE_INPUT_COLOR = new Color(255, 255, 255); // White
+    private static final Color BACKGROUND_COLOR = new Color(240, 248, 255); // Alice Blue
+    private static final Color PANEL_COLOR = new Color(224, 255, 255); // Light Cyan
+    private static final Color MENU_COLOR = new Color(175, 238, 238); // Pale Turquoise
+    private static final Color BUTTON_COLOR = new Color(173, 216, 230); // Light Blue
+    private static final Color CHAT_AREA_COLOR = new Color(255, 250, 250); // Snow
+    private static final Color MESSAGE_INPUT_COLOR = new Color(255, 255, 224); // Light Yellow
+    private static final Color LABEL_COLOR = new Color(25, 25, 112); // Midnight Blue
+    private static final Color TEXT_COLOR = new Color(0, 0, 0); // Black
 
     public Gui(Client client) {
         try {
@@ -283,7 +285,7 @@ public class Gui {
         });
     }
 
-    private static class LoginWindow {
+    private class LoginWindow {
         private final JFrame frame;
         private final JTextField userNameField;
         private final JPasswordField passwordField;
@@ -398,6 +400,7 @@ public class Gui {
                 chatLabel = new JLabel();
                 chatLabel.setFont(new Font("Arial", Font.BOLD, 16));
                 chatLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+                chatLabel.setForeground(LABEL_COLOR);
                 chatLabel.setBackground(PANEL_COLOR);
                 chatLabel.setOpaque(true);
             }
@@ -435,6 +438,7 @@ public class Gui {
             chatBoxList.setPreferredSize(new Dimension(200, chatBoxList.getPreferredSize().height));
             chatBoxList.setBackground(PANEL_COLOR);
             chatBoxList.setFont(new Font("Arial", Font.PLAIN, 14));
+            chatBoxList.setCellRenderer(new ChatBoxCellRenderer());
 
             chatBoxListScrollPane = new JScrollPane(chatBoxList);
             chatBoxListScrollPane.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -552,8 +556,30 @@ public class Gui {
         }
     }
 
+    // Custom cell renderer for ChatBox list
+    public class ChatBoxCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list,
+                                                      Object value,
+                                                      int index,
+                                                      boolean isSelected,
+                                                      boolean cellHasFocus) {
+            // Let the default renderer set up the label
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof ChatBox chatBox) {
+                label.setText(chatBox.getName());
+                label.setFont(new Font("Arial", Font.PLAIN, 14));
+                label.setOpaque(true);
+                label.setBackground(isSelected ? BUTTON_COLOR : PANEL_COLOR);
+                label.setForeground(TEXT_COLOR);
+            }
+            return label;
+        }
+    }
+
     // Inner class for the connection window
-    private static class ConnectionWindow {
+    private class ConnectionWindow {
         private final JFrame frame;
         private final JTextField serverIPField;
         private final JTextField serverPortField;
