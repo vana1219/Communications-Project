@@ -763,6 +763,7 @@ public class Gui {
             super(inFrame, "Create ChatBox", true);
 
             pane = getContentPane(); // set content pane
+            pane.setBackground(BACKGROUND_COLOR);
 
             // Call Initialization
             setUpContentPane();
@@ -788,30 +789,40 @@ public class Gui {
         private JPanel setupBoxLayout() {
             comboPanel = new JPanel();
             comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
+            comboPanel.setBackground(BACKGROUND_COLOR);
 
             chBoxTxt = new JTextField(20);
-
             chBoxTxt.addActionListener(new TxtBoxListener());
+            chBoxTxt.setFont(new Font("Arial", Font.PLAIN, 14));
 
-            chBoxName = new JLabel("Name Inserted Here");
+            chBoxName = new JLabel("ChatBox Name");
+            chBoxName.setFont(new Font("Arial", Font.BOLD, 14));
+            chBoxName.setForeground(LABEL_COLOR);
 
             createButton = new JButton("Create ChatBox");
-
+            createButton.setBackground(BUTTON_COLOR);
+            createButton.setFont(new Font("Arial", Font.BOLD, 14));
             createButton.addActionListener(new CreateButtonListener());
 
-            addParticipant = new JButton("Add Participant From List");
+            addParticipant = new JButton("Add Participant");
+            addParticipant.setBackground(BUTTON_COLOR);
+            addParticipant.setFont(new Font("Arial", Font.PLAIN, 14));
             addParticipant.addActionListener(new AddButtonListener());
 
-            removeParticipant = new JButton("Remove Participant From List");
+            removeParticipant = new JButton("Remove Participant");
+            removeParticipant.setBackground(BUTTON_COLOR);
+            removeParticipant.setFont(new Font("Arial", Font.PLAIN, 14));
             removeParticipant.addActionListener(new RemoveButtonListener());
 
             comboPanel.add(chBoxTxt);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(chBoxName);
-            comboPanel.add(createButton);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(addParticipant);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(removeParticipant);
-
-            comboPanel.setOpaque(true);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+            comboPanel.add(createButton);
 
             return comboPanel;
         }
@@ -819,18 +830,22 @@ public class Gui {
         // Precondition: pane must be the content pane of the JDialog
         // Postcondition: finished up on BorderLayout and brings it all together
         private void setupLayout() {
-            prompt = new JLabel("Users are listed on the left, Participants on the right\n"
-                    + "Below that we have name of new ChatBox on the left and create ChatBox button to the right");
+            prompt = new JLabel("Select users to add as participants:");
+            prompt.setFont(new Font("Arial", Font.BOLD, 14));
+            prompt.setForeground(LABEL_COLOR);
 
             setUpUserList();
 
             setUpParticipantList();
 
-            pane.add(prompt, BorderLayout.NORTH); // add prompt
-            pane.add(userScrPane, BorderLayout.CENTER); // add user list
-            pane.add(participantScrPane, BorderLayout.EAST); // add participants list
+            JPanel listsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+            listsPanel.setBackground(BACKGROUND_COLOR);
+            listsPanel.add(userScrPane);
+            listsPanel.add(participantScrPane);
 
-            pane.add(comboPanel, BorderLayout.SOUTH); // add text and button
+            pane.add(prompt, BorderLayout.NORTH); // add prompt
+            pane.add(listsPanel, BorderLayout.CENTER); // add lists
+            pane.add(comboPanel, BorderLayout.SOUTH); // add controls
         }
 
         public void setUpUserList() {
@@ -841,12 +856,14 @@ public class Gui {
             users.setSelectedIndex(0);
             users.addListSelectionListener(new UserListListener());
             users.setVisibleRowCount(10);
+            users.setFont(new Font("Arial", Font.PLAIN, 14));
 
             // Initialize list
             userScrPane = new JScrollPane(users, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-            userScrPane.setOpaque(true);
+            userScrPane.setBorder(BorderFactory.createTitledBorder("Available Users"));
+            userScrPane.setBackground(PANEL_COLOR);
+            userScrPane.getViewport().setBackground(PANEL_COLOR);
         }
 
         public void setUpParticipantList() {
@@ -856,13 +873,15 @@ public class Gui {
             participants.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             participants.setSelectedIndex(0);
             participants.addListSelectionListener(new ParticipantListListener());
+            participants.setFont(new Font("Arial", Font.PLAIN, 14));
 
             participantModel.clear();
 
             participantScrPane = new JScrollPane(participants, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-            participantScrPane.setOpaque(true);
+            participantScrPane.setBorder(BorderFactory.createTitledBorder("Participants"));
+            participantScrPane.setBackground(PANEL_COLOR);
+            participantScrPane.getViewport().setBackground(PANEL_COLOR);
         }
 
         // Handles when user is clicking on the list of users
@@ -936,10 +955,9 @@ public class Gui {
 
             public void actionPerformed(ActionEvent e) {
 
-                // grab list of participants to be removed
-
-                for (int listIndex : participantListIndex) {
-                    participantModel.remove(listIndex); // remove participants
+                // Remove selected participants
+                for (int i = participantListIndex.length - 1; i >= 0; i--) {
+                    participantModel.remove(participantListIndex[i]);
                 }
 
             }
@@ -973,6 +991,13 @@ public class Gui {
                     participantList.add(participantModel.get(i));
                 }
 
+                if (chatboxName == null || chatboxName.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(CreateChatBoxDialog.this,
+                            "Please enter a name for the ChatBox.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 // Make request to send chatbox
                 client.queueMessage(new CreateChat(participantList, chatboxName));
 
@@ -1004,6 +1029,7 @@ public class Gui {
             super(inFrame, "Admin Options", true);
 
             pane = getContentPane(); // set content pane
+            pane.setBackground(BACKGROUND_COLOR);
 
             // Call Initialization
             setUpContentPane();
@@ -1027,6 +1053,7 @@ public class Gui {
             chatBoxListDialog.setVisible(true);
         }
 
+        // Inner class for ChatLogDialog
         public class ChatLogDialog extends JDialog {
             private final JList<ChatBox> chatBoxList;
             private final DefaultListModel<ChatBox> chatBoxListModel;
@@ -1039,26 +1066,37 @@ public class Gui {
                 super(adminOptionsWindow, "Chat Logs", true);
                 this.client = client;
 
+                setLayout(new BorderLayout());
+                getContentPane().setBackground(BACKGROUND_COLOR);
+
                 chatBoxListModel = new DefaultListModel<>();
                 chatBoxListModel.addAll(chatBoxes);
 
                 chatBoxList = new JList<>(chatBoxListModel);
                 chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                chatBoxList.setFont(new Font("Arial", Font.PLAIN, 14));
+                chatBoxList.setCellRenderer(new ChatBoxCellRenderer());
 
                 chatLogArea = new JTextArea();
                 chatLogArea.setEditable(false);
+                chatLogArea.setFont(new Font("Arial", Font.PLAIN, 14));
+                chatLogArea.setBackground(CHAT_AREA_COLOR);
 
                 getLogButton = new JButton("Get Log");
+                getLogButton.setBackground(BUTTON_COLOR);
+                getLogButton.setFont(new Font("Arial", Font.BOLD, 14));
                 getLogButton.addActionListener(e -> requestChatLog());
 
                 closeButton = new JButton("Close");
+                closeButton.setBackground(BUTTON_COLOR);
+                closeButton.setFont(new Font("Arial", Font.BOLD, 14));
                 closeButton.addActionListener(e -> dispose());
 
                 JPanel buttonPanel = new JPanel();
+                buttonPanel.setBackground(BACKGROUND_COLOR);
                 buttonPanel.add(getLogButton);
                 buttonPanel.add(closeButton);
 
-                setLayout(new BorderLayout());
                 add(new JScrollPane(chatBoxList), BorderLayout.WEST);
                 add(new JScrollPane(chatLogArea), BorderLayout.CENTER);
                 add(buttonPanel, BorderLayout.SOUTH);
@@ -1081,7 +1119,7 @@ public class Gui {
             }
         }
 
-        // **ChatBoxListDialog** class for Hide/Unhide ChatBox
+        // ChatBoxListDialog class for Hide/Unhide ChatBox
         public class ChatBoxListDialog extends JDialog {
             private final JList<ChatBox> chatBoxList;
             private final DefaultListModel<ChatBox> chatBoxListModel;
@@ -1094,27 +1132,38 @@ public class Gui {
                 super(adminOptionsWindow, "Manage ChatBoxes", true);
                 this.client = client;
 
+                setLayout(new BorderLayout());
+                getContentPane().setBackground(BACKGROUND_COLOR);
+
                 chatBoxListModel = new DefaultListModel<>();
                 chatBoxListModel.addAll(chatBoxes);
 
                 chatBoxList = new JList<>(chatBoxListModel);
                 chatBoxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                chatBoxList.setFont(new Font("Arial", Font.PLAIN, 14));
+                chatBoxList.setCellRenderer(new ChatBoxCellRenderer());
 
                 hideButton = new JButton("Hide ChatBox");
+                hideButton.setBackground(BUTTON_COLOR);
+                hideButton.setFont(new Font("Arial", Font.BOLD, 14));
                 hideButton.addActionListener(e -> hideChatBox());
 
                 unhideButton = new JButton("Unhide ChatBox");
+                unhideButton.setBackground(BUTTON_COLOR);
+                unhideButton.setFont(new Font("Arial", Font.BOLD, 14));
                 unhideButton.addActionListener(e -> unhideChatBox());
 
                 closeButton = new JButton("Close");
+                closeButton.setBackground(BUTTON_COLOR);
+                closeButton.setFont(new Font("Arial", Font.BOLD, 14));
                 closeButton.addActionListener(e -> dispose());
 
                 JPanel buttonPanel = new JPanel();
+                buttonPanel.setBackground(BACKGROUND_COLOR);
                 buttonPanel.add(hideButton);
                 buttonPanel.add(unhideButton);
                 buttonPanel.add(closeButton);
 
-                setLayout(new BorderLayout());
                 add(new JScrollPane(chatBoxList), BorderLayout.CENTER);
                 add(buttonPanel, BorderLayout.SOUTH);
 
@@ -1157,33 +1206,49 @@ public class Gui {
         private JPanel setupBoxLayout() {
             comboPanel = new JPanel();
             comboPanel.setLayout(new BoxLayout(comboPanel, BoxLayout.X_AXIS)); // set layout
+            comboPanel.setBackground(BACKGROUND_COLOR);
 
             banUserButton = new JButton("Ban User");
+            banUserButton.setBackground(BUTTON_COLOR);
+            banUserButton.setFont(new Font("Arial", Font.BOLD, 14));
             banUserButton.addActionListener(new BanUserButtonListener());
 
             unbanUserButton = new JButton("Unban User");
+            unbanUserButton.setBackground(BUTTON_COLOR);
+            unbanUserButton.setFont(new Font("Arial", Font.BOLD, 14));
             unbanUserButton.addActionListener(new UnbanUserButtonListener());
 
             viewChatLogButton = new JButton("View Chat Logs");
+            viewChatLogButton.setBackground(BUTTON_COLOR);
+            viewChatLogButton.setFont(new Font("Arial", Font.BOLD, 14));
             viewChatLogButton.addActionListener(new ViewChatLogButtonListener());
 
             hideChatBoxButton = new JButton("Hide ChatBox");
+            hideChatBoxButton.setBackground(BUTTON_COLOR);
+            hideChatBoxButton.setFont(new Font("Arial", Font.BOLD, 14));
             hideChatBoxButton.addActionListener(new HideChatBoxButtonListener());
 
             unhideChatBoxButton = new JButton("Unhide ChatBox");
+            unhideChatBoxButton.setBackground(BUTTON_COLOR);
+            unhideChatBoxButton.setFont(new Font("Arial", Font.BOLD, 14));
             unhideChatBoxButton.addActionListener(new UnhideChatBoxButtonListener());
 
-            createUserButton = new JButton("Create User"); // Initialize Create User button
+            createUserButton = new JButton("Create User");
+            createUserButton.setBackground(BUTTON_COLOR);
+            createUserButton.setFont(new Font("Arial", Font.BOLD, 14));
             createUserButton.addActionListener(new CreateUserButtonListener());
 
             comboPanel.add(banUserButton);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(unbanUserButton);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(viewChatLogButton);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(hideChatBoxButton);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(unhideChatBoxButton);
-            comboPanel.add(createUserButton); // Add Create User button to the panel
-
-            comboPanel.setOpaque(true);
+            comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+            comboPanel.add(createUserButton);
 
             return comboPanel;
         }
@@ -1192,6 +1257,8 @@ public class Gui {
         // Postcondition: finished up on BorderLayout and brings it all together
         private void setupLayout() {
             prompt = new JLabel("Select a user from the list and choose an action");
+            prompt.setFont(new Font("Arial", Font.BOLD, 14));
+            prompt.setForeground(LABEL_COLOR);
 
             setUpUserList();
 
@@ -1209,12 +1276,14 @@ public class Gui {
             users.setSelectedIndex(0);
             users.addListSelectionListener(new UserListListener());
             users.setVisibleRowCount(10);
+            users.setFont(new Font("Arial", Font.PLAIN, 14));
 
             // Initialize list
             userScrPane = new JScrollPane(users, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-            userScrPane.setOpaque(true);
+            userScrPane.setBorder(BorderFactory.createTitledBorder("Users"));
+            userScrPane.setBackground(PANEL_COLOR);
+            userScrPane.getViewport().setBackground(PANEL_COLOR);
         }
 
         // Handles when user is clicking on the list of users
@@ -1233,6 +1302,7 @@ public class Gui {
                     viewChatLogButton.setEnabled(true); // Always enabled
                     hideChatBoxButton.setEnabled(true); // Always enabled
                     unhideChatBoxButton.setEnabled(true); // Always enabled
+                    createUserButton.setEnabled(true);
                 }
             }
 
@@ -1244,7 +1314,7 @@ public class Gui {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
                     if (selectedUser.equals(client.getUserData())) {
-                        JOptionPane.showMessageDialog(frame, "You can't ban yourself.");
+                        JOptionPane.showMessageDialog(AdminOptionsWindow.this, "You can't ban yourself.");
                         return;
                     }
                     client.queueMessage(new BanUser(selectedUser.getUserID()));
@@ -1269,21 +1339,21 @@ public class Gui {
             }
         }
 
-        // **HideChatBoxButtonListener** inner class
+        // HideChatBoxButtonListener inner class
         private class HideChatBoxButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 client.queueMessage(new AskChatBoxList());
             }
         }
 
-        // **UnhideChatBoxButtonListener** inner class
+        // UnhideChatBoxButtonListener inner class
         private class UnhideChatBoxButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 client.queueMessage(new AskChatBoxList());
             }
         }
 
-        // **CreateUserButtonListener** inner class
+        // CreateUserButtonListener inner class
         private class CreateUserButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 CreateUserDialog createUserDialog = new CreateUserDialog(AdminOptionsWindow.this, client);
@@ -1292,7 +1362,7 @@ public class Gui {
         }
     }
 
-    // **CreateUserDialog** class
+    // CreateUserDialog class
     public class CreateUserDialog extends JDialog {
         private final JTextField usernameField;
         private final JPasswordField passwordField;
@@ -1309,11 +1379,18 @@ public class Gui {
             usernameField = new JTextField(20);
             passwordField = new JPasswordField(20);
             isAdminCheckBox = new JCheckBox("Is Admin");
+            isAdminCheckBox.setBackground(BACKGROUND_COLOR);
+            isAdminCheckBox.setFont(new Font("Arial", Font.PLAIN, 14));
             createButton = new JButton("Create");
+            createButton.setBackground(BUTTON_COLOR);
+            createButton.setFont(new Font("Arial", Font.BOLD, 14));
             cancelButton = new JButton("Cancel");
+            cancelButton.setBackground(BUTTON_COLOR);
+            cancelButton.setFont(new Font("Arial", Font.BOLD, 14));
 
             // Set up layout
             JPanel panel = new JPanel(new GridBagLayout());
+            panel.setBackground(BACKGROUND_COLOR);
             GridBagConstraints gbc = new GridBagConstraints();
 
             gbc.insets = new Insets(5, 5, 5, 5);
@@ -1341,6 +1418,7 @@ public class Gui {
 
             // Buttons
             JPanel buttonPanel = new JPanel();
+            buttonPanel.setBackground(BACKGROUND_COLOR);
             buttonPanel.add(createButton);
             buttonPanel.add(cancelButton);
 
@@ -1388,10 +1466,17 @@ public class Gui {
                 String displayName = user.getUsername();
                 if (user.isBanned()) {
                     displayName += " (banned)";
+                    label.setForeground(Color.RED);
+                } else {
+                    label.setForeground(TEXT_COLOR);
                 }
                 label.setText(displayName);
+                label.setFont(new Font("Arial", Font.PLAIN, 14));
+                label.setOpaque(true);
+                label.setBackground(isSelected ? BUTTON_COLOR : PANEL_COLOR);
             }
             return label;
         }
     }
+
 }
