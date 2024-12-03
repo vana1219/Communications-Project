@@ -13,7 +13,7 @@ public class User implements Serializable {
     private final int userID;
     private String username;
     private String password;
-    private boolean isOnline;
+    private transient boolean isOnline;
     private boolean isBanned;
 
     // Constructor
