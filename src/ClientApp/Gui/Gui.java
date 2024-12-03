@@ -87,6 +87,7 @@ public class Gui {
     public void showMain() {
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().add(mainWindow.panel);
+            frame.setTitle(frame.getTitle()+" Logged in as: " + client.getUserData().getUsername());
 
             if (!treeListModel.isEmpty()) {
                 mainWindow.chatBox = treeListModel.getElementAt(0);
