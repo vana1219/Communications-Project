@@ -219,7 +219,7 @@ public class ClientHandler implements Runnable {
         }
 
         // Use Admin's addUser method
-        boolean registrationSuccess = adminUser.addUser(newUser);
+        boolean registrationSuccess = authenticationSystem.registerUser(newUser);
 
         if (registrationSuccess) {
             System.out.println("Admin " + adminUser.getUsername() + " successfully created user: " + newUsername);
