@@ -138,11 +138,11 @@ public class ClientHandler implements Runnable {
 
 		// Validate credentials using AuthenticationSystem
 		User authenticatedUser = authenticationSystem.validateCredentials(username, password);
-        if(authenticatedUser.isBanned()) {
+		if (authenticatedUser != null) {
+            if(authenticatedUser.isBanned()) {
             sendNotification("User is banned.");
             return;
         }
-		if (authenticatedUser != null) {
 			// Successful login
 			this.user = authenticatedUser;
 			System.out.println("User logged in: " + user.getUsername());
