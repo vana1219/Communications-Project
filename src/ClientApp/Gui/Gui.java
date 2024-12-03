@@ -98,7 +98,7 @@ public class Gui {
         });
     }
 
-    public void showCreateUser() {
+    public void showCreateChat() {
         client.queueMessage(new AskUserList());
         SwingUtilities.invokeLater(() -> {
             chatBoxDialog.setVisible(true);
@@ -333,7 +333,7 @@ public class Gui {
 
             // Create "Create Chat" menu item
             JMenuItem createChatMenuItem = new JMenuItem("Create Chat");
-            createChatMenuItem.addActionListener(e -> showCreateUser());
+            createChatMenuItem.addActionListener(e -> showCreateChat());
             menuItems.add(createChatMenuItem);
 
             // Create "Logout" menu Item
