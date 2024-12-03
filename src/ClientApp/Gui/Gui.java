@@ -1,6 +1,8 @@
 package ClientApp.Gui;
 
 import javax.swing.*;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -19,6 +21,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+
 
 public class Gui {
     private final Client client;
@@ -87,7 +90,7 @@ public class Gui {
     public void showMain() {
         SwingUtilities.invokeLater(() -> {
             frame.getContentPane().add(mainWindow.panel);
-            frame.setTitle(frame.getTitle()+" Logged in as: " + client.getUserData().getUsername());
+            frame.setTitle(frame.getTitle() + " Logged in as: " + client.getUserData().getUsername());
 
             if (!treeListModel.isEmpty()) {
                 mainWindow.chatBox = treeListModel.getElementAt(0);
@@ -159,17 +162,63 @@ public class Gui {
         }
         final String displayUsername = resolvedUsername;
         SwingUtilities.invokeLater(() -> {
-            mainWindow.chatModel.addElement("<html><b>" + displayUsername + ": </b>"
-                    + message.toString().replace("\n", "<br><plaintext>     </plaintext>") + "<br></html>");
+            mainWindow.chatModel
+                    .addElement("<html><b> &thinsp " + displayUsername
+                                + "</b><font size=\"3\" color=\"gray\">&thinsp "
+                                + timeFormat(message.getTimestamp())
+                                + "</font>"
+                                + "<p style=\"width: 500px; margin-left:10px;\">"
+                                + message.toString().replace("\n", "<br>")
+                                + "</p><br></html>"
+                               );
         });
     }
+
+    public String timeFormat(LocalDateTime time) {
+        Period dateAgo = Period.between(time.toLocalDate(), LocalDateTime.now().toLocalDate());
+
+        long count;
+        String unit = "";
+        if (dateAgo.getYears() > 0) {
+            count = dateAgo.getYears();
+            unit = ChronoUnit.YEARS.toString();
+        } else if (dateAgo.getMonths() > 0) {
+            count = dateAgo.getMonths();
+            unit = ChronoUnit.MONTHS.toString();
+        } else if (dateAgo.getDays() > 0) {
+            count = dateAgo.getDays();
+            unit = ChronoUnit.DAYS.toString();
+        } else {
+            Duration timeAgo = Duration.between(time, LocalDateTime.now());
+            if (timeAgo.toHours() > 0) {
+                count = timeAgo.toHours();
+                unit = ChronoUnit.HOURS.toString();
+            } else if (timeAgo.toMinutes() > 0) {
+                count = timeAgo.toMinutes();
+                unit = ChronoUnit.MINUTES.toString();
+            } else if (timeAgo.toSeconds() > 0) {
+//                count = timeAgo.toSeconds();
+//                unit = ChronoUnit.SECONDS.toString();
+                return "moments ago";
+            }else return "now";
+        }
+
+        if(count == 1){
+            unit = unit.replaceAll("s","");
+        }
+        unit = unit.toLowerCase();
+
+        return count + " " + unit + " ago";
+
+    }
+
     public ChatBox getChatBox() {
         return mainWindow.chatBox;
     }
 
     public ChatBox getChatBox(int chatBoxID) {
         return treeListModel.treeSet.stream().filter(chatBox -> chatBox.getChatBoxID() == chatBoxID).findFirst()
-                .orElse(null);
+                                    .orElse(null);
     }
 
     public User idToUser(int userId, ChatBox chatBox) {
@@ -286,10 +335,12 @@ public class Gui {
                 chatList = new JList<>(chatModel);
                 chatList.setSelectionModel(new DefaultListSelectionModel());
                 chatList.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+                chatList.setFixedCellWidth(400);
 
                 // Create the scroll pane for the chat area
                 chatScrollPane = new JScrollPane(chatList);
                 chatScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                chatScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             }
 
             // Create the message input field
@@ -346,7 +397,7 @@ public class Gui {
                     showAdminOptions();
                 } else {
                     JOptionPane.showMessageDialog(frame, "Access denied. Admin privileges required.", "Error",
-                            JOptionPane.ERROR_MESSAGE);
+                                                  JOptionPane.ERROR_MESSAGE);
                 }
             });
             menuItems.add(adminOptionsMenuItem);
@@ -380,7 +431,7 @@ public class Gui {
             String message = messageField.getText().strip().trim().replaceAll("(?m)^\\s+$", "");
             if (!message.isEmpty()) {
                 client.queueMessage(new SendMessage(new Message(client.getUserData().getUserID(), message),
-                        chatBox.getChatBoxID()));
+                                                    chatBox.getChatBoxID()));
                 messageField.setText("");// Clear the input field
             }
         }
@@ -642,7 +693,7 @@ public class Gui {
 
             // Initialize list
             userScrPane = new JScrollPane(users, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                                          ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             userScrPane.setOpaque(true);
         }
@@ -658,7 +709,7 @@ public class Gui {
             participantModel.clear();
 
             participantScrPane = new JScrollPane(participants, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                                                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             participantScrPane.setOpaque(true);
         }
@@ -713,8 +764,8 @@ public class Gui {
                     User selectedUser = userModel.get(listIndex);
                     if (selectedUser.isBanned()) {
                         JOptionPane.showMessageDialog(CreateChatBoxDialog.this,
-                                "Cannot add banned user: " + selectedUser.getUsername(), "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                                                      "Cannot add banned user: " + selectedUser.getUsername(), "Error",
+                                                      JOptionPane.ERROR_MESSAGE);
                         continue; // Skip adding this user
                     }
                     temporary.add(selectedUser);
@@ -793,7 +844,6 @@ public class Gui {
         private int[] userListIndex;
         private JScrollPane userScrPane;
         private ChatLogDialog chatLogDialog;
-
 
 
         public AdminOptionsWindow(JFrame inFrame) {
@@ -931,7 +981,7 @@ public class Gui {
 
             // Initialize list
             userScrPane = new JScrollPane(users, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                                          ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             userScrPane.setOpaque(true);
         }
@@ -955,13 +1005,13 @@ public class Gui {
 
         }
 
-     // Handles when user clicks on Ban User button
+        // Handles when user clicks on Ban User button
         public class BanUserButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
-                    if(selectedUser.equals( client.getUserData())){
-                        JOptionPane.showMessageDialog(frame,"You can't ban yourself.");
+                    if (selectedUser.equals(client.getUserData())) {
+                        JOptionPane.showMessageDialog(frame, "You can't ban yourself.");
                         return;
                     }
                     client.queueMessage(new BanUser(selectedUser.getUserID()));
@@ -986,6 +1036,7 @@ public class Gui {
             }
         }
     }
+
     // Custom cell renderer for User lists
     public class UserListCellRenderer extends DefaultListCellRenderer {
         @Override
