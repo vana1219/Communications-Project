@@ -12,7 +12,10 @@ import org.junit.runners.Suite;
 	TestChatBox.class,
 	TestUser.class,
 	TestMessage.class,
-	TestServer.class
+	TestServer.class,
+	TestAuthenticationSystem.class,
+	TestMessageHandler.class,
+	TestStorageManager.class
 })
 public class AllTests {
 }
