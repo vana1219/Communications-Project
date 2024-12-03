@@ -24,6 +24,10 @@ public class User implements Serializable {
         this.isOnline = false;
         this.isBanned = false;
     }
+    
+    public static void setUserIdGenerator(int value) {
+        userIdGenerator.set(value);
+    }
 
     // Getters and setters
     public int getUserID() {

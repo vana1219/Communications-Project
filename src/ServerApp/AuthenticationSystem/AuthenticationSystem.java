@@ -186,17 +186,23 @@ public class AuthenticationSystem {
 
     // Loads users from individual files into memory
     private void loadUsersFromFiles() {
-        synchronized (this) { // Ensure thread safety during load
+        synchronized (this) {
+            int maxUserId = 0;
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(usersDirectory))) {
                 for (Path path : directoryStream) {
                     try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
                         User user = (User) ois.readObject();
                         userDB.put(user.getUserID(), user);
+                        if (user.getUserID() > maxUserId) {
+                            maxUserId = user.getUserID();
+                        }
                     } catch (IOException | ClassNotFoundException e) {
                         System.err.println("Error loading user from file: " + path.getFileName());
                         e.printStackTrace();
                     }
                 }
+                // **Update userIdGenerator**
+                User.setUserIdGenerator(maxUserId);
                 System.out.println("Loaded " + userDB.size() + " users from files.");
             } catch (IOException e) {
                 System.err.println("Error reading user files from directory: " + usersDirectory);

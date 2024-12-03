@@ -70,8 +70,9 @@ public class Gui {
 
     public void setChatBox(ChatBox chatBox) {
         mainWindow.chatBox = chatBox;
-        mainWindow.chatLabel.setText(chatBox.getName() + "  (ID: " + chatBox.getChatBoxID()+")");
+        mainWindow.chatLabel.setText(chatBox.getName() + "  (ID: " + chatBox.getChatBoxID() + ")");
     }
+
     public void displayChatLog(String chatLog) {
         if (adminOptionsWindow != null && adminOptionsWindow.getChatLogDialog() != null) {
             adminOptionsWindow.getChatLogDialog().displayChatLog(chatLog);
@@ -168,13 +169,13 @@ public class Gui {
         SwingUtilities.invokeLater(() -> {
             mainWindow.chatModel
                     .addElement("<html><b> &thinsp " + displayUsername
-                                + "</b><font size=\"3\" color=\"gray\">&thinsp "
-                                + timeFormat(message.getTimestamp())
-                                + "</font>"
-                                + "<p style=\"width: 500px; margin-left:10px;\">"
-                                + message.toString().replace("\n", "<br>")
-                                + "</p><br></html>"
-                               );
+                            + "</b><font size=\"3\" color=\"gray\">&thinsp "
+                            + timeFormat(message.getTimestamp())
+                            + "</font>"
+                            + "<p style=\"width: 500px; margin-left:10px;\">"
+                            + message.toString().replace("\n", "<br>")
+                            + "</p><br></html>"
+                    );
         });
     }
 
@@ -204,11 +205,11 @@ public class Gui {
 //                count = timeAgo.toSeconds();
 //                unit = ChronoUnit.SECONDS.toString();
                 return "moments ago";
-            }else return "now";
+            } else return "now";
         }
 
-        if(count == 1){
-            unit = unit.replaceAll("s","");
+        if (count == 1) {
+            unit = unit.replaceAll("s", "");
         }
         unit = unit.toLowerCase();
 
@@ -222,7 +223,7 @@ public class Gui {
 
     public ChatBox getChatBox(int chatBoxID) {
         return treeListModel.treeSet.stream().filter(chatBox -> chatBox.getChatBoxID() == chatBoxID).findFirst()
-                                    .orElse(null);
+                .orElse(null);
     }
 
     public User idToUser(int userId, ChatBox chatBox) {
@@ -265,7 +266,7 @@ public class Gui {
             JPanel usernamePanel = new JPanel();
             usernamePanel.setLayout(new FlowLayout());
             usernamePanel.add(new JLabel("Username:"));
-            userNameField = new JTextField("bob admin");
+            userNameField = new JTextField("Bob Admin");
             userNameField.setPreferredSize(new Dimension(150, userNameField.getPreferredSize().height));
             usernamePanel.add(userNameField);
             JPanel passwordPanel = new JPanel();
@@ -401,7 +402,7 @@ public class Gui {
                     showAdminOptions();
                 } else {
                     JOptionPane.showMessageDialog(frame, "Access denied. Admin privileges required.", "Error",
-                                                  JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.ERROR_MESSAGE);
                 }
             });
             menuItems.add(adminOptionsMenuItem);
@@ -442,7 +443,7 @@ public class Gui {
             String message = messageField.getText().strip().trim().replaceAll("(?m)^\\s+$", "");
             if (!message.isEmpty()) {
                 client.queueMessage(new SendMessage(new Message(client.getUserData().getUserID(), message),
-                                                    chatBox.getChatBoxID()));
+                        chatBox.getChatBoxID()));
                 messageField.setText("");// Clear the input field
             }
         }
@@ -704,7 +705,7 @@ public class Gui {
 
             // Initialize list
             userScrPane = new JScrollPane(users, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                                          ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             userScrPane.setOpaque(true);
         }
@@ -720,7 +721,7 @@ public class Gui {
             participantModel.clear();
 
             participantScrPane = new JScrollPane(participants, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                                                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             participantScrPane.setOpaque(true);
         }
@@ -775,8 +776,8 @@ public class Gui {
                     User selectedUser = userModel.get(listIndex);
                     if (selectedUser.isBanned()) {
                         JOptionPane.showMessageDialog(CreateChatBoxDialog.this,
-                                                      "Cannot add banned user: " + selectedUser.getUsername(), "Error",
-                                                      JOptionPane.ERROR_MESSAGE);
+                                "Cannot add banned user: " + selectedUser.getUsername(), "Error",
+                                JOptionPane.ERROR_MESSAGE);
                         continue; // Skip adding this user
                     }
                     temporary.add(selectedUser);
@@ -850,6 +851,7 @@ public class Gui {
         private JButton banUserButton;
         private JButton unbanUserButton;
         private JButton viewChatLogButton;
+        private JButton createUserButton; // Add Create User button
         private JList<User> users;
         private JLabel prompt;
         private int[] userListIndex;
@@ -959,9 +961,13 @@ public class Gui {
             viewChatLogButton = new JButton("View Chat Logs");
             viewChatLogButton.addActionListener(new ViewChatLogButtonListener());
 
+            createUserButton = new JButton("Create User"); // Initialize Create User button
+            createUserButton.addActionListener(new CreateUserButtonListener());
+
             comboPanel.add(banUserButton);
             comboPanel.add(unbanUserButton);
             comboPanel.add(viewChatLogButton);
+            comboPanel.add(createUserButton); // Add Create User button to the panel
 
             comboPanel.setOpaque(true);
 
@@ -992,7 +998,7 @@ public class Gui {
 
             // Initialize list
             userScrPane = new JScrollPane(users, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                                          ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
             userScrPane.setOpaque(true);
         }
@@ -1046,6 +1052,95 @@ public class Gui {
                 client.queueMessage(new AskChatBoxList());
             }
         }
+
+        // **CreateUserButtonListener** inner class
+        private class CreateUserButtonListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                CreateUserDialog createUserDialog = new CreateUserDialog(AdminOptionsWindow.this, client);
+                createUserDialog.setVisible(true);
+            }
+        }
+    }
+
+    // **CreateUserDialog** class
+    public class CreateUserDialog extends JDialog {
+        private final JTextField usernameField;
+        private final JPasswordField passwordField;
+        private final JCheckBox isAdminCheckBox;
+        private final JButton createButton;
+        private final JButton cancelButton;
+        private final Client client;
+
+        public CreateUserDialog(AdminOptionsWindow adminOptionsWindow, Client client) {
+            super(adminOptionsWindow, "Create User", true);
+            this.client = client;
+
+            // Initialize components
+            usernameField = new JTextField(20);
+            passwordField = new JPasswordField(20);
+            isAdminCheckBox = new JCheckBox("Is Admin");
+            createButton = new JButton("Create");
+            cancelButton = new JButton("Cancel");
+
+            // Set up layout
+            JPanel panel = new JPanel(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+
+            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.anchor = GridBagConstraints.WEST;
+
+            // Username label and field
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            panel.add(new JLabel("Username:"), gbc);
+            gbc.gridx = 1;
+            panel.add(usernameField, gbc);
+
+            // Password label and field
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            panel.add(new JLabel("Password:"), gbc);
+            gbc.gridx = 1;
+            panel.add(passwordField, gbc);
+
+            // Is Admin checkbox
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            gbc.gridwidth = 2;
+            panel.add(isAdminCheckBox, gbc);
+
+            // Buttons
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(createButton);
+            buttonPanel.add(cancelButton);
+
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            gbc.gridwidth = 2;
+            panel.add(buttonPanel, gbc);
+
+            // Add action listeners
+            createButton.addActionListener(e -> createUser());
+            cancelButton.addActionListener(e -> dispose());
+
+            setContentPane(panel);
+            pack();
+            setLocationRelativeTo(adminOptionsWindow);
+        }
+
+        private void createUser() {
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword());
+            boolean isAdmin = isAdminCheckBox.isSelected();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Username and password cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            client.queueMessage(new CreateUser(username, password, isAdmin));
+            dispose();
+        }
     }
 
     // Custom cell renderer for User lists
@@ -1070,4 +1165,3 @@ public class Gui {
         }
     }
 }
-

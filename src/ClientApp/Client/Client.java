@@ -44,7 +44,6 @@ public class Client {
             try {
                 response = inboundRequestQueue.take();
                 switch (response.getType()) {
-                    // Existing cases...
                     case MessageType.LOGIN_RESPONSE:
                         receiveLoginResponse((LoginResponse) response);
                         break;
