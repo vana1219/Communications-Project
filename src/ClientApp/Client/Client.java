@@ -44,7 +44,6 @@ public class Client {
             try {
                 response = inboundRequestQueue.take();
                 switch (response.getType()) {
-                    // Existing cases...
                     case MessageType.LOGIN_RESPONSE:
                         receiveLoginResponse((LoginResponse) response);
                         break;
@@ -69,6 +68,8 @@ public class Client {
                     case MessageType.LOGOUT_RESPONSE:
                         JOptionPane.showMessageDialog(null, "Logout successful");
                         return;
+                    case MessageType.HIDE_CHATBOX:
+                    case MessageType.UNHIDE_CHATBOX:
                     default:
                         break;
                 }
@@ -105,8 +106,9 @@ public class Client {
     private void handleReturnChatBox(SendChatBox sendChatBox) {
         ChatBox chatBox = sendChatBox.chatBox();
         gui.updateChatBox(chatBox);
-
-        if (gui.getChatBox().getChatBoxID() == chatBox.getChatBoxID()) {
+        if (chatBox.isHidden()) {
+            gui.clearMessages();
+        } else if (gui.getChatBox() != null && gui.getChatBox().getChatBoxID() == chatBox.getChatBoxID()) {
             gui.clearMessages();
             gui.addAllMessages(chatBox);
         }

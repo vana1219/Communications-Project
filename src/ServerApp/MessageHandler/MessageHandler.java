@@ -256,5 +256,16 @@ public class MessageHandler {
         }
         return -1;
     }
+    
+    public boolean unhideChatBox(int chatBoxID) {
+        ChatBox chatBox = chatBoxes.get(chatBoxID);
+        if (chatBox != null) {
+            chatBox.setHidden(false); // Set chatbox to unhidden
+            storeChatBox(chatBox); // Store updated chatbox to reflect unhidden status
+            updateParticipants(chatBoxID); // Update all participants with the latest chatbox state
+            return true;
+        }
+        return false;
+    }
 }
 
