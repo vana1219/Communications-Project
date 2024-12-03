@@ -93,8 +93,10 @@ public class AuthenticationSystem {
  //           	if (user.isOnline() == true) {
  //           		return null;
  //           	}
-                user.setOnline(true);
-                saveUserToFile(user); // Save updated user to file
+                if(!user.isBanned()) {
+                    user.setOnline(true);
+                    saveUserToFile(user);// Save updated user to file
+                }
                 return user;
             }
         }

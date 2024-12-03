@@ -226,6 +226,8 @@ public class Client {
                         JOptionPane.showMessageDialog(null, "Invalid credentials or double login.", "Login Failed",
                                                       JOptionPane.ERROR_MESSAGE);
                     }
+                }else if(response.getType() == MessageType.NOTIFICATION){
+                    JOptionPane.showMessageDialog(null, ((Notification)response).text(), "Notification", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
             Thread.sleep(500);
