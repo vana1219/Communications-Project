@@ -167,9 +167,9 @@ public class Gui {
                                 + "</b><font size=\"3\" color=\"gray\">&thinsp "
                                 + timeFormat(message.getTimestamp())
                                 + "</font>"
-                                + "<br> &thinsp "
-                                + message.toString().replace("\n", "<br>&thinsp ")
-                                + "</html>"
+                                + "<p style=\"width: 500px; margin-left:10px;\">"
+                                + message.toString().replace("\n", "<br>")
+                                + "</p><br></html>"
                                );
         });
     }
