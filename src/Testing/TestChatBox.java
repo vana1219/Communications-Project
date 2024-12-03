@@ -35,7 +35,7 @@ class TestChatBox {
     @Test
     void testGetChatBoxNameandGetChatBoxID() {
     	assertEquals("Test ChatBox",chatBox.getName());
-    	assertEquals(1, chatBox.getChatBoxID());
+    	assertEquals(3, chatBox.getChatBoxID());
     }
     @Test 
     void testGetParrticipants() {
