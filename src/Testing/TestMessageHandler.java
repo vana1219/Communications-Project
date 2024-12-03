@@ -43,49 +43,56 @@ class TestMessageHandler {
 	}
 	@Test
 	void testGetChatBox() {
-		User user1=new User("user1", "pass");
-		User user2=new User("user2", "pass");
-		chatbox.addParticipant(user1);
-		chatbox.addParticipant(user2);
-		List<User> participants =chatbox.getParticipantsList();
-		msgHandler.createChatBox(participants, "chat1");
-		int boxId=chatbox.getChatBoxID();
-		assertNotNull(msgHandler.getChatBox(boxId));
+		User user1 = new User("user1", "pass");
+	     User user2 = new User("user2", "pass");
+	     ChatBox chatbox = new ChatBox();
+	     chatbox.addParticipant(user1);
+	     chatbox.addParticipant(user2);
+	     List<User> participants = chatbox.getParticipantsList();
+	     ChatBox createdChatBox = msgHandler.createChatBox(participants, "chat1");
+	     int boxId = createdChatBox.getChatBoxID();
+	     assertEquals(createdChatBox, msgHandler.getChatBox(boxId));
 		
 	}
 	@Test
 	void testSendMessage() {
-		User user1=new User("user1", "pass");
-		User user2=new User("user2", "pass");
-		chatbox.addParticipant(user1);
-		chatbox.addParticipant(user2);
-		List<User> participants =chatbox.getParticipantsList();
-		msgHandler.createChatBox(participants, "chat1");
-		int boxId=chatbox.getChatBoxID();
-		Message msg=new Message(1,"This is test msg");
-		assertTrue(msgHandler.sendMessage(boxId,msg));
+		User user1 = new User("user1", "pass");
+        User user2 = new User("user2", "pass");
+        ChatBox chatbox = new ChatBox();
+        chatbox.addParticipant(user1);
+        chatbox.addParticipant(user2);
+        List<User> participants = chatbox.getParticipantsList();
+        ChatBox createdChatBox = msgHandler.createChatBox(participants, "chat1");
+        int boxId = createdChatBox.getChatBoxID();
+        Message msg = new Message(1, "This is test msg");
+        assertTrue(msgHandler.sendMessage(boxId, msg));
 	}
 	@Test
 	void testSendMessageToUser() {
-		User user1=new User("user1", "pass");
-		User user2=new User("user2", "pass");
-		chatbox.addParticipant(user1);
-		chatbox.addParticipant(user2);
-		List<User> participants =chatbox.getParticipantsList();
-		msgHandler.createChatBox(participants, "chat1");
-		int userId=user1.getUserID();
-		assertTrue(msgHandler.sendMessageToUser(userId, "Hi There"));
+		User user1 = new User("user1", "pass");
+	    User user2 = new User("user2", "pass");
+	    userDB.put(user1.getUserID(), user1); // Add user1 to userDB
+	    userDB.put(user2.getUserID(), user2); // Add user2 to userDB
+	    ChatBox chatbox = new ChatBox();
+	    chatbox.addParticipant(user1);
+	    chatbox.addParticipant(user2);
+	    List<User> participants = chatbox.getParticipantsList();
+	    msgHandler.createChatBox(participants, "chat1");
+	    int userId = user1.getUserID();
+	    assertTrue(msgHandler.sendMessageToUser(userId, "Hi There"));
 	}
 	@Test
 	void testRemoveParticipantFromChatBox() {
-		User user1=new User("user1", "pass");
-		User user2=new User("user2", "pass");
-		chatbox.addParticipant(user1);
-		chatbox.addParticipant(user2);
-		List<User> participants =chatbox.getParticipantsList();
-		int boxId=chatbox.getChatBoxID();
-		int userId=user1.getUserID();
-		assertTrue(msgHandler.removeParticipantFromChatBox(boxId, userId));
+		 User user1 = new User("user1", "pass");
+	     User user2 = new User("user2", "pass");
+	     ChatBox chatbox = new ChatBox();
+	     chatbox.addParticipant(user1);
+	     chatbox.addParticipant(user2);
+	     List<User> participants = chatbox.getParticipantsList();
+	     ChatBox createdChatBox = msgHandler.createChatBox(participants, "chat1");
+	     int boxId = createdChatBox.getChatBoxID();
+	     int userId = user1.getUserID();
+	     assertTrue(msgHandler.removeParticipantFromChatBox(boxId, userId));
 		
 	}
 
