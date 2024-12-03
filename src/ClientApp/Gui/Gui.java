@@ -960,6 +960,10 @@ public class Gui {
             public void actionPerformed(ActionEvent e) {
                 User selectedUser = users.getSelectedValue();
                 if (selectedUser != null) {
+                    if(selectedUser.equals( client.getUserData())){
+                        JOptionPane.showMessageDialog(frame,"You can't ban yourself.");
+                        return;
+                    }
                     client.queueMessage(new BanUser(selectedUser.getUserID()));
                 }
             }
