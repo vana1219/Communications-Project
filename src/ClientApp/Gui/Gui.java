@@ -63,11 +63,15 @@ public class Gui {
             treeListModel.add(chatBox);
 
             if (mainWindow.chatBox != null && mainWindow.chatBox.getChatBoxID() == chatBox.getChatBoxID()) {
-                mainWindow.chatBox = chatBox;
+                setChatBox(chatBox);
             }
         });
     }
 
+    public void setChatBox(ChatBox chatBox) {
+        mainWindow.chatBox = chatBox;
+        mainWindow.chatLabel.setText(chatBox.getName() + "  (ID: " + chatBox.getChatBoxID()+")");
+    }
     public void displayChatLog(String chatLog) {
         if (adminOptionsWindow != null && adminOptionsWindow.getChatLogDialog() != null) {
             adminOptionsWindow.getChatLogDialog().displayChatLog(chatLog);
@@ -93,7 +97,7 @@ public class Gui {
             frame.setTitle(frame.getTitle() + " Logged in as: " + client.getUserData().getUsername());
 
             if (!treeListModel.isEmpty()) {
-                mainWindow.chatBox = treeListModel.getElementAt(0);
+                setChatBox(treeListModel.getElementAt(0));
             }
             frame.setLocationRelativeTo(null);
             frame.setSize(new Dimension(1000, 600));
@@ -115,7 +119,7 @@ public class Gui {
 
     public void addChatBox(ChatBox chatBox) {
         if (mainWindow.chatBox == null) {
-            mainWindow.chatBox = chatBox;
+            setChatBox(chatBox);
         }
         SwingUtilities.invokeLater(() -> treeListModel.add(chatBox));
     }
@@ -123,7 +127,7 @@ public class Gui {
     public void addAllChatBoxes(Collection<? extends ChatBox> chatBoxes) {
         SwingUtilities.invokeLater(() -> {
             treeListModel.addAll(chatBoxes);
-            mainWindow.chatBox = treeListModel.getElementAt(0);
+            setChatBox(treeListModel.getElementAt(0));
         });
     }
 
@@ -178,7 +182,7 @@ public class Gui {
         Period dateAgo = Period.between(time.toLocalDate(), LocalDateTime.now().toLocalDate());
 
         long count;
-        String unit = "";
+        String unit;
         if (dateAgo.getYears() > 0) {
             count = dateAgo.getYears();
             unit = ChronoUnit.YEARS.toString();
@@ -320,17 +324,19 @@ public class Gui {
         private final JScrollPane inputScrollPane;
         private final JScrollPane chatBoxListScrollPane;
         private final DefaultListModel<String> chatModel;
-        private ChatBox lastSelectedChatBox;
         private ChatBox chatBox = null;
         private final JPanel panel;
         private final JMenuBar menuBar;
         private final JMenu menu;
         private final List<JMenuItem> menuItems;
+        private final JPanel rightPanel;
+        private final JLabel chatLabel;
 
         public MainWindow() {
             frame.setSize(600, 500);
             // Create the chat area (used to display messages)
             {
+                rightPanel = new JPanel();
                 chatModel = new DefaultListModel<>();
                 chatList = new JList<>(chatModel);
                 chatList.setSelectionModel(new DefaultListSelectionModel());
@@ -412,9 +418,13 @@ public class Gui {
 
             // Create the layout and add components
             panel = new JPanel();
+            rightPanel.setLayout(new BorderLayout());
+            rightPanel.add(chatScrollPane, BorderLayout.CENTER);
+            chatLabel = new JLabel();
+            rightPanel.add(chatLabel, BorderLayout.NORTH);
             panel.setLayout(new BorderLayout());
             panel.add(menuBar, BorderLayout.NORTH);
-            panel.add(chatScrollPane, BorderLayout.CENTER);
+            panel.add(rightPanel, BorderLayout.CENTER);
             panel.add(new JPanel(), BorderLayout.SOUTH);
             panel.add(messagePane, BorderLayout.SOUTH);
             panel.add(chatBoxListScrollPane, BorderLayout.WEST);
@@ -422,7 +432,7 @@ public class Gui {
 
         public void selectChatBox(ChatBox chatBox) {
             if (this.chatBox != chatBox) {
-                this.chatBox = chatBox;
+                setChatBox(chatBox);
                 clearMessages();
                 client.queueMessage(new AskChatBox(chatBox.getChatBoxID()));
             }
