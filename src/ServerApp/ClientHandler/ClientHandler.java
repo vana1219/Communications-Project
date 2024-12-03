@@ -155,7 +155,10 @@ public class ClientHandler implements Runnable {
 
 		// Validate credentials using AuthenticationSystem
 		User authenticatedUser = authenticationSystem.validateCredentials(username, password);
-
+        if(authenticatedUser.isBanned()) {
+            sendNotification("User is banned.");
+            return;
+        }
 		if (authenticatedUser != null) {
 			// Successful login
 			this.user = authenticatedUser;
@@ -232,10 +235,9 @@ public class ClientHandler implements Runnable {
 	}
 
 	// Handle Logout
-	private void handleLogout() {
+	public void handleLogout() {
 		authenticationSystem.logout(user.getUserID());
 		sendMessage(new LogoutResponse());
-
         closeConnection();
 	}
 
@@ -245,6 +247,7 @@ public class ClientHandler implements Runnable {
 
 	    boolean success = authenticationSystem.banUser(userIDToBan);
 	    if (success) {
+            messageHandler.forceLogout(userIDToBan);
 	        System.out.println("Admin " + user.getUsername() + " banned user with ID: " + userIDToBan);
 	        sendNotification("User banned successfully.");
 	    } else {

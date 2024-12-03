@@ -53,7 +53,7 @@ public class Gui {
         chatBoxDialog = new CreateChatBoxDialog(frame);
         adminOptionsWindow = new AdminOptionsWindow(frame);
     }
-    
+
     public void updateChatBox(ChatBox chatBox) {
         SwingUtilities.invokeLater(() -> {
             treeListModel.remove(chatBox);
@@ -156,7 +156,7 @@ public class Gui {
                 resolvedUsername += " (banned)";
             }
         }
-        final String displayUsername = resolvedUsername; 
+        final String displayUsername = resolvedUsername;
         SwingUtilities.invokeLater(() -> {
             mainWindow.chatModel.addElement("<html><b>" + displayUsername + ": </b>"
                     + message.toString().replace("\n", "<br><plaintext>     </plaintext>") + "<br></html>");
@@ -793,8 +793,8 @@ public class Gui {
         private int[] userListIndex;
         private JScrollPane userScrPane;
         private ChatLogDialog chatLogDialog;
-        
-        
+
+
 
         public AdminOptionsWindow(JFrame inFrame) {
             super(inFrame, "Admin Options", true);
@@ -808,7 +808,7 @@ public class Gui {
             this.pack();
             this.setLocationRelativeTo(null);
         }
-        
+
         public void showChatLogDialog(List<ChatBox> chatBoxes) {
             chatLogDialog = new ChatLogDialog(this, chatBoxes, client);
             chatLogDialog.setVisible(true);
@@ -817,7 +817,7 @@ public class Gui {
         public ChatLogDialog getChatLogDialog() {
             return chatLogDialog;
         }
-        
+
         public class ChatLogDialog extends JDialog {
             private final JList<ChatBox> chatBoxList;
             private final DefaultListModel<ChatBox> chatBoxListModel;
