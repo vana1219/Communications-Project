@@ -32,7 +32,7 @@ public class Gui {
     private final CreateChatBoxDialog chatBoxDialog;
     private final AdminOptionsWindow adminOptionsWindow;
     private final DefaultListModel<User> userModel;
-
+    private final List<ChatBox> allChatBox = new ArrayList<>();
     // Define color scheme
     private static final Color BACKGROUND_COLOR = new Color(230, 230, 250); // Lavender
     private static final Color PANEL_COLOR = new Color(230, 230, 250); // Lavender
@@ -102,11 +102,8 @@ public class Gui {
     }
 
     public void updateChatBoxList(List<ChatBox> chatBoxes) {
-        SwingUtilities.invokeLater(() -> {
-            if (adminOptionsWindow != null) {
-                adminOptionsWindow.showChatBoxListDialog(chatBoxes);
-            }
-        });
+            allChatBox.clear();
+            allChatBox.addAll(chatBoxes);
     }
 
     // Method to get connection info from the user
@@ -1017,7 +1014,7 @@ public class Gui {
         private JButton viewChatLogButton;
         private JButton createUserButton;
         private JButton hideChatBoxButton; // Add Hide ChatBox button
-        private JButton unhideChatBoxButton; // Add Unhide ChatBox button
+        private JButton manageChatBoxButton; // Add Unhide ChatBox button
         private JList<User> users;
         private JLabel prompt;
         private int[] userListIndex;
@@ -1223,15 +1220,15 @@ public class Gui {
             viewChatLogButton.setFont(new Font("Arial", Font.BOLD, 14));
             viewChatLogButton.addActionListener(new ViewChatLogButtonListener());
 
-            hideChatBoxButton = new JButton("Hide ChatBox");
-            hideChatBoxButton.setBackground(BUTTON_COLOR);
-            hideChatBoxButton.setFont(new Font("Arial", Font.BOLD, 14));
-            hideChatBoxButton.addActionListener(new HideChatBoxButtonListener());
+//            hideChatBoxButton = new JButton("Hide ChatBox");
+//            hideChatBoxButton.setBackground(BUTTON_COLOR);
+//            hideChatBoxButton.setFont(new Font("Arial", Font.BOLD, 14));
+//            hideChatBoxButton.addActionListener(new HideChatBoxButtonListener());
 
-            unhideChatBoxButton = new JButton("Unhide ChatBox");
-            unhideChatBoxButton.setBackground(BUTTON_COLOR);
-            unhideChatBoxButton.setFont(new Font("Arial", Font.BOLD, 14));
-            unhideChatBoxButton.addActionListener(new UnhideChatBoxButtonListener());
+            manageChatBoxButton = new JButton("Manage ChatBox");
+            manageChatBoxButton.setBackground(BUTTON_COLOR);
+            manageChatBoxButton.setFont(new Font("Arial", Font.BOLD, 14));
+            manageChatBoxButton.addActionListener(new ManageChatBoxButtonListener());
 
             createUserButton = new JButton("Create User");
             createUserButton.setBackground(BUTTON_COLOR);
@@ -1244,9 +1241,9 @@ public class Gui {
             comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(viewChatLogButton);
             comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-            comboPanel.add(hideChatBoxButton);
+//            comboPanel.add(hideChatBoxButton);
             comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-            comboPanel.add(unhideChatBoxButton);
+            comboPanel.add(manageChatBoxButton);
             comboPanel.add(Box.createRigidArea(new Dimension(10, 0)));
             comboPanel.add(createUserButton);
 
@@ -1300,8 +1297,8 @@ public class Gui {
                     banUserButton.setEnabled(hasSelection);
                     unbanUserButton.setEnabled(hasSelection);
                     viewChatLogButton.setEnabled(true); // Always enabled
-                    hideChatBoxButton.setEnabled(true); // Always enabled
-                    unhideChatBoxButton.setEnabled(true); // Always enabled
+//                    hideChatBoxButton.setEnabled(true); // Always enabled
+                    manageChatBoxButton.setEnabled(true); // Always enabled
                     createUserButton.setEnabled(true);
                 }
             }
@@ -1336,13 +1333,25 @@ public class Gui {
         public class ViewChatLogButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 client.queueMessage(new AskChatBoxList());
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+                adminOptionsWindow.showChatLogDialog(allChatBox);
             }
         }
 
-        // HideChatBoxButtonListener inner class
-        private class HideChatBoxButtonListener implements ActionListener {
+        // ManageChatBoxButtonListener inner class
+        private class ManageChatBoxButtonListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 client.queueMessage(new AskChatBoxList());
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+                adminOptionsWindow.showChatBoxListDialog(allChatBox);
             }
         }
 
